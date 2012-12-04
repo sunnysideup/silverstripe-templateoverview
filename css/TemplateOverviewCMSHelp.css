@@ -1,0 +1,5 @@
+#HowToMakeThisPageWorkList {list-style: disc; margin: 17px;}
+#HowToMakeThisPageWorkList li {font-size: 120%; list-style: disc; margin: 5px 0 5px 17px ;}
+#HowToMakeThisPageWorkList li span{color: green; font-size: 120%;}
+
+ul#TemplateOverviewImages li {width: 100px; float: left; padding: 10px;}

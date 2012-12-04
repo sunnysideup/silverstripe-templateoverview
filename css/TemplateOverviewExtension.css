@@ -1,0 +1,22 @@
+#TemplateOverviewPageDevelopmentFooter {margin-top: 100px; clear: both; background-color: #999; border-top: 10px solid #fff; text-align: left; font-size: 15px!important; color:#fff;padding: 2em;}
+	#TemplateOverviewPageDevelopmentFooter h3 {font-size: 1.5em; font-weight: bold; color: green;}
+	#TemplateOverviewPageDevelopmentFooter ul, #TemplateOverviewPageDevelopmentFooter p {margin-top: 0.5em;}
+	#TemplateOverviewPageDevelopmentFooter ul {padding-left: 20px!important;}
+		#TemplateOverviewPageDevelopmentFooter .current {color: yellow;}
+		#TemplateOverviewPageDevelopmentFooter a {color: #fff; font-weight: bold; text-decoration: none;}
+			#TemplateOverviewPageDevelopmentFooter a:hover, #TemplateOverviewPageDevelopmentFooter a:hover {color: yellow;}
+
+/* SPECIAL CASES */
+#TemplateOverviewPrevNextList{
+	-moz-column-count: 5;
+	-moz-column-gap: 20px;
+	-webkit-column-count: 5;
+	-webkit-column-gap: 20px;
+	column-count: 5;
+	column-gap: 20px;
+	padding: 0px;
+	margin: 0px;
+}
+#TemplateOverviewPrevNextList li{list-style: none; background-repeat: no-repeat; background-position: top left; padding-left: 20px; }
+#TemplateOverviewPageDevelopmentFooter li.hiddenListItem{display: none;}
+#TemplateOverviewPageDevelopmentFooter .clear {clear: both;}

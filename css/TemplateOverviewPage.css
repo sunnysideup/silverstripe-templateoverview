@@ -1,0 +1,22 @@
+#classList {text-align: left;}
+	#classList li {background-repeat: no-repeat; background-position: 0 0.5em; padding: 0.5em; margin: 0.3em; padding-left: 2em; list-style: none; list-style-image: none;clear: left;}
+		#classList li img {float: none;}
+		#classList li span {display: block; margin: 0.5em 0}
+			#classList li div.images {float: left; margin-right: 10px; }
+				#classList li div.littleImages {float: right; margin-right: 10px; }
+				#classList li div.images span.thumb {float: left;}
+					#classList li div.images span.thumb img {border: 1px solid #000;}
+						#classList li div.images span.thumb a:hover: img {border: 1px solid red;}
+					#classList li div.images span.littleThumb img {border: 1px solid #000;}
+						#classList li div.images span.littleThumb a:hover img{border: 1px solid red;}
+
+			#classList .typo-heading {font-weight: bold; font-size: 1.3em; text-decoration: underline; margin-top: 0!important; padding-top: 0!important;}
+.typo-example {}
+.typo-fullLink {}
+ .typo-fullLink a {}
+
+#TemplateOverviewImages img {border: 10px solid #ccc;}
+.MoreDetailOL {clear: left; border: 3px dotted #ccc; display: none;}
+	.MoreDetailOL .moreDetailLI {margin-left: 0px!important; padding-left:0!important;}
+.templateOverviewDescription {border: 1px solid green; padding: 10px; margin: 0px;}
+.updateToDoListLink {font-weight: bold; color: green;}
