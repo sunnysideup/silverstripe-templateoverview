@@ -9,7 +9,7 @@ Nicolaas Francken [at] sunnysideup.co.nz
 
 Requirements
 -----------------------------------------------
-SilverStripe 2.3.0 or greater.
+SilverStripe 3.0 or greater.
 HIGHLY RECOMMENDED:
 prettyphoto: http://sunny.svnrepository.com/svn/sunny-side-up-general/prettyPhoto
 
