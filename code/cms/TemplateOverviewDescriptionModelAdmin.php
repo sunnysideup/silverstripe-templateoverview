@@ -4,7 +4,6 @@
  *@description model admin for template overview
  **/
 
-
 class TemplateOverviewDescriptionModelAdmin extends ModelAdmin {
 
 

@@ -40,10 +40,10 @@ class TemplateOverviewBug extends DataObject {
 	);
 
 	public static $summary_fields = array(
-		"Title" => "PartialMatchFilter",
+		"Title",
 		"NeedsMoreInformation",
 		"Fixed",
-		"Template.Title"
+		"Template.Title" => "Template"
 	);
 
 	public static $field_labels = array(
