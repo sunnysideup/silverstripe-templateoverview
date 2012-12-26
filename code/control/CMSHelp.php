@@ -49,17 +49,17 @@ class CMSHelp extends ContentController {
 	 *
 	 * @return String -
 	 */
-	function Link() {
+	function Link($action = "") {
 		return "/".self::$url_segment."/";
 	}
 
 	/**
-	 * @return Object - DataObjectSet of help files
+	 * @return ArrayList of help files
 	 *
 	 *
 	 */
 	function HelpFiles(){
-		$dos = new DataObjectSet();
+		$dos = new ArrayList();
 		$fileArray = self::get_list_of_files(self::get_help_file_directory_name());
 		if($fileArray && count($fileArray)) {
 			$linkArray = array();

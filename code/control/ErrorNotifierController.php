@@ -52,7 +52,7 @@ class ErrorNotifierController extends Controller {
 		return $this->showThankYouNote;
 	}
 
-	function Link() {
+	function Link($action = "") {
 		return "/error/report/";
 	}
 

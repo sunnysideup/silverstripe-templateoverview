@@ -22,7 +22,7 @@ class TemplateOverviewPageExtension extends Extension {
 		if(Director::isDev()) {
 			Requirements::javascript($this->owner->project()."/javascript/TemplateOverviewOverlay.js");
 			Requirements::javascript("templateoverview/javascript/TemplateOverviewExtension.js");
-			Requirements::themedCSS("TemplateOverviewExtension");
+			Requirements::themedCSS("TemplateOverviewExtension", "templateoverview");
 			return true;
 		}
 		return false;

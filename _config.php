@@ -6,7 +6,7 @@
  *
  **/
 
-ErrorPage::$icon = "templateoverview/images/treeicons/ErrorPage";
+//ErrorPage::$icon = "templateoverview/images/treeicons/ErrorPage";
 
 //copy the lines between the START AND END line to your /mysite/_config.php file and choose the right settings
 //===================---------------- START templateoverview MODULE ----------------===================

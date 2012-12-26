@@ -109,7 +109,7 @@ class TemplateOverviewBug extends DataObject {
 		return $fields;
 	}
 
-	function Link() {
+	function Link($action = "") {
 		return TemplateOverviewDescriptionModelAdmin::get_full_url_segment()."TemplateOverviewBug/".$this->ID."/edit/";
 	}
 

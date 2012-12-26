@@ -1,5 +1,5 @@
 <% if MoreDetail %>
-	<% control MoreDetail %>
+	<% with MoreDetail %>
 <li class="description moreDetailLI">
 	<p class="templateOverviewDescription">
 		<% if Description %>$Description ... <% else %> [no description provided] <% end_if %>
@@ -16,9 +16,9 @@
 		<% if Image7ID %><span class="mediumThumb"><a href="$Image5.URL" rel="prettyPhoto[$ClassNameLink]">$Image7.SetWidth(525)</a></span><% end_if %>
 	</div>
 </li>
-	<% end_control %>
+	<% end_with %>
 <% end_if %>
-<% control Results %>
+<% loop Results %>
 <li class="example moreDetailLI">{$Pos}. <a href="$URLSegment">$Title</a> - <a href="/admin/show/$ID">CMS view</a></li>
-<% end_control %>
+<% end_loop %>
 

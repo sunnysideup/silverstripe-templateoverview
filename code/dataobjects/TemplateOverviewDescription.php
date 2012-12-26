@@ -78,7 +78,7 @@ class TemplateOverviewDescription extends DataObject {
 		return false;
 	}
 
-	function canDelete() {
+	function canDelete($member = null) {
 		return true;
 	}
 

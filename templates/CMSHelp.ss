@@ -45,18 +45,18 @@
 	<h2 id="TOCHeading">Specific to $SiteTitle</h2>
 	<p>Below are some screenshots that are specific to this site.</p>
 	<ol id="TOC">
-		<% control HelpFiles %>
+		<% loop HelpFiles %>
 		<li class="$EvenOdd $FirstLast"><a href="#Pos$Pos" class="small">$Title</a></li>
-		<% end_control %>
+		<% end_loop %>
 	</ol>
 	<ol id="HelpImages">
-		<% control HelpFiles %>
+		<% loop HelpFiles %>
 		<li class="$EvenOdd $FirstLast" id="Pos$Pos">
 			<h3><a class="backToTop" href="#TOCHeading">^</a> $Title</h3>
 			<a href="#Pos$Pos" class="small"><img src="$Link" /></a>
 		</li>
 
-		<% end_control %>
+		<% end_loop %>
 	</ol>
 	<% else %>
 	<p>There are no help files.</p>

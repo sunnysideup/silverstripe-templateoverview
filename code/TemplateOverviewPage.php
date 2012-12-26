@@ -39,7 +39,7 @@ class TemplateOverviewPage extends Page {
 		"TemplateOverviewDescriptions" => "TemplateOverviewDescription"
 	);
 
-	public function canCreate() {
+	public function canCreate($member = null) {
 		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		return !DataObject::get("SiteTree", "{$bt}ClassName{$bt} = 'TemplateOverviewPage'");
 	}
@@ -136,7 +136,7 @@ class TemplateOverviewPage extends Page {
 				}
 			}
 			ksort($ArrayOfAllClasses);
-			self::$list_of_all_classes =  new DataObjectSet();
+			self::$list_of_all_classes =  new ArrayList();
 			$currentClassname = '';
 			if($c = Controller::curr()) {
 				if($d = $c->dataRecord) {

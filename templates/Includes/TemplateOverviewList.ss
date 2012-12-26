@@ -1,11 +1,11 @@
 <h1 id="allclasses">Templates used on this website ($TotalCount): </h1>
 <ul id="classList">
-<% control ListOfAllClasses %>
+<% loop ListOfAllClasses %>
 	<% if Count %>
 	<li style="background-image: url({$Icon});" id="sectionFor-$ClassName">
 		<% if TemplateOverviewDescription %>
 		<div class="images">
-		<% control TemplateOverviewDescription %>
+		<% with TemplateOverviewDescription %>
 			<% if Image1ID %><span class="thumb"><a href="$Image1.URL" rel="prettyPhoto[$ClassNameLink]">$Image1.SetWidth(150)</a></span><% end_if %>
 			<div class="littleImages">
 				<% if Image2ID %><span class="littleThumb"><a href="$Image2.URL" rel="prettyPhoto[$ClassNameLink]">$Image2.SetWidth(25)</a></span><% end_if %>
@@ -13,7 +13,7 @@
 				<% if Image4ID %><span class="littleThumb"><a href="$Image4.URL" rel="prettyPhoto[$ClassNameLink]">$Image4.SetWidth(25)</a></span><% end_if %>
 				<% if Image5ID %><span class="littleThumb"><a href="$Image5.URL" rel="prettyPhoto[$ClassNameLink]">$Image5.SetWidth(25)</a></span><% end_if %>
 			</div>
-		<% end_control %>
+		<% end_with %>
 		</div>
 		<% end_if %>
 		<span class="typo-heading">$Count x $ClassName - template</span>
@@ -29,5 +29,5 @@
 	<% else %>
 	<li style="background-image: url({$Icon});">There are no instances of $ClassName templates.</li>
 	<% end_if %>
-<% end_control %>
+<% end_loop %>
 </ul>
