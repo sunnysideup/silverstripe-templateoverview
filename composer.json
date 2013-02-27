@@ -1,5 +1,5 @@
 {
-	"name": "silverstripe/templateoverview",
+	"name": "sunnysideup/templateoverview",
 	"type": "silverstripe-module",
 	"description": "adds development tools for building silverstripe websites, in particular around managing page types.",
 	"homepage": "http://www.silverstripe-webdevelopment.com",
