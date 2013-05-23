@@ -201,7 +201,12 @@ class TemplateOverviewPage extends Page {
 		else {
 			$icon = $obj->stat("icon");
 		}
-		$listArray["Icon"] = $icon."-file.gif";
+		$iconFile = Director::baseFolder().'/'.$icon;
+		print_r($iconFile);
+		if(!file_exists($iconFile)) {
+			$icon = $icon."-file.gif";
+		}
+		$listArray["Icon"] = $icon;
 		$object = new ArrayData($listArray);
 		return $object;
 	}
