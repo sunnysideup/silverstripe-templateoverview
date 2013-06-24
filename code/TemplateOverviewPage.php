@@ -202,7 +202,6 @@ class TemplateOverviewPage extends Page {
 			$icon = $obj->stat("icon");
 		}
 		$iconFile = Director::baseFolder().'/'.$icon;
-		print_r($iconFile);
 		if(!file_exists($iconFile)) {
 			$icon = $icon."-file.gif";
 		}
