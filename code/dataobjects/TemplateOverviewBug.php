@@ -92,13 +92,13 @@ class TemplateOverviewBug extends DataObject {
 		}
 
 		$fields->addFieldToTab("Root.ScreenShots", new LiteralField("HowToMakeAScreenShot", '<h3>Learn how to make <a target="_blank" href="http://www.google.com.au/search?&q=How+To+Make+ScreenShot">a screenshot</a></h3>'));
-		$fields->addFieldToTab("Root.ScreenShots", new ImageField("Screenshot1", "Required First screenshot", $value = null, $form = null, $rightTitle = null, $folderName = "Bugs"));
-		$fields->addFieldToTab("Root.ScreenShots", new ImageField("Screenshot2", "Second screenshot (optional)", $value = null, $form = null, $rightTitle = null, $folderName = "Bugs"));
-		$fields->addFieldToTab("Root.ScreenShots", new ImageField("Screenshot3", "Third screenshot (optional)", $value = null, $form = null, $rightTitle = null, $folderName = "Bugs"));
-		$fields->addFieldToTab("Root.ScreenShots", new ImageField("Screenshot4", "Fourth screenshot (optional)", $value = null, $form = null, $rightTitle = null, $folderName = "Bugs"));
-		$fields->addFieldToTab("Root.ScreenShots", new ImageField("Screenshot5", "Fifth screenshot (optional)", $value = null, $form = null, $rightTitle = null, $folderName = "Bugs"));
-		$fields->addFieldToTab("Root.ScreenShots", new ImageField("Screenshot6", "Sixth screenshot (optional)", $value = null, $form = null, $rightTitle = null, $folderName = "Bugs"));
-		$fields->addFieldToTab("Root.ScreenShots", new ImageField("Screenshot7", "Seventh screenshot (optional)", $value = null, $form = null, $rightTitle = null, $folderName = "Bugs"));
+		$fields->addFieldToTab("Root.ScreenShots", new UploadField("Screenshot1", "Required First screenshot"));
+		$fields->addFieldToTab("Root.ScreenShots", new UploadField("Screenshot2", "Second screenshot (optional)"));
+		$fields->addFieldToTab("Root.ScreenShots", new UploadField("Screenshot3", "Third screenshot (optional)"));
+		$fields->addFieldToTab("Root.ScreenShots", new UploadField("Screenshot4", "Fourth screenshot (optional)"));
+		$fields->addFieldToTab("Root.ScreenShots", new UploadField("Screenshot5", "Fifth screenshot (optional)"));
+		$fields->addFieldToTab("Root.ScreenShots", new UploadField("Screenshot6", "Sixth screenshot (optional)"));
+		$fields->addFieldToTab("Root.ScreenShots", new UploadField("Screenshot7", "Seventh screenshot (optional)"));
 		$fields->addFieldToTab("Root.Outcome", new CheckboxField("NeedsMoreInformation", "Developer needs more information from website owner"));
 		$fields->addFieldToTab("Root.Outcome", new TextareaField("QuestionsFromDeveloper", "Questions from developer"));
 		if(!$this->NeedsMoreInformation) {

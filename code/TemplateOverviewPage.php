@@ -64,7 +64,7 @@ class TemplateOverviewPage extends Page {
 			$sourceSort = "{$bt}ClassNameLink{$bt} ASC"
 			//$sourceJoin = null
 		);
-		$fields->addFieldToTab('Root.Content.Descriptions', $tablefield);
+		$fields->addFieldToTab('Root.Descriptions', $tablefield);
 		return $fields;
 	}
 
@@ -262,7 +262,7 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 
 
 	function ConfigurationDetails() {
-		$m = Member::CurrentMember();
+		$m = Member::currentUser();
 		if($m) {
 			if($m->IsAdmin()) {
 				$baseFolder = Director::baseFolder();

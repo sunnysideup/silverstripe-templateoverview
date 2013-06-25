@@ -71,7 +71,7 @@ class TemplateOverviewTestPage_Controller extends Page_Controller {
 			$member = Member::currentMemberID();
 			$entry->write();
 		}
-		Director::redirect($this->Link("testscreated"));
+		$this->redirect($this->Link("testscreated"));
 	}
 
 	function testscreated() {

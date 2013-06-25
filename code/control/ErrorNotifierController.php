@@ -23,7 +23,7 @@ class ErrorNotifierController extends Controller {
 		}
 		$folder = Folder::findOrMake("ErrorScreenshots");
 		$form = new Form($this, 'Form',
-			new FieldSet(
+			new FieldList(
 				new TextField('Name'),
 				new TextField('Email'),
 				new TextField('URL', 'What is the URL of the page the error occured (this is the address shown in the address bar (e.g. http://www.mysite.com/mypage/with/errors/)', $url),
@@ -34,7 +34,7 @@ class ErrorNotifierController extends Controller {
 				, $value = null, $form = null, $rightTitle = null, $folderName = $folder->Name
 				)
 			),
-			new FieldSet(
+			new FieldList(
 				new FormAction('senderror', 'Submit Error')
 			),
 			new RequiredFields(array("Email", "Name"))
