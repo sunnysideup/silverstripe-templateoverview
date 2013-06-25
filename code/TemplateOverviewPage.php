@@ -52,19 +52,10 @@ class TemplateOverviewPage extends Page {
 	protected static $list_of_all_classes = null;
 
 	public function getCMSFields() {
-		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		$fields = parent::getCMSFields();
-		$tablefield = new HasManyComplexTableField(
-			$controller = $this,
-			$name = 'TemplateOverviewDescriptions',
-			$sourceClass = 'TemplateOverviewDescription',
-			null,
-			$detailFormFields = 'getCMSFields_forPopup',
-			$sourceFilter = "{$bt}ParentID{$bt} = ".$this->ID,
-			$sourceSort = "{$bt}ClassNameLink{$bt} ASC"
-			//$sourceJoin = null
-		);
-		$fields->addFieldToTab('Root.Descriptions', $tablefield);
+		$gridFieldConfig = GridFieldConfig_RelationEditor::create();
+		$gridfield = new GridField("TemplateOverviewDescriptions", "TemplateOverviewDescription", $this->TemplateOverviewDescriptions(), $gridFieldConfig);
+		$fields->addFieldToTab('Root.Descriptions', $gridfield);
 		return $fields;
 	}
 
