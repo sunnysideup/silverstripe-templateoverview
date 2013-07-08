@@ -22,17 +22,27 @@ class ErrorNotifierController extends Controller {
 			$url = Director::baseURL();
 		}
 		$folder = Folder::findOrMake("ErrorScreenshots");
+		
+		$whatDidYouTryDoField = new TextareaField('WhatDidYouTryToDo', 'What did you try to do');
+		$whatDidYouTryDoField->setRows(3);
+
+		$whatWentWrongField = new TextareaField('WhatWentWrong', 'What went wrong');
+		$whatWentWrongField->setRows(3);
+
+		$screenshotField = new FileField(
+			'Screenshot',
+			'To take a screenshot press the PRT SCR button on your keyboard, then open MS Word or MS Paint and paste the screenshot. Save the file and then attach (upload) the file here.'
+		);
+		$screenshotField->setFolderName($folder->Name);
+
 		$form = new Form($this, 'Form',
 			new FieldList(
 				new TextField('Name'),
 				new TextField('Email'),
 				new TextField('URL', 'What is the URL of the page the error occured (this is the address shown in the address bar (e.g. http://www.mysite.com/mypage/with/errors/)', $url),
-				new TextareaField('WhatDidYouTryToDo', 'What did you try to do', 3),
-				new TextareaField('WhatWentWrong', 'What went wrong', 3),
-				new FileField('Screenshot',
-				'To take a screenshot press the PRT SCR button on your keyboard, then open MS Word or MS Paint and paste the screenshot. Save the file and then attach (upload) the file here.'
-				, $value = null, $form = null, $rightTitle = null, $folderName = $folder->Name
-				)
+				$whatDidYouTryDoField,
+				$whatWentWrongField,
+				$screenshotField
 			),
 			new FieldList(
 				new FormAction('senderror', 'Submit Error')

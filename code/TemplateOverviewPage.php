@@ -40,8 +40,7 @@ class TemplateOverviewPage extends Page {
 	);
 
 	public function canCreate($member = null) {
-		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
-		return !DataObject::get("SiteTree", "{$bt}ClassName{$bt} = 'TemplateOverviewPage'");
+		return !SiteTree::get()->filter(array("ClassName" => 'TemplateOverviewPage'))->count();
 	}
 
 
@@ -63,7 +62,7 @@ class TemplateOverviewPage extends Page {
 		parent::requireDefaultRecords();
 		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		if(self::$auto_include) {
-			$check = DataObject::get_one("TemplateOverviewPage");
+			$check = TemplateOverviewPage::get()->First();
 			if(!$check) {
 				$page = new TemplateOverviewPage();
 				$page->ShowInMenus = 0;
@@ -73,7 +72,7 @@ class TemplateOverviewPage extends Page {
 				$page->PageTitle = "Templates overview";
 				$page->Sort = 99998;
 				$page->URLSegment = "templates";
-				$parent = DataObject::get_one("Page", "{$bt}URLSegment{$bt} = '".self::$parent_url_segment."'");
+				$parent = Page::get()->filter(array("URLSegment" => self::$parent_url_segment))->First();
 				if($parent) {
 					$page->ParentID = $parent->ID;
 				}
@@ -96,7 +95,7 @@ class TemplateOverviewPage extends Page {
 			foreach($classes as $className) {
 				if(!in_array($className, self::$classes_to_exclude)) {
 					if($this->showAll) {
-						$objects = DataObject::get($className, 'ClassName = "'.$className.'"', "RAND() ASC", null, "0, 25");
+						$objects = $className::get()->filter(array("ClassName" => $className))->sort("RAND() ASC")->limit(25, 0);
 						$count = 0;
 						if(is_object($objects) && $objects->count()) {
 							foreach($objects as $obj) {
@@ -107,14 +106,14 @@ class TemplateOverviewPage extends Page {
 					}
 					else {
 						$obj = null;
-						$objects = DataObject::get($className, "ClassName = '".$className."'", 'RAND() ASC', '', 1);
+						$objects = $className::get()->filter(array("ClassName" => $className))->sort("RAND() ASC")->limit(1);
 						if(is_object($objects) && $objects->count()) {
 							$obj = $objects->First();
 							$extension = '';
 							if(Versioned::current_stage() == "Live") {
 								$extension = "_Live";
 							}
-							$count = DB::query("Select COUNT(*) from {$bt}SiteTree{$extension}{$bt} where {$bt}ClassName{$bt} = '".$obj->ClassName."'")->value();
+							$count = SiteTree::get()->filter(array("ClassName" => $obj->ClassName))->count();
 						}
 						else {
 							$obj = singleton($className);
@@ -157,7 +156,7 @@ class TemplateOverviewPage extends Page {
 
 	protected function TemplateDetails($className) {
 		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
-		$obj = DataObject::get_one("TemplateOverviewDescription", "ClassNameLink = '".$className."'");
+		$obj = TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $className))->First();
 		if(!$obj) {
 			$obj = new TemplateOverviewDescription();
 			$obj->ClassNameLink = $className;
@@ -206,7 +205,7 @@ class TemplateOverviewPage extends Page {
 		$array = ClassInfo::subclassesFor($obj->ClassName);
 		if(count($array)) {
 			foreach($array as $class) {
-				if(DataObject::get_by_id($class, $obj->ID)) {
+				if($class::get()->byID($obj->ID)) {
 					return false;
 				}
 			}
@@ -235,12 +234,12 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 	function showmore($request) {
 		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		$id = $request->param("ID");
-		$obj = DataObject::get_by_id("SiteTree", intval($id));
+		$obj = SiteTree::get()->byID(intval($id));
 		if($obj) {
-			$data = DataObject::get($obj->ClassName, $where = "{$bt}ClassName{$bt} = '".$obj->ClassName."'", $orderBy = "", $join = "", $limit = 500);
+			$data = $obj->ClassName::get()->filter(array("ClassName" => $obj->ClassName))->limit(500);
 			$array = array(
 				"Results" => $data,
-				"MoreDetail" => DataObject::get("TemplateOverviewDescription", "ClassNameLink = '".$obj->ClassName."'")
+				"MoreDetail" => TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $obj->ClassName))
 			);
 		}
 		else {
@@ -270,7 +269,7 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 	}
 
 	function clearalltemplatedescriptions() {
-		if($m =$this->CurrentMember()) {
+		if($m = Member::currentUser()) {
 			if($m->IsAdmin()) {
 				DB::query("DELETE FROM TemplateOverviewDescription");
 				die("all descriptions have been deleted");

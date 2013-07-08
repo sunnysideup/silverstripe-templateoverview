@@ -65,7 +65,7 @@ class TemplateOverviewTestItem extends DataObject {
 
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$source = DataObject::get("TemplateOverviewDescription");
+		$source = TemplateOverviewDescription::get();
 		$fields->removeFieldFromTab("Root", "TemplateOverviewDescriptions");
 		$fields->removeFieldFromTab("Root", "TemplateOverviewTestItemEntry");
 		$fields->addFieldToTab("Root.TestOnTheseTemplates", new MultiSelectField(

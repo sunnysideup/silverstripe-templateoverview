@@ -98,7 +98,7 @@ class TemplateOverviewDescription extends DataObject {
 
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$page = DataObject::get_one("TemplateOverviewPage");
+		$page = TemplateOverviewPage::get()->First();
 		if(!$page) {
 			user_error("Please make sure to create a TemplateOverviewPage to make use of this module.", E_USER_WARNING);
 		}
@@ -124,7 +124,7 @@ class TemplateOverviewDescription extends DataObject {
 	function requireDefaultRecords() {
 		parent::requireDefaultRecords();
 		$data = ClassInfo::subclassesFor("SiteTree");
-		$templateOverviewPage = DataObject::get_one("TemplateOverviewPage");
+		$templateOverviewPage = TemplateOverviewPage::get()->First();
 		$fileList = null;
 		if(self::get_image_source_folder()) {
 			$fileList = CMSHelp::get_list_of_files(self::get_image_source_folder());
@@ -141,7 +141,7 @@ class TemplateOverviewDescription extends DataObject {
 		}
 		if($data && $templateOverviewPage) {
 			foreach($data as $className) {
-				$object = DataObject::get_one("TemplateOverviewDescription", "ClassNameLink = '$className'");
+				$object = TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $className))->First();
 				if(!$object) {
 					$object = new TemplateOverviewDescription();
 					$object->ClassNameLink = $className;
@@ -169,7 +169,7 @@ class TemplateOverviewDescription extends DataObject {
 										if(!file_exists($destinationDir.$fileArray["FileName"])) {
 											copy($fileArray["FullLocation"], $destinationDir.$fileArray["FileName"]);
 										}
-										$image = DataObject::get_one("Image", "\"ParentID\" = ".$destinationFolder->ID." AND \"Name\" = '".$fileArray["FileName"]."'");
+										$image = $Image::get()->filter(array("ParentID" => $destinationFolder-ID, "Name" => $fileArray["FileName"]))->First();
 										if(!$image) {
 											$image = new Image();
 											$image->ParentID = $destinationFolder->ID;
@@ -203,7 +203,7 @@ class TemplateOverviewDescription extends DataObject {
 
 	protected function validate() {
 		if($this->ID) {
-			if(DataObject::get_one("TemplateOverviewDescription", "ClassNameLink = '".$this->ClassNameLink."' AND ID <> ".$this->ID)) {
+			if(TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $this->ClassNameLink))->exclude(array("ID" => $this->ID))) {
 				return new ValidationResult(false, _t("TemplateOverviewDescription.ALREADYEXISTS", "This template already exists"));
 			}
 		}
@@ -212,7 +212,7 @@ class TemplateOverviewDescription extends DataObject {
 
 	function onBeforeWrite() {
 		if(!$this->ParentID) {
-			if($page = DataObject::get_one("TemplateOverviewPage")) {
+			if($page = TemplateOverviewPage::get()->First()) {
 				$this->ParentID = $page->ID;
 			}
 		}

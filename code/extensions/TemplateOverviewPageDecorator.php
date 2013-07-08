@@ -21,7 +21,7 @@ class TemplateOverviewPageDecorator extends SiteTreeExtension {
 				));
 			}
 		}
-		$obj = DataObject::get_one("TemplateOverviewDescription", "ClassNameLink = '".$this->owner->ClassName."'");
+		$obj = TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $this->owner->ClassName))->First();
 		if($obj) {
 			if($obj->ToDoListHyperLink) {
 				$fields->replaceField("ToDo", new LiteralField("ToDo", '<p><a href="'.$obj->ToDoListHyperLink.'" target="todo">review to do items...</a></p>'));

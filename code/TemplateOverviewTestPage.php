@@ -16,13 +16,13 @@ class TemplateOverviewTestPage extends Page {
 	function requireDefaultRecords(){
 		parent::requireDefaultRecords();
 		if(isset($_REQUEST["checkallpages"])) {
-			$classObjects = DataObject::get("TemplateOverviewDescription");
-			if($classObjects) {
+			$classObjects = TemplateOverviewDescription::get();
+			if($classObjects->count()) {
 				foreach($classObjects as $classObject) {
 					$className = $classObject->ClassNameLink;
 					if($className && class_exists($className) && $className != "TemplateOverviewTestPage") {
-						$page = DataObject::get_one($className,"\"ClassName\" = '$className'");
-						if($page) {
+						$page = $className::get()->filter(array("ClassName" => $className));
+						if($page->count()) {
 							$url1 = Director::absoluteURL($page->Link());
 							$url2 = Director::absoluteURL("/admin/show/".$page->ID);
 							$this->checkURL($url1);
@@ -64,7 +64,7 @@ class TemplateOverviewTestPage extends Page {
 class TemplateOverviewTestPage_Controller extends Page_Controller {
 
 	function createtest() {
-		$tests = DataObject::get("TemplateOverviewTestItem");
+		$tests = TemplateOverviewTestItem::get();
 		foreach($tests as $test) {
 			$entry = new TemplateOverviewTestItemEntry();
 			$entry->TemplateOverviewTestItemID = $test->ID;

@@ -86,8 +86,8 @@ class TemplateOverviewBug extends DataObject {
 			}
 		}
 		$fields->addFieldToTab("Root.RelatesTo", new TreeDropdownField("PageID", "Relevant page (if any)", "SiteTree"));
-		$templates = DataObject::get("TemplateOverviewDescription");
-		if($templates) {
+		$templates = TemplateOverviewDescription::get();
+		if($templates->count()) {
 			$fields->addFieldToTab("Root.RelatesTo", new DropdownField("TemplateID", "Relevant page type (if any)", $templates->toDropdownMap('ID','ClassNameLinkFancy', " --- please select ---")));
 		}
 

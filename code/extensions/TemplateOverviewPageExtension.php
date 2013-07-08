@@ -12,7 +12,7 @@ class TemplateOverviewPageExtension extends Extension {
 	protected $templateList = null;
 
 	public function TemplateOverviewPage() {
-		return DataObject::get_one("TemplateOverviewPage");
+		return TemplateOverviewPage::get()->First();
 	}
 	public function BugManagementLink() {
 		return TemplateOverviewDescriptionModelAdmin::get_full_url_segment();
@@ -61,7 +61,7 @@ class TemplateOverviewPageExtension extends Extension {
 
 	function TemplateList() {
 		if(!$this->templateList) {
-			$page = DataObject::get_one("TemplateOverviewPage");
+			$page = TemplateOverviewPage::get()->First();
 			if($page) {
 				$this->templateList = $page->ListOfAllClasses();
 			}
@@ -71,18 +71,16 @@ class TemplateOverviewPageExtension extends Extension {
 
 	function TemplateOverviewBugs() {
 		$templateID = 0;
-		if($templateOverviewDescription = DataObject::get_one("TemplateOverviewDescription", "\"ClassNameLink\" = '".$this->owner->ClassName."'")) {
+		if($templateOverviewDescription = TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $this->owner->ClassName))->First()) {
 			$templateID = $templateOverviewDescription->ID;
 		}
-		return DataObject::get(
-			"TemplateOverviewBug",
-			"\"Fixed\" <> 1 AND (((\"TemplateID\" = 0 AND \"PageID\" = 0 ) OR \"TemplateID\" = ".$templateID.") OR ((\"PageID\" = 0 AND \"TemplateID\")  OR \"PageID\" = ".$this->owner->ID.")  )",
-			"PageID DESC, TemplateID DESC"
-		);
+		return TemplateOverviewBug::get()
+			->where("\"Fixed\" <> 1 AND (((\"TemplateID\" = 0 AND \"PageID\" = 0 ) OR \"TemplateID\" = ".$templateID.") OR ((\"PageID\" = 0 AND \"TemplateID\")  OR \"PageID\" = ".$this->owner->ID.")  )")
+			->sort(array("PageID" => "DESC", "TemplateID => DESC"));
 	}
 
 	function TemplateDescriptionForThisClass(){
-		return DataObject::get_one("TemplateOverviewDescription", "ClassNameLink = '".$this->owner->ClassName."'");
+		return TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $this->owner->ClassName))->First();
 	}
 
 }
