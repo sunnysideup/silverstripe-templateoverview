@@ -15,4 +15,9 @@ class TemplateOverviewDescriptionModelAdmin extends ModelAdmin {
 
 	public static $menu_title = 'Bugs';
 
+	public static function get_full_url_segment($action = null){
+		$obj = singleton("TemplateOverviewDescriptionModelAdmin");
+		return $obj->Link($action);
+	}
+
 }

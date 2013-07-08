@@ -236,7 +236,8 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 		$id = $request->param("ID");
 		$obj = SiteTree::get()->byID(intval($id));
 		if($obj) {
-			$data = $obj->ClassName::get()->filter(array("ClassName" => $obj->ClassName))->limit(500);
+			$className = $obj->ClassName;
+			$data = $className::get()->filter(array("ClassName" => $obj->ClassName))->limit(500);
 			$array = array(
 				"Results" => $data,
 				"MoreDetail" => TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $obj->ClassName))
