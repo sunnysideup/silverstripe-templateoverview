@@ -182,7 +182,7 @@ class CheckAllTemplates extends BuildTask {
 			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$length = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
 			$possibleError = false;
-			if((strlen($response) < 500) || (substr($response, 0, 10) == "Fatal error")) {
+			if((strlen($response) < 500) || (substr($response, 0, 11) == "Fatal error")) {
 				$possibleError = true;
 			}
 				//Content-Length
@@ -194,7 +194,7 @@ class CheckAllTemplates extends BuildTask {
 				$errors++;
 			}
 			if($possibleError) {
-				echo " <span style='color: red;>CHECK FOR ERRORS</span> ";
+				echo " <span style='color: red;'>CHECK FOR ERRORS</span> ";
 			}
 			echo "[<a href=".$url.">".$url."</a>]: HTTPCODE [".$httpCode."]</li>";
 		}
@@ -240,7 +240,7 @@ class CheckAllTemplates extends BuildTask {
 						foreach($modelsToAdd as $model => $extraInfo) {
 							$modelLink = $modelAdminLink.$model."/";
 							$models[] = $modelLink;
-							$models[] = $modelLink."/EditForm/field/".$model."/item/new/";
+							$models[] = $modelLink."EditForm/field/".$model."/item/new/";
 							if($item = $model::get()->First()) {
 								$models[] = $modelLink."EditForm/field/".$model."/item/".$item->ID."/edit";
 							}

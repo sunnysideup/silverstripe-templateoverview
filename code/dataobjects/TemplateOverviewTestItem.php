@@ -68,7 +68,7 @@ class TemplateOverviewTestItem extends DataObject {
 		$source = TemplateOverviewDescription::get();
 		$fields->removeFieldFromTab("Root", "TemplateOverviewDescriptions");
 		$fields->removeFieldFromTab("Root", "TemplateOverviewTestItemEntry");
-		$fields->addFieldToTab("Root.TestOnTheseTemplates", new MultiSelectField(
+		$fields->addFieldToTab("Root.TestOnTheseTemplates", new CheckboxSetField(
 			"TemplateOverviewDescriptions",
 			"Test",
 			$source->map('ID','ClassNameLinkFancy')
