@@ -251,7 +251,7 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 	function ConfigurationDetails() {
 		$m = Member::currentUser();
 		if($m) {
-			if($m->IsAdmin()) {
+			if($m->inGroup("ADMIN")) {
 				$baseFolder = Director::baseFolder();
 				$myFile = $baseFolder."/".$this->project()."/_config.php";
 				$fh = fopen($myFile, 'r');
@@ -267,7 +267,7 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 
 	function clearalltemplatedescriptions() {
 		if($m = Member::currentUser()) {
-			if($m->IsAdmin()) {
+			if($m->inGroup("ADMIN")) {
 				DB::query("DELETE FROM TemplateOverviewDescription");
 				die("all descriptions have been deleted");
 			}
