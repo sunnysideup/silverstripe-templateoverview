@@ -91,7 +91,7 @@ class CheckAllTemplates extends BuildTask {
 			}
 			echo "
 			</table>
-			<script src='/framework/thirdparty/jquery/jquery.js' type='text/javascript'></script>
+			<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js' ></script>
 			<script type='text/javascript'>
 
 				var list = ".Convert::raw2json($linkArray).";
