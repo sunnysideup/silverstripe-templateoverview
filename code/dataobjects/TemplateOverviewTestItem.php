@@ -71,7 +71,7 @@ class TemplateOverviewTestItem extends DataObject {
 		$fields->addFieldToTab("Root.TestOnTheseTemplates", new MultiSelectField(
 			"TemplateOverviewDescriptions",
 			"Test",
-			$source->toDropdownMap('ID','ClassNameLinkFancy')
+			$source->map('ID','ClassNameLinkFancy')
 		));
 		return $fields;
 	}

@@ -88,7 +88,14 @@ class TemplateOverviewBug extends DataObject {
 		$fields->addFieldToTab("Root.RelatesTo", new TreeDropdownField("PageID", "Relevant page (if any)", "SiteTree"));
 		$templates = TemplateOverviewDescription::get();
 		if($templates->count()) {
-			$fields->addFieldToTab("Root.RelatesTo", new DropdownField("TemplateID", "Relevant page type (if any)", $templates->toDropdownMap('ID','ClassNameLinkFancy', " --- please select ---")));
+			$fields->addFieldToTab(
+				"Root.RelatesTo",
+				new DropdownField(
+					"TemplateID",
+					"Relevant page type (if any)",
+					array(0 => "please select")+$templates->map('ID','ClassNameLinkFancy')->toArray()
+				)
+			);
 		}
 
 		$fields->addFieldToTab("Root.ScreenShots", new LiteralField("HowToMakeAScreenShot", '<h3>Learn how to make <a target="_blank" href="http://www.google.com.au/search?&q=How+To+Make+ScreenShot">a screenshot</a></h3>'));
