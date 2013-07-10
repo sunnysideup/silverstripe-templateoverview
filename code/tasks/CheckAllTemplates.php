@@ -10,6 +10,16 @@
 
 class CheckAllTemplates extends BuildTask {
 
+
+	public function getDescription() {
+		return $this->description;
+	}
+
+	public function getTitle() {
+		return $this->title;
+	}
+
+
 	protected $title = 'Check URLs for HTTP errors';
 
 	protected $description = "Will go through main URLs on the website, checking for HTTP errors (e.g. 404)";
@@ -19,92 +29,155 @@ class CheckAllTemplates extends BuildTask {
 	  */
 	private $modelAdmins = array();
 
+	/**
+	 *
+	 * all of the public acessible links
+	 */
+	private $allOpenLinks = array();
+
+	/**
+	 *
+	 * all of the admin acessible links
+	 */
 	private $allAdmins = array();
 
 	/**
 	  * Pages to check by class name. For example, for "ClassPage", will check the first instance of the cart page.
 	  */
-	private $classNames = array(
-		"CartPage",
-		"CheckoutPage",
-		"OrderConfirmationPage",
-		"AccountPage",
-		"Product",
-		"ProductGroup",
-		"ProductGroupSearchPage"
-	);
+	private $classNames = array();
+
+	private $ch = null;
+
+	private $member = null;
+
+	private $username = "";
+
+	private $password = "";
 
 
 	public function run($request) {
 		set_time_limit(0);
-		$this->classNames = $this->ListOfAllClasses();
-		$this->modelAdmins = $this->ListOfAllModelAdmins();
-		$classURLs = $this->prepareClasses();
-		$username = "TEMPLATEOVERVIEW_URLCHECKER___";
-		$password = rand(1000000000,9999999999);
+		$asAdmin = empty($_REQUEST["admin"]) ? false : true;
+		$testOne = isset($_REQUEST["test"]) ? $_GET["test"] : null;
+		//actually test a URL and return the data
+		if($testOne) {
+			if($asAdmin) {
+				$this->createAndLoginUser();
+			}
+			$this->setupCurl();
+			echo $this->testURL($testOne);
+		}
+		//create a list of
+		else {
+			Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
+			$this->classNames = $this->ListOfAllClasses();
+			$this->modelAdmins = $this->ListOfAllModelAdmins();
+			$this->allNonAdmins = $this->prepareClasses();
+			$this->allAdmins = $this->array_push_array($this->modelAdmins, $this->prepareClasses(1));
+			$sections = array("allNonAdmins", "allAdmins");
+			$count = 0;
+			echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>";
+			foreach($sections as $key => $section) {
+				foreach($this->$section as $link) {
+					$count++;
+					$id = "ID".$count;
+					$linkArray[] = array("IsAdmin" => $key, "Link" => $link, "ID" => $id);
+					echo "
+						<li class=".($key ? "isAdmin" : "notAdmin")." id=\"$id\">$link</li>
+					";
+				}
+			}
+			echo "
 
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+			<script src='/framework/thirdparty/jquery/jquery.js' type='text/javascript'></script>
+			<script type='text/javascript'>
 
-		//Test Class pages
-		echo "<h4>Testing class pages before logging in</h4><br /><ul>";
-		$errors = $this->testURLs($classURLs, $ch); // Test the class pages i.e. CartPage before logging in.
-		echo "</ul>";
-		echo "<strong><span" . ( $errors > 0 ? " style='color:red'" : " style='color:green'").">".$errors." errors.</span></strong><br /><br />";
+				var list = ".Convert::raw2json($linkArray).";
 
+				var baseURL = '/dev/tasks/CheckAllTemplates/';
+
+				var stop = false;
+
+				jQuery(document).ready(
+					function(){
+						jQuery('a.start').click(
+							function() {
+								var newItem = list.shift();
+								checkURL(newItem);
+							}
+						);
+						jQuery('a.stop').click(
+							function() {
+								stop = true;
+							}
+						);
+					}
+				)
+
+				function checkURL(newItem){
+					if(stop) {
+
+					}
+					else {
+						var testLink = escape(newItem.Link);
+						var isAdmin = newItem.IsAdmin;
+						var ID = newItem.ID;
+						jQuery('#'+ID).html(jQuery('#'+ID).html()+'loading ... ');
+						jQuery.ajax({
+							url: baseURL,
+							type: 'get',
+							data: {'test': testLink, 'admin': isAdmin},
+							success: function(data, textStatus){
+								jQuery('#'+ID).html(data);
+								jQuery('h1').fadeOut(2000);
+								var newItem = list.shift();
+								checkURL(newItem);
+							},
+							error: function(){
+								alert('error occured');
+							},
+							dataType: 'html'
+						});
+					}
+				}
+			</script>";
+		}
+	}
+
+	private function createAndLoginUser(){
+		$this->username = "TEMPLATEOVERVIEW_URLCHECKER___";
+		$this->password = rand(1000000000,9999999999);
 		//Make temporary admin member
-		echo "<strong>Making admin member (".$username.") on the fly...</strong><br />";
-		$adminMember = Member::get()->filter(array("Email" => $username))->first();
+		$adminMember = Member::get()->filter(array("Email" => $this->username))->first();
 		if($adminMember != NULL) {
-			echo "<strong>Member alread exists... deleting</strong><br />";
 			$adminMember->delete();
 		}
-		$Member = new Member();
-		$Member->Email = $username;
-		$Member->Password = $password;
-		$Member->write();
-		$Member->Groups()->add(Group::get()->filter(array("code" => "administrators"))->first());
+		$this->member = new Member();
+		$this->member->Email = $this->username;
+		$this->member->Password = $this->password;
+		$this->member->write();
+		$this->member->Groups()->add(Group::get()->filter(array("code" => "administrators"))->first());
 
-		echo "Made admin<br />";;
-		echo "Logging in..<br />";
-
-		$username = $Member->Email;
 		$loginUrl = Director::absoluteURL('/Security/LoginForm');
-		$ch = $this->login($ch, $loginUrl, $username, $password); // Will return 'false' if we failed to log in.
-		if(!$ch) {
+		$this->ch = $this->login($loginUrl); // Will return 'false' if we failed to log in.
+		if(!$this->ch) {
 			echo "<span style='color:red'>There was an error logging in!</span><br />";
-
-		} else {
-			echo "<span style='color:green'>Successfully made contact with login form.</span><br />";
-			echo "<h4>Retrying class pages after login.</h4><ul>";
-			//$errors = $this->testURLs($classURLs, $ch);
-			echo "</ul>";
-			echo "<strong><span" . ( $errors > 0 ? " style='color:red'" : " style='color:green'").">".$errors." errors.</span></strong><br /><br />";
-
-
-			// Will add /admin/edit/show/$ID for each of the {@link #classNames} to {@link #urls}
-			$this->allAdmins = $this->array_push_array($this->modelAdmins, $this->prepareClasses(1));
-
-			echo "<h4>Testing admin URLs</h4><ul>";
-			$errors = $this->testURLs($this->allAdmins, $ch);
-			echo "</ul>";
-			echo "<strong><span" . ( $errors > 0 ? " style='color:red'" : " style='color:green'").">".$errors." errors.</span></strong><br /><br />";
-
-
-			curl_close($ch);
-
 		}
-		$Member->delete();
 	}
 
-	public function getDescription() {
-		return $this->description;
+	private function setupCurl(){
+		$this->ch = curl_init();
+		curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, TRUE);
 	}
 
-	public function getTitle() {
-		return $this->title;
+	private function cleanup(){
+		if($this->member) {
+			$this->member->delete();
+		}
+		curl_close($this->ch);
 	}
+
 
 	/**
 	  * Takes {@link #$classNames}, gets the URL of the first instance of it (will exclude extensions of the class) and
@@ -144,23 +217,23 @@ class CheckAllTemplates extends BuildTask {
 
 	/**
 	  * Will try log in to SS with given username and password.
-	  * @param Curl Handle $ch A curl handle to use (will be returned later if successful).
+	  * @param Curl Handle $this->ch A curl handle to use (will be returned later if successful).
 	  * @param String $loginUrl URL of the form to post to
 	  * @param String $username Username
 	  * @param String $password Password
 	  * @return Curl Handle|Boolean Returns the curl handle if successfully contacted log in form, else 'false'
 	  */
-	private function login($ch, $loginUrl, $username, $password) {
-		curl_setopt($ch, CURLOPT_URL, $loginUrl);
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, 'Email='.$username.'&Password='.$password);
-		curl_setopt($ch, CURLOPT_COOKIEJAR, 'cookie.txt');
+	private function login($loginUrl) {
+		curl_setopt($this->ch, CURLOPT_URL, $loginUrl);
+		curl_setopt($this->ch, CURLOPT_POST, 1);
+		curl_setopt($this->ch, CURLOPT_POSTFIELDS, 'Email='.$this->username.'&Password='.$this->password);
+		curl_setopt($this->ch, CURLOPT_COOKIEJAR, 'cookie.txt');
 
 
 		//execute the request (the login)
-		$loginContent = curl_exec($ch);
-		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		if($httpCode == 200) return $ch;
+		$loginContent = curl_exec($this->ch);
+		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+		if($httpCode == 200) return $this->ch;
 		return false;
 	}
 
@@ -170,35 +243,33 @@ class CheckAllTemplates extends BuildTask {
 	  * @param Curl Handle Curl handle to use
 	  * @return Int number of errors
 	  */
-	private function testURLs($urls, $ch) {
-		$errors = 0;
-		foreach($urls as $url) {
-			if(strlen(trim($url)) < 1) continue; //Checks for empty strings.
-
-			$url = Director::absoluteURL($url);
-
-			curl_setopt($ch, CURLOPT_URL, $url);
-			$response = curl_exec($ch);
-			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-			$length = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-			$possibleError = false;
-			if((strlen($response) < 500) || (substr($response, 0, 11) == "Fatal error")) {
-				$possibleError = true;
-			}
-				//Content-Length
-			if($httpCode == 200 ) {
-				echo "<li style='color:green'>";
-			}
-			else {
-				echo "<li style='color:red'>";
-				$errors++;
-			}
-			if($possibleError) {
-				echo " <span style='color: red;'>CHECK FOR ERRORS</span> ";
-			}
-			echo "[<a href=".$url.">".$url."</a>]: HTTPCODE [".$httpCode."]</li>";
+	private function testURL($url) {
+		if(strlen(trim($url)) < 1) {
+			user_error("empty url"); //Checks for empty strings.
 		}
-		return $errors;
+
+		$url = Director::absoluteURL($url);
+
+		curl_setopt($this->ch, CURLOPT_URL, $url);
+		$response = curl_exec($this->ch);
+		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+		$length = curl_getinfo($this->ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+		$possibleError = false;
+		if((strlen($response) < 500) || (substr($response, 0, 11) == "Fatal error")) {
+			$possibleError = true;
+		}
+			//Content-Length
+		if($httpCode == 200 ) {
+			echo "<span style='color:green'>";
+		}
+		else {
+			echo "<span style='color:red'>";
+			$errors++;
+		}
+		if($possibleError) {
+			echo " <span style='color: red;'>CHECK FOR ERRORS</span> ";
+		}
+		echo "[<a href=".$url.">".$url."</a>]: HTTPCODE [".$httpCode."]</span>";
 	}
 
 	/**
@@ -213,7 +284,7 @@ class CheckAllTemplates extends BuildTask {
 		return $array;
 	}
 
-	function ListOfAllClasses(){
+	private function ListOfAllClasses(){
 		$pages = array();
 		$templateOverviewPage = TemplateOverviewPage::get()->First();
 		if(!$templateOverviewPage) {
@@ -226,7 +297,7 @@ class CheckAllTemplates extends BuildTask {
 		return $pages;
 	}
 
-	function ListOfAllModelAdmins(){
+	private function ListOfAllModelAdmins(){
 		$models = array();
 		$modelAdmins = CMSMenu::get_cms_classes("ModelAdmin");
 		if($modelAdmins && count($modelAdmins)) {
