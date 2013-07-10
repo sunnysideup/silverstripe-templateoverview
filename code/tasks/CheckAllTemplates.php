@@ -182,7 +182,7 @@ class CheckAllTemplates extends BuildTask {
 			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$length = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
 			$possibleError = false;
-			if((strlen($response) < 500) || (substr($reponse, 0, 10) == "Fatal error")) {
+			if((strlen($response) < 500) || (substr($response, 0, 10) == "Fatal error")) {
 				$possibleError = true;
 			}
 				//Content-Length
