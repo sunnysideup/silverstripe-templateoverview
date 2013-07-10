@@ -61,10 +61,10 @@ class CheckAllTemplates extends BuildTask {
 		$testOne = isset($_REQUEST["test"]) ? $_GET["test"] : null;
 		//actually test a URL and return the data
 		if($testOne) {
+			$this->setupCurl();
 			if($asAdmin) {
 				$this->createAndLoginUser();
 			}
-			$this->setupCurl();
 			echo $this->testURL($testOne);
 		}
 		//create a list of
@@ -76,19 +76,21 @@ class CheckAllTemplates extends BuildTask {
 			$this->allAdmins = $this->array_push_array($this->modelAdmins, $this->prepareClasses(1));
 			$sections = array("allNonAdmins", "allAdmins");
 			$count = 0;
-			echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>";
+			echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
+			<table border='1'>
+			<tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th>error</th></tr>";
 			foreach($sections as $key => $section) {
 				foreach($this->$section as $link) {
 					$count++;
 					$id = "ID".$count;
 					$linkArray[] = array("IsAdmin" => $key, "Link" => $link, "ID" => $id);
 					echo "
-						<li class=".($key ? "isAdmin" : "notAdmin")." id=\"$id\">$link</li>
+						<tr id=\"$id\" class=".($key ? "isAdmin" : "notAdmin")."><td>$link</td><td></td><td></td><td></td></tr>
 					";
 				}
 			}
 			echo "
-
+			</table>
 			<script src='/framework/thirdparty/jquery/jquery.js' type='text/javascript'></script>
 			<script type='text/javascript'>
 
@@ -119,22 +121,27 @@ class CheckAllTemplates extends BuildTask {
 
 					}
 					else {
-						var testLink = escape(newItem.Link);
+						var testLink = (newItem.Link);
 						var isAdmin = newItem.IsAdmin;
 						var ID = newItem.ID;
-						jQuery('#'+ID).html(jQuery('#'+ID).html()+'loading ... ');
+						jQuery('#'+ID).find('td').css('border', '1px solid red');
 						jQuery.ajax({
 							url: baseURL,
 							type: 'get',
 							data: {'test': testLink, 'admin': isAdmin},
 							success: function(data, textStatus){
 								jQuery('#'+ID).html(data);
-								jQuery('h1').fadeOut(2000);
+								//jQuery('h1').fadeOut(2000);
 								var newItem = list.shift();
+								jQuery('#'+ID).find('td').css('border', '1px solid green');
 								checkURL(newItem);
 							},
 							error: function(){
-								alert('error occured');
+								jQuery('#'+ID).html(data);
+								//jQuery('h1').fadeOut(2000);
+								var newItem = list.shift();
+								jQuery('#'+ID).find('td').css('border', '1px solid green');
+								checkURL(newItem);
 							},
 							dataType: 'html'
 						});
@@ -253,23 +260,24 @@ class CheckAllTemplates extends BuildTask {
 		curl_setopt($this->ch, CURLOPT_URL, $url);
 		$response = curl_exec($this->ch);
 		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+		$timeTaken = round(curl_getinfo($this->ch, CURLINFO_TOTAL_TIME), 2);
 		$length = curl_getinfo($this->ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
 		$possibleError = false;
-		if((strlen($response) < 500) || (substr($response, 0, 11) == "Fatal error")) {
-			$possibleError = true;
+		if((strlen($response) < 500) || ($length < 500) || (substr($response, 0, 11) == "Fatal error")) {
+			$error = "<span style='color: red;'>short response</span> ";
 		}
-			//Content-Length
+		$error = "none";
+		$html = "";
 		if($httpCode == 200 ) {
-			echo "<span style='color:green'>";
+			$html .= "<td style='color:green'><a href='$url' style='color: grey!important; text-decoration: none;'>$url</a></td>";
 		}
 		else {
-			echo "<span style='color:red'>";
-			$errors++;
+			$html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
 		}
 		if($possibleError) {
-			echo " <span style='color: red;'>CHECK FOR ERRORS</span> ";
 		}
-		echo "[<a href=".$url.">".$url."</a>]: HTTPCODE [".$httpCode."]</span>";
+		$html .= "<td style='text-align: right'>$httpCode</td><td style='text-align: right'>$timeTaken</td><td>$error</td>";
+		echo $html;
 	}
 
 	/**
