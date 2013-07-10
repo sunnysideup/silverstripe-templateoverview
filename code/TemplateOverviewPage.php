@@ -60,7 +60,6 @@ class TemplateOverviewPage extends Page {
 
 	public function requireDefaultRecords() {
 		parent::requireDefaultRecords();
-		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		if(self::$auto_include) {
 			$check = TemplateOverviewPage::get()->First();
 			if(!$check) {
@@ -88,7 +87,6 @@ class TemplateOverviewPage extends Page {
 
 
 	public function ListOfAllClasses() {
-		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		if(!self::$list_of_all_classes)  {
 			$ArrayOfAllClasses =  Array();
 			$classes = ClassInfo::subclassesFor("SiteTree");
@@ -155,7 +153,6 @@ class TemplateOverviewPage extends Page {
 
 
 	protected function TemplateDetails($className) {
-		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		$obj = TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $className))->First();
 		if(!$obj) {
 			$obj = new TemplateOverviewDescription();
@@ -232,7 +229,6 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 	}
 
 	function showmore($request) {
-		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		$id = $request->param("ID");
 		$obj = SiteTree::get()->byID(intval($id));
 		if($obj) {
