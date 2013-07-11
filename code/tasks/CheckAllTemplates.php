@@ -216,7 +216,11 @@ class CheckAllTemplates extends BuildTask {
 		$this->member->Email = $this->username;
 		$this->member->Password = $this->password;
 		$this->member->write();
-		$this->member->Groups()->add(Group::get()->filter(array("code" => "administrators"))->first());
+		$adminGroup = Group::get()->filter(array("code" => "administrators")->first();
+		if(!$adminGroup) {
+			user_error("No admin group exists");
+		}
+		$this->member->Groups()->add($adminGroup);
 		curl_setopt($this->ch, CURLOPT_USERPWD, $this->username.":".$this->password);
 
 		$loginUrl = Director::absoluteURL('/Security/LoginForm');
