@@ -156,18 +156,14 @@ class CheckAllTemplates extends BuildTask {
 							var ID = checker.item.ID;
 							jQuery('#'+ID).find('td')
 								.css('border', '1px solid blue');
-							jQuery('#'+ID)
-								.css('background-repeat', 'no-repeat')
-								.css('background-image', 'url(/templateoverview/images/loading.gif)');
+							jQuery('#'+ID).css('background-image', 'url(/templateoverview/images/loading.gif)');
 							jQuery.ajax({
 								url: checker.baseURL,
 								type: 'get',
 								data: {'test': testLink, 'admin': isAdmin},
 								success: function(data, textStatus){
 									checker.item = null;
-									jQuery('#'+ID).html(data)
-										.css('background-repeat', 'no-repeat')
-										.css('background-image', 'none');
+									jQuery('#'+ID).html(data).css('background-image', 'none');
 									checker.item = checker.list.shift();
 									jQuery('#'+ID).find('td').css('border', '1px solid green');
 
@@ -179,9 +175,7 @@ class CheckAllTemplates extends BuildTask {
 								error: function(){
 									checker.item = null;
 									jQuery('#'+ID).find('td.error').html('ERROR');
-									jQuery('#'+ID)
-										.css('background-repeat', 'no-repeat')
-										.css('background-image', 'none');
+									jQuery('#'+ID).css('background-image', 'none');
 									checker.item = checker.list.shift();
 									jQuery('#'+ID).find('td').css('border', '1px solid red');
 									window.setTimeout(
