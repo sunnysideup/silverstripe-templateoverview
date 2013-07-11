@@ -78,7 +78,7 @@ class CheckAllTemplates extends BuildTask {
 			$count = 0;
 			echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
 			<table border='1'>
-			<tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th>error</th></tr>";
+			<tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th></tr>";
 			foreach($sections as $key => $section) {
 				foreach($this->$section as $link) {
 					$count++;
@@ -94,57 +94,81 @@ class CheckAllTemplates extends BuildTask {
 			<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js' ></script>
 			<script type='text/javascript'>
 
-				var list = ".Convert::raw2json($linkArray).";
-
-				var baseURL = '/dev/tasks/CheckAllTemplates/';
-
-				var stop = false;
 
 				jQuery(document).ready(
 					function(){
+						checker.init();
+					}
+				);
+
+				var checker = {
+					list: ".Convert::raw2json($linkArray).",
+
+					baseURL: '/dev/tasks/CheckAllTemplates/',
+
+					item: null,
+
+					stop: true,
+
+					init: function() {
 						jQuery('a.start').click(
 							function() {
-								var newItem = list.shift();
-								checkURL(newItem);
+								checker.stop = false;
+								if(!checker.item) {
+									checker.item = checker.list.shift();
+								}
+								checker.checkURL();
 							}
 						);
 						jQuery('a.stop').click(
 							function() {
-								stop = true;
+								checker.stop = true;
 							}
 						);
-					}
-				)
+					},
 
-				function checkURL(newItem){
-					if(stop) {
+					checkURL: function(){
+						if(checker.stop) {
 
-					}
-					else {
-						var testLink = (newItem.Link);
-						var isAdmin = newItem.IsAdmin;
-						var ID = newItem.ID;
-						jQuery('#'+ID).find('td').css('border', '1px solid red');
-						jQuery.ajax({
-							url: baseURL,
-							type: 'get',
-							data: {'test': testLink, 'admin': isAdmin},
-							success: function(data, textStatus){
-								jQuery('#'+ID).html(data);
-								//jQuery('h1').fadeOut(2000);
-								var newItem = list.shift();
-								jQuery('#'+ID).find('td').css('border', '1px solid green');
-								checkURL(newItem);
-							},
-							error: function(){
-								jQuery('#'+ID).html(data);
-								//jQuery('h1').fadeOut(2000);
-								var newItem = list.shift();
-								jQuery('#'+ID).find('td').css('border', '1px solid green');
-								checkURL(newItem);
-							},
-							dataType: 'html'
-						});
+						}
+						else {
+							var testLink = (checker.item.Link);
+							var isAdmin = checker.item.IsAdmin;
+							var ID = checker.item.ID;
+							jQuery('#'+ID).find('td')
+								.css('border', '1px solid blue')
+								.css('background-repeat', 'no-repeat')
+								.css('background-image', '/templateoverview/images/loading.gif');
+							jQuery.ajax({
+								url: checker.baseURL,
+								type: 'get',
+								data: {'test': testLink, 'admin': isAdmin},
+								success: function(data, textStatus){
+									checker.item = null;
+									jQuery('#'+ID).html(data);
+									//jQuery('h1').fadeOut(2000);
+									checker.item = checker.list.shift();
+									jQuery('#'+ID).find('td').css('border', '1px solid green');
+
+									window.setTimeout(
+										function() {checker.checkURL();},
+										1000
+									);
+								},
+								error: function(){
+									checker.item = null;
+									jQuery('#'+ID).find('td.error').html('ERROR');
+									//jQuery('h1').fadeOut(2000);
+									checker.item = checker.list.shift();
+									jQuery('#'+ID).find('td').css('border', '1px solid red');
+									window.setTimeout(
+										function() {checker.checkURL();},
+										1000
+									);
+								},
+								dataType: 'html'
+							});
+						}
 					}
 				}
 			</script>";
@@ -260,7 +284,8 @@ class CheckAllTemplates extends BuildTask {
 		curl_setopt($this->ch, CURLOPT_URL, $url);
 		$response = curl_exec($this->ch);
 		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
-		$timeTaken = round(curl_getinfo($this->ch, CURLINFO_TOTAL_TIME), 2);
+		$timeTaken = curl_getinfo($this->ch, CURLINFO_TOTAL_TIME);
+		$timeTaken = number_format((float)$timeTaken, 2, '.', '');
 		$length = curl_getinfo($this->ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
 		$possibleError = false;
 		if((strlen($response) < 500) || ($length < 500) || (substr($response, 0, 11) == "Fatal error")) {

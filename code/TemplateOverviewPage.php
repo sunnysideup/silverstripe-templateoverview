@@ -272,8 +272,10 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 				die("all descriptions have been deleted");
 			}
 		}
-
 	}
 
+	function TestTaskLink(){
+		return "/dev/tasks/CheckAllTemplates/";
+	}
 }
 
