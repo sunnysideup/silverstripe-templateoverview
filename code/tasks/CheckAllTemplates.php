@@ -12,7 +12,7 @@ class CheckAllTemplates extends BuildTask {
 
 	protected $title = 'Check URLs for HTTP errors';
 
-	protected $description = "Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited by ModelAdmin, checking for HTTP response errors (e.g. 404)";
+	protected $description = "Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited in ModelAdmin, checking for HTTP response errors (e.g. 404). Click start to run.";
 
 	/**
 	  * List of URLs to be checked. Excludes front end pages (Cart pages etc).
@@ -317,6 +317,10 @@ class CheckAllTemplates extends BuildTask {
 		return $array;
 	}
 
+	/**
+	 * returns a lis of all SiteTree Classes
+	 * @return Array(String)
+	 */
 	private function ListOfAllClasses(){
 		$pages = array();
 		$list = null;
@@ -339,6 +343,10 @@ class CheckAllTemplates extends BuildTask {
 		return $pages;
 	}
 
+	/**
+	 * returns a list of all model admin links
+	 * @return Array(String)
+	 */
 	private function ListOfAllModelAdmins(){
 		$models = array();
 		$modelAdmins = CMSMenu::get_cms_classes("ModelAdmin");
@@ -366,9 +374,10 @@ class CheckAllTemplates extends BuildTask {
 	}
 
 	/**
-	  * Takes {@link #$classNames}, gets the URL of the first instance of it (will exclude extensions of the class) and
-	  * appends to the {@link #$urls} list to be checked
-	  */
+	 * Takes {@link #$classNames}, gets the URL of the first instance of it (will exclude extensions of the class) and
+	 * appends to the {@link #$urls} list to be checked
+	 * @return Array(String)
+	 */
 	private function prepareClasses($publicOrAdmin = 0) {
 		//first() will return null or the object
 		$return = array();
