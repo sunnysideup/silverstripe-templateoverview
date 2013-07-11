@@ -94,13 +94,18 @@ class CheckAllTemplates extends BuildTask {
 			echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
 			<table border='1'>
 			<tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th></tr>";
-			foreach($sections as $key => $section) {
+			foreach($sections as $isAdmin => $section) {
 				foreach($this->$section as $link) {
 					$count++;
 					$id = "ID".$count;
-					$linkArray[] = array("IsAdmin" => $key, "Link" => $link, "ID" => $id);
+					$linkArray[] = array("IsAdmin" => $isAdmin, "Link" => $link, "ID" => $id);
 					echo "
-						<tr id=\"$id\" class=".($key ? "isAdmin" : "notAdmin")."><td>$link</td><td></td><td></td><td></td></tr>
+						<tr id=\"$id\" class=".($isAdmin ? "isAdmin" : "notAdmin").">
+							<td><a href=\"/dev/tasks/CheckAllTemplates/?test=".urlencode($link)."&admin=".$isAdmin."\" style='color: purple' target='_blank'>$link</a></td>
+							<td></td>
+							<td></td>
+							<td></td>
+						</tr>
 					";
 				}
 			}
@@ -150,17 +155,19 @@ class CheckAllTemplates extends BuildTask {
 							var isAdmin = checker.item.IsAdmin;
 							var ID = checker.item.ID;
 							jQuery('#'+ID).find('td')
-								.css('border', '1px solid blue')
+								.css('border', '1px solid blue');
+							jQuery('#'+ID)
 								.css('background-repeat', 'no-repeat')
-								.css('background-image', '/templateoverview/images/loading.gif');
+								.css('background-image', 'url(/templateoverview/images/loading.gif)');
 							jQuery.ajax({
 								url: checker.baseURL,
 								type: 'get',
 								data: {'test': testLink, 'admin': isAdmin},
 								success: function(data, textStatus){
 									checker.item = null;
-									jQuery('#'+ID).html(data);
-									//jQuery('h1').fadeOut(2000);
+									jQuery('#'+ID).html(data)
+										.css('background-repeat', 'no-repeat')
+										.css('background-image', 'none');
 									checker.item = checker.list.shift();
 									jQuery('#'+ID).find('td').css('border', '1px solid green');
 
@@ -172,7 +179,9 @@ class CheckAllTemplates extends BuildTask {
 								error: function(){
 									checker.item = null;
 									jQuery('#'+ID).find('td.error').html('ERROR');
-									//jQuery('h1').fadeOut(2000);
+									jQuery('#'+ID)
+										.css('background-repeat', 'no-repeat')
+										.css('background-image', 'none');
 									checker.item = checker.list.shift();
 									jQuery('#'+ID).find('td').css('border', '1px solid red');
 									window.setTimeout(
@@ -216,7 +225,7 @@ class CheckAllTemplates extends BuildTask {
 		$this->member->Email = $this->username;
 		$this->member->Password = $this->password;
 		$this->member->write();
-		$adminGroup = Group::get()->filter(array("code" => "administrators")->first();
+		$adminGroup = Group::get()->filter(array("code" => "administrators"))->first();
 		if(!$adminGroup) {
 			user_error("No admin group exists");
 		}
