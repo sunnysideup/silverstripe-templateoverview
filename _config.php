@@ -16,7 +16,7 @@ Config::inst()->update("ErrorPage", 'icon', "templateoverview/images/treeicons/E
   //Object::add_extension('Page_Controller', 'TemplateOverviewPageExtension');
 	//MAY SET
   //Object::add_extension('SiteTree', 'TemplateOverviewPageDecorator');
-  //Director::addRules(7, array('error/report' => 'ErrorNotifierController'));
+  //Director::addRules(100, array('error/report' => 'ErrorNotifierController'));
 //}
 //TemplateOverviewPage::set_auto_include(true);
 //LeftAndMain::require_css("templateoverview/css/TemplateOverviewCMSHelp.css");

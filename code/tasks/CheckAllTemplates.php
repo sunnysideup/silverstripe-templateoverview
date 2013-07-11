@@ -10,19 +10,9 @@
 
 class CheckAllTemplates extends BuildTask {
 
-
-	public function getDescription() {
-		return $this->description;
-	}
-
-	public function getTitle() {
-		return $this->title;
-	}
-
-
 	protected $title = 'Check URLs for HTTP errors';
 
-	protected $description = "Will go through main URLs on the website, checking for HTTP errors (e.g. 404)";
+	protected $description = "Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited by ModelAdmin, checking for HTTP response errors (e.g. 404)";
 
 	/**
 	  * List of URLs to be checked. Excludes front end pages (Cart pages etc).
@@ -30,46 +20,71 @@ class CheckAllTemplates extends BuildTask {
 	private $modelAdmins = array();
 
 	/**
-	 *
+	 * @var Array
 	 * all of the public acessible links
 	 */
 	private $allOpenLinks = array();
 
 	/**
-	 *
+	 * @var Array
 	 * all of the admin acessible links
 	 */
 	private $allAdmins = array();
 
 	/**
-	  * Pages to check by class name. For example, for "ClassPage", will check the first instance of the cart page.
-	  */
+	 * @var Array
+	 * Pages to check by class name. For example, for "ClassPage", will check the first instance of the cart page.
+	 */
 	private $classNames = array();
 
+	/**
+	 *
+	 * @var curlHolder
+	 */
 	private $ch = null;
 
+	/**
+	 * temporary Admin used to log in.
+	 * @var Member
+	 */
 	private $member = null;
 
+	/**
+	 * temporary username for temporary admin
+	 * @var String
+	 */
 	private $username = "";
 
+	/**
+	 * temporary password for temporary admin
+	 * @var String
+	 */
 	private $password = "";
 
-
+	/**
+	 * Main function
+	 * has two streams:
+	 * 1. check on url specified in GET variable.
+	 * 2. create a list of urls to check
+	 *
+	 */
 	public function run($request) {
-		set_time_limit(0);
 		$asAdmin = empty($_REQUEST["admin"]) ? false : true;
 		$testOne = isset($_REQUEST["test"]) ? $_GET["test"] : null;
-		//actually test a URL and return the data
+
+		//1. actually test a URL and return the data
 		if($testOne) {
 			$this->setupCurl();
 			if($asAdmin) {
 				$this->createAndLoginUser();
 			}
 			echo $this->testURL($testOne);
+			$this->cleanup();
 		}
-		//create a list of
+
+		//2. create a list of
 		else {
-			Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
+			Requirements::javascript(THIRDPARTY_DIR . '//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js');
 			$this->classNames = $this->ListOfAllClasses();
 			$this->modelAdmins = $this->ListOfAllModelAdmins();
 			$this->allNonAdmins = $this->prepareClasses();
@@ -93,7 +108,6 @@ class CheckAllTemplates extends BuildTask {
 			</table>
 			<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js' ></script>
 			<script type='text/javascript'>
-
 
 				jQuery(document).ready(
 					function(){
@@ -175,6 +189,21 @@ class CheckAllTemplates extends BuildTask {
 		}
 	}
 
+	/**
+	 * creates the basic curl
+	 *
+	 */
+	private function setupCurl(){
+		$this->ch = curl_init();
+		curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, TRUE);
+	}
+
+
+	/**
+	 * creates and logs in a temporary user.
+	 *
+	 */
 	private function createAndLoginUser(){
 		$this->username = "TEMPLATEOVERVIEW_URLCHECKER___";
 		$this->password = rand(1000000000,9999999999);
@@ -188,48 +217,33 @@ class CheckAllTemplates extends BuildTask {
 		$this->member->Password = $this->password;
 		$this->member->write();
 		$this->member->Groups()->add(Group::get()->filter(array("code" => "administrators"))->first());
+		curl_setopt($this->ch, CURLOPT_USERPWD, $this->username.":".$this->password);
 
 		$loginUrl = Director::absoluteURL('/Security/LoginForm');
-		$this->ch = $this->login($loginUrl); // Will return 'false' if we failed to log in.
-		if(!$this->ch) {
+		curl_setopt($this->ch, CURLOPT_URL, $loginUrl);
+		curl_setopt($this->ch, CURLOPT_POST, 1);
+		curl_setopt($this->ch, CURLOPT_POSTFIELDS, 'Email='.$this->username.'&Password='.$this->password);
+		curl_setopt($this->ch, CURLOPT_COOKIEJAR, 'cookie.txt');
+
+
+		//execute the request (the login)
+		$loginContent = curl_exec($this->ch);
+		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+		if($httpCode != 200) {
 			echo "<span style='color:red'>There was an error logging in!</span><br />";
 		}
 	}
 
-	private function setupCurl(){
-		$this->ch = curl_init();
-		curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, TRUE);
-	}
-
+	/**
+	 * removes the temporary user
+	 * and cleans up the curl connection.
+	 *
+	 */
 	private function cleanup(){
 		if($this->member) {
 			$this->member->delete();
 		}
 		curl_close($this->ch);
-	}
-
-
-	/**
-	  * Takes {@link #$classNames}, gets the URL of the first instance of it (will exclude extensions of the class) and
-	  * appends to the {@link #$urls} list to be checked
-	  */
-	private function prepareClasses($publicOrAdmin = 0) {
-		//first() will return null or the object
-		$return = array();
-		foreach($this->classNames as $class) {
-			$page = $class::get()->exclude(array("ClassName" => $this->arrayExcept($this->classNames, $class)))->first();
-			if($page) {
-				if($publicOrAdmin) {
-					$url = "/admin/pages/edit/show/".$page->ID;
-				}
-				else {
-					$url = $page->link();
-				}
-				$return[] = $url;
-			}
-		}
-		return $return;
 	}
 
 	/**
@@ -247,33 +261,9 @@ class CheckAllTemplates extends BuildTask {
 	}
 
 	/**
-	  * Will try log in to SS with given username and password.
-	  * @param Curl Handle $this->ch A curl handle to use (will be returned later if successful).
-	  * @param String $loginUrl URL of the form to post to
-	  * @param String $username Username
-	  * @param String $password Password
-	  * @return Curl Handle|Boolean Returns the curl handle if successfully contacted log in form, else 'false'
-	  */
-	private function login($loginUrl) {
-		curl_setopt($this->ch, CURLOPT_URL, $loginUrl);
-		curl_setopt($this->ch, CURLOPT_POST, 1);
-		curl_setopt($this->ch, CURLOPT_POSTFIELDS, 'Email='.$this->username.'&Password='.$this->password);
-		curl_setopt($this->ch, CURLOPT_COOKIEJAR, 'cookie.txt');
-
-
-		//execute the request (the login)
-		$loginContent = curl_exec($this->ch);
-		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
-		if($httpCode == 200) return $this->ch;
-		return false;
-	}
-
-	/**
-	  * Tests the URLs for a 200 HTTP code.
-	  * @param Array(String) $urls an array of urls (relative to base site e.g. /admin) to test
-	  * @param Curl Handle Curl handle to use
-	  * @return Int number of errors
-	  */
+	 * ECHOES the result of testing the URL....
+	 * @param String $url
+	 */
 	private function testURL($url) {
 		if(strlen(trim($url)) < 1) {
 			user_error("empty url"); //Checks for empty strings.
@@ -284,12 +274,16 @@ class CheckAllTemplates extends BuildTask {
 		curl_setopt($this->ch, CURLOPT_URL, $url);
 		$response = curl_exec($this->ch);
 		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+		if($httpCode == "401") {
+			$this->createAndLoginUser();
+			return $this->testURL($url);
+		}
 		$timeTaken = curl_getinfo($this->ch, CURLINFO_TOTAL_TIME);
 		$timeTaken = number_format((float)$timeTaken, 2, '.', '');
 		$length = curl_getinfo($this->ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
 		$possibleError = false;
 		if((strlen($response) < 500) || ($length < 500) || (substr($response, 0, 11) == "Fatal error")) {
-			$error = "<span style='color: red;'>short response</span> ";
+			$error = "<span style='color: red;'>short response / error response</span> ";
 		}
 		$error = "none";
 		$html = "";
@@ -297,9 +291,8 @@ class CheckAllTemplates extends BuildTask {
 			$html .= "<td style='color:green'><a href='$url' style='color: grey!important; text-decoration: none;'>$url</a></td>";
 		}
 		else {
+			$error = "unexpected response";
 			$html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
-		}
-		if($possibleError) {
 		}
 		$html .= "<td style='text-align: right'>$httpCode</td><td style='text-align: right'>$timeTaken</td><td>$error</td>";
 		echo $html;
@@ -319,13 +312,22 @@ class CheckAllTemplates extends BuildTask {
 
 	private function ListOfAllClasses(){
 		$pages = array();
-		$templateOverviewPage = TemplateOverviewPage::get()->First();
-		if(!$templateOverviewPage) {
-			$templateOverviewPage = singleton("TemplateOverviewPage");
+		$list = null;
+		if(class_exists("TemplateOverviewPage")) {
+			$templateOverviewPage = TemplateOverviewPage::get()->First();
+			if(!$templateOverviewPage) {
+				$templateOverviewPage = singleton("TemplateOverviewPage");
+				$list = $templateOverviewPage->ListOfAllClasses();
+				foreach($list as $page) {
+					$pages[] = $page->ClassName;
+				}
+			}
 		}
-		$list = $templateOverviewPage->ListOfAllClasses();
-		foreach($list as $page) {
-			$pages[] = $page->ClassName;
+		if(!count($pages)) {
+			$list = ClassInfo::subclassesFor("SiteTree");
+			foreach($list as $page) {
+				$pages[] = $page;
+			}
 		}
 		return $pages;
 	}
@@ -355,4 +357,28 @@ class CheckAllTemplates extends BuildTask {
 		}
 		return $models;
 	}
+
+	/**
+	  * Takes {@link #$classNames}, gets the URL of the first instance of it (will exclude extensions of the class) and
+	  * appends to the {@link #$urls} list to be checked
+	  */
+	private function prepareClasses($publicOrAdmin = 0) {
+		//first() will return null or the object
+		$return = array();
+		foreach($this->classNames as $class) {
+			$page = $class::get()->exclude(array("ClassName" => $this->arrayExcept($this->classNames, $class)))->first();
+			if($page) {
+				if($publicOrAdmin) {
+					$url = "/admin/pages/edit/show/".$page->ID;
+				}
+				else {
+					$url = $page->link();
+				}
+				$return[] = $url;
+			}
+		}
+		return $return;
+	}
+
+
 }
