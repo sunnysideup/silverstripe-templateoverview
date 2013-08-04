@@ -328,10 +328,10 @@ class CheckAllTemplates extends BuildTask {
 			$templateOverviewPage = TemplateOverviewPage::get()->First();
 			if(!$templateOverviewPage) {
 				$templateOverviewPage = singleton("TemplateOverviewPage");
-				$list = $templateOverviewPage->ListOfAllClasses();
-				foreach($list as $page) {
-					$pages[] = $page->ClassName;
-				}
+			}
+			$list = $templateOverviewPage->ListOfAllClasses();
+			foreach($list as $page) {
+				$pages[] = $page->ClassName;
 			}
 		}
 		if(!count($pages)) {
