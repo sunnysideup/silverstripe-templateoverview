@@ -164,6 +164,7 @@ class CheckAllTemplates extends BuildTask {
 								success: function(data, textStatus){
 									checker.item = null;
 									jQuery('#'+ID).html(data).css('background-image', 'none');
+									jQuery('#'+ID).find('h1').remove();
 									checker.item = checker.list.shift();
 									jQuery('#'+ID).find('td').css('border', '1px solid green');
 
