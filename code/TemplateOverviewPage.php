@@ -86,7 +86,7 @@ class TemplateOverviewPage extends Page {
 	}
 
 
-	public function ListOfAllClasses() {
+	public function ListOfAllClasses($checkCurrentClass = true) {
 		if(!self::$list_of_all_classes)  {
 			$ArrayOfAllClasses =  Array();
 			$classes = ClassInfo::subclassesFor("SiteTree");
@@ -95,7 +95,7 @@ class TemplateOverviewPage extends Page {
 					if($this->showAll) {
 						$objects = $className::get()->filter(array("ClassName" => $className))->sort("RAND() ASC")->limit(25, 0);
 						$count = 0;
-						if(is_object($objects) && $objects->count()) {
+						if($objects->count()) {
 							foreach($objects as $obj) {
 								$object = $this->createPageObject($obj, $count++, $className);
 								$ArrayOfAllClasses[$object->indexNumber] = clone $object;
@@ -105,12 +105,8 @@ class TemplateOverviewPage extends Page {
 					else {
 						$obj = null;
 						$objects = $className::get()->filter(array("ClassName" => $className))->sort("RAND() ASC")->limit(1);
-						if(is_object($objects) && $objects->count()) {
+						if($objects->count()) {
 							$obj = $objects->First();
-							$extension = '';
-							if(Versioned::current_stage() == "Live") {
-								$extension = "_Live";
-							}
 							$count = SiteTree::get()->filter(array("ClassName" => $obj->ClassName))->count();
 						}
 						else {
@@ -126,9 +122,11 @@ class TemplateOverviewPage extends Page {
 			ksort($ArrayOfAllClasses);
 			self::$list_of_all_classes =  new ArrayList();
 			$currentClassname = '';
-			if($c = Controller::curr()) {
-				if($d = $c->dataRecord) {
-					$currentClassname = $d->ClassName;
+			if($checkCurrentClass) {
+				if($c = Controller::curr()) {
+					if($d = $c->dataRecord) {
+						$currentClassname = $d->ClassName;
+					}
 				}
 			}
 			if(count($ArrayOfAllClasses)) {

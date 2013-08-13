@@ -85,7 +85,7 @@ class CheckAllTemplates extends BuildTask {
 		//2. create a list of
 		else {
 			Requirements::javascript(THIRDPARTY_DIR . '//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js');
-			$this->classNames = $this->ListOfAllClasses();
+			$this->classNames = $this->listOfAllClasses();
 			$this->modelAdmins = $this->ListOfAllModelAdmins();
 			$this->allNonAdmins = $this->prepareClasses();
 			$this->allAdmins = $this->array_push_array($this->modelAdmins, $this->prepareClasses(1));
@@ -322,7 +322,7 @@ class CheckAllTemplates extends BuildTask {
 	 * returns a lis of all SiteTree Classes
 	 * @return Array(String)
 	 */
-	private function ListOfAllClasses(){
+	private function listOfAllClasses(){
 		$pages = array();
 		$list = null;
 		if(class_exists("TemplateOverviewPage")) {
@@ -359,7 +359,13 @@ class CheckAllTemplates extends BuildTask {
 					$models[] = $modelAdminLink;
 					$modelsToAdd = $obj->getManagedModels();
 					if($modelsToAdd && count($modelsToAdd)) {
-						foreach($modelsToAdd as $model => $extraInfo) {
+						foreach($modelsToAdd as $key => $model) {
+							if(is_array($model) || !is_subclass_of($model, "DataObject")) {
+								$model = $key;
+							}
+							if(!is_subclass_of($model, "DataObject")) {
+								continue;
+							}
 							$modelLink = $modelAdminLink.$model."/";
 							$models[] = $modelLink;
 							$models[] = $modelLink."EditForm/field/".$model."/item/new/";
