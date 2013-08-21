@@ -458,20 +458,20 @@ class CheckAllTemplates_W3cValidateApi{
 	private $SilentUi = false;
 	private $Ui = '';
 
-	function W3cValidateApi(){
+	private function W3cValidateApi(){
 		//Nothing...
 	}
 
-	function makeCallUrl(){
+	private function makeCallUrl(){
 		$this->CallUrl = $this->BaseUrl . "?output=" . $this->Output . "&uri=" . $this->Uri;
 	}
 
-	function setUri($uri){
+	private function setUri($uri){
 		$this->Uri = $uri;
 		$this->makeCallUrl();
 	}
 
-	function makeValidationCall(){
+	private function makeValidationCall(){
 		if($this->CallUrl != '' && $this->Uri != '' && $this->Output != ''){
 			$handle = fopen($this->CallUrl, "rb");
 			$contents = '';
@@ -488,7 +488,7 @@ class CheckAllTemplates_W3cValidateApi{
 		}
 	}
 
-	function validate($uri){
+	private function validate($uri){
 		if($uri != ''){
 			$this->setUri($uri);
 		} else {
@@ -518,32 +518,23 @@ class CheckAllTemplates_W3cValidateApi{
 		}
 	}
 
-	function ui_validate($uri){
+	public function ui_validate($uri){
 		$this->validate($uri);
 
 		if($this->ValidResult){
-			$msg1 = 'This document was successfully checked';
+			$msg1 = 'W3 Validator: PASS';
 			$color1 = '#00CC00';
 		}
 		else {
-			$msg1 = 'Errors found while checking this document';
+			$msg1 = 'W3 Validator: FAIL';
 			$color1 = '#FF3300';
 		}
-		$ui = '<div style="background:#FFFFFF; border:1px solid #CCCCCC; padding:2px;">
-					<h1 style="color:#FFFFFF; border-bottom:1px solid #CCCCCC; margin:0; padding:5px; background:'.$color1.'; font-family:Arial, Helvetica, sans-serif; font-size:16px; font-weight:bold;">
-					 '.$msg1.'
-					</h1>
-					<div>
-						<strong>Errors:</strong><br>
+		$ui = '<div style="background:'.$color1.';">
+						 <strong>'.$msg1.'</strong>
 						'.$this->ValidErrors.'
-					</div>
-				</div>';
+					</div>';
 		$this->Ui = $ui;
-		if($this->SilentUi == false){
-			echo $ui;
-		}
 		return $ui;
-
 	}
 
 }
