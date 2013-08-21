@@ -272,7 +272,7 @@ class CheckAllTemplates extends BuildTask {
 	 * ECHOES the result of testing the URL....
 	 * @param String $url
 	 */
-	private function testURL($url) {
+	private function testURL($url, $validate = true) {
 		if(strlen(trim($url)) < 1) {
 			user_error("empty url"); //Checks for empty strings.
 		}
@@ -284,7 +284,7 @@ class CheckAllTemplates extends BuildTask {
 		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
 		if($httpCode == "401") {
 			$this->createAndLoginUser();
-			return $this->testURL($url);
+			return $this->testURL($url, false);
 		}
 		$timeTaken = curl_getinfo($this->ch, CURLINFO_TOTAL_TIME);
 		$timeTaken = number_format((float)$timeTaken, 2, '.', '');
@@ -303,7 +303,12 @@ class CheckAllTemplates extends BuildTask {
 			$html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
 		}
 		$html .= "<td style='text-align: right'>$httpCode</td><td style='text-align: right'>$timeTaken</td><td>$error</td>";
-		echo $html;
+
+		if($validate) {
+			$w3Obj = new CheckAllTemplates_W3cValidateApi();
+			$html .= $w3Obj->ui_validate($url);
+		}
+		return $html;
 	}
 
 	/**
@@ -403,5 +408,142 @@ class CheckAllTemplates extends BuildTask {
 		return $return;
 	}
 
+
+}
+
+
+/*
+   Author:	Jamie Telin (jamie.telin@gmail.com), currently at employed Zebramedia.se
+
+   Scriptname: W3C Validation Api v1.0 (W3C Markup Validation Service)
+
+   Use:
+   		//Create new object
+			$validate = new W3cValidateApi;
+
+			//Example 1
+				$validate->setUri('http://google.com/');	//Set URL to check
+				echo $validate->makeValidationCall();		//Will return SOAP 1.2 response
+
+			//Example 2
+				$a = $validate->validate('http://google.com/');
+				if($a){
+					echo 'Verified!';
+				} else {
+					echo 'Not verified!<br>';
+					echo 'Errors found: ' . $validate->ValidErrors;
+				}
+
+			//Example 3
+				$validate->ui_validate('http://google.com/'); //Visual display
+
+			//Settings
+				$validate->Output 		//Set the type of output you want, default = soap12 or web
+				$validate->Uri 			//Set url to be checked
+				$validate->setUri($uri) //Set url to be checked and make callUrl, deafault way to set URL
+				$validate->SilentUi		//Set to false to prevent echo the vidual display
+				$validate->Sleep		//Default sleeptime is 1 sec after API call
+*/
+
+class CheckAllTemplates_W3cValidateApi{
+
+	private $BaseUrl = 'http://validator.w3.org/check';
+	private $Output = 'soap12';
+	private $Uri = '';
+	private $Feedback;
+	private $CallUrl = '';
+	private $ValidResult = false;
+	private $ValidErrors = 0;
+	private $Sleep = 1;
+	private $SilentUi = false;
+	private $Ui = '';
+
+	function W3cValidateApi(){
+		//Nothing...
+	}
+
+	function makeCallUrl(){
+		$this->CallUrl = $this->BaseUrl . "?output=" . $this->Output . "&uri=" . $this->Uri;
+	}
+
+	function setUri($uri){
+		$this->Uri = $uri;
+		$this->makeCallUrl();
+	}
+
+	function makeValidationCall(){
+		if($this->CallUrl != '' && $this->Uri != '' && $this->Output != ''){
+			$handle = fopen($this->CallUrl, "rb");
+			$contents = '';
+			while (!feof($handle)) {
+				$contents .= fread($handle, 8192);
+			}
+			fclose($handle);
+			$this->Feedback = $contents;
+			sleep($this->Sleep);
+			return $contents;
+		}
+		else {
+			return false;
+		}
+	}
+
+	function validate($uri){
+		if($uri != ''){
+			$this->setUri($uri);
+		} else {
+			$this->makeCallUrl();
+		}
+
+		$this->makeValidationCall();
+
+		$a = strpos($this->Feedback, '<m:validity>', 0)+12;
+		$b = strpos($this->Feedback, '</m:validity>', $a);
+		$result = substr($this->Feedback, $a, $b-$a);
+		if($result == 'true'){
+			$result = true;
+		} else {
+			$result = false;
+		}
+		$this->ValidResult = $result;
+
+		if($result){
+			return $result;
+		} else {
+			//<m:errorcount>3</m:errorcount>
+			$a = strpos($this->Feedback, '<m:errorcount>', $a)+14;
+			$b = strpos($this->Feedback, '</m:errorcount>', $a);
+			$errors = substr($this->Feedback, $a, $b-$a);
+			$this->ValidErrors = $errors;
+		}
+	}
+
+	function ui_validate($uri){
+		$this->validate($uri);
+
+		if($this->ValidResult){
+			$msg1 = 'This document was successfully checked';
+			$color1 = '#00CC00';
+		}
+		else {
+			$msg1 = 'Errors found while checking this document';
+			$color1 = '#FF3300';
+		}
+		$ui = '<div style="background:#FFFFFF; border:1px solid #CCCCCC; padding:2px;">
+					<h1 style="color:#FFFFFF; border-bottom:1px solid #CCCCCC; margin:0; padding:5px; background:'.$color1.'; font-family:Arial, Helvetica, sans-serif; font-size:16px; font-weight:bold;">
+					 '.$msg1.'
+					</h1>
+					<div>
+						<strong>Errors:</strong><br>
+						'.$this->ValidErrors.'
+					</div>
+				</div>';
+		$this->Ui = $ui;
+		if($this->SilentUi == false){
+			echo $ui;
+		}
+		return $ui;
+
+	}
 
 }
