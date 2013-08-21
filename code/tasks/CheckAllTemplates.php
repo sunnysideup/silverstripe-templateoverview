@@ -454,7 +454,6 @@ class CheckAllTemplates_W3cValidateApi{
 	private $CallUrl = '';
 	private $ValidResult = false;
 	private $ValidErrors = 0;
-	private $Sleep = 1;
 	private $SilentUi = false;
 	private $Ui = '';
 
@@ -480,7 +479,6 @@ class CheckAllTemplates_W3cValidateApi{
 			}
 			fclose($handle);
 			$this->Feedback = $contents;
-			sleep($this->Sleep);
 			return $contents;
 		}
 		else {
@@ -502,14 +500,16 @@ class CheckAllTemplates_W3cValidateApi{
 		$result = substr($this->Feedback, $a, $b-$a);
 		if($result == 'true'){
 			$result = true;
-		} else {
+		}
+		else {
 			$result = false;
 		}
 		$this->ValidResult = $result;
 
 		if($result){
 			return $result;
-		} else {
+		}
+		else {
 			//<m:errorcount>3</m:errorcount>
 			$a = strpos($this->Feedback, '<m:errorcount>', $a)+14;
 			$b = strpos($this->Feedback, '</m:errorcount>', $a);
@@ -529,10 +529,7 @@ class CheckAllTemplates_W3cValidateApi{
 			$msg1 = 'W3 Validator: FAIL';
 			$color1 = '#FF3300';
 		}
-		$ui = '<div style="background:'.$color1.';">
-						 <strong>'.$msg1.'</strong>
-						'.$this->ValidErrors.'
-					</div>';
+		$ui = '<div style="background:'.$color1.';"><strong>'.$msg1.'</strong>'.$this->ValidErrors.'</div>';
 		$this->Ui = $ui;
 		return $ui;
 	}
