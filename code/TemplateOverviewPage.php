@@ -14,15 +14,15 @@ class TemplateOverviewPage extends Page {
 
 	static $icon = "templateoverview/images/treeicons/TemplateOverviewPage";
 
-	protected static $auto_include = false;
+	private static $auto_include = false;
 		static function set_auto_include($value) {self::$auto_include = $value;}
 		static function get_auto_include() {return self::$auto_include;}
 
-	protected static $parent_url_segment = "admin-only";
+	private static $parent_url_segment = "admin-only";
 		static function set_parent_url_segment($value) {self::$parent_url_segment = $value;}
 		static function get_parent_url_segment() {return self::$parent_url_segment;}
 
-	protected static $classes_to_exclude = array("SiteTree", "TemplateOverviewPage","TemplateOverviewTestPage", "RedirectorPage", "VirtualPage");
+	private static $classes_to_exclude = array("SiteTree", "TemplateOverviewPage","TemplateOverviewTestPage", "RedirectorPage", "VirtualPage");
 		static function set_classes_to_exclude($array) {self::$classes_to_exclude = $array;}
 		static function get_classes_to_exclude() {return self::$classes_to_exclude;}
 
@@ -40,7 +40,7 @@ class TemplateOverviewPage extends Page {
 	);
 
 	public function canCreate($member = null) {
-		return !SiteTree::get()->filter(array("ClassName" => 'TemplateOverviewPage'))->count();
+		return SiteTree::get()->filter(array("ClassName" => 'TemplateOverviewPage'))->count() ? false : true;
 	}
 
 
@@ -48,7 +48,7 @@ class TemplateOverviewPage extends Page {
 
 	protected $showAll = false;
 
-	protected static $list_of_all_classes = null;
+	private static $list_of_all_classes = null;
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
@@ -67,7 +67,6 @@ class TemplateOverviewPage extends Page {
 				$page->ShowInMenus = 0;
 				$page->ShowInSearch = 0;
 				$page->Title = "Templates overview";
-				$page->MetaTitle = "Templates overview";
 				$page->PageTitle = "Templates overview";
 				$page->Sort = 99998;
 				$page->URLSegment = "templates";
@@ -93,7 +92,10 @@ class TemplateOverviewPage extends Page {
 			foreach($classes as $className) {
 				if(!in_array($className, self::$classes_to_exclude)) {
 					if($this->showAll) {
-						$objects = $className::get()->filter(array("ClassName" => $className))->sort("RAND() ASC")->limit(25, 0);
+						$objects = $className::get()
+							->filter(array("ClassName" => $className))
+							->sort("RAND() ASC")
+							->limit(25, 0);
 						$count = 0;
 						if($objects->count()) {
 							foreach($objects as $obj) {
@@ -104,10 +106,14 @@ class TemplateOverviewPage extends Page {
 					}
 					else {
 						$obj = null;
-						$objects = $className::get()->filter(array("ClassName" => $className))->sort("RAND() ASC")->limit(1);
+						$objects = $className::get()
+							->filter(array("ClassName" => $className))
+							->sort("RAND() ASC")
+							->limit(1);
 						if($objects->count()) {
 							$obj = $objects->First();
-							$count = SiteTree::get()->filter(array("ClassName" => $obj->ClassName))->count();
+							$count = SiteTree::get()
+								->filter(array("ClassName" => $obj->ClassName))->count();
 						}
 						else {
 							$obj = singleton($className);
@@ -151,7 +157,9 @@ class TemplateOverviewPage extends Page {
 
 
 	protected function TemplateDetails($className) {
-		$obj = TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $className))->First();
+		$obj = TemplateOverviewDescription::get()
+			->filter(array("ClassNameLink" => $className))
+			->First();
 		if(!$obj) {
 			$obj = new TemplateOverviewDescription();
 			$obj->ClassNameLink = $className;
@@ -231,7 +239,9 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 		$obj = SiteTree::get()->byID(intval($id));
 		if($obj) {
 			$className = $obj->ClassName;
-			$data = $className::get()->filter(array("ClassName" => $obj->ClassName))->limit(500);
+			$data = $className::get()
+				->filter(array("ClassName" => $obj->ClassName))
+				->limit(500);
 			$array = array(
 				"Results" => $data,
 				"MoreDetail" => TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $obj->ClassName))

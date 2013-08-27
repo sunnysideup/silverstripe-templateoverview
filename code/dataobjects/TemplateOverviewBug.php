@@ -2,7 +2,7 @@
 
 class TemplateOverviewBug extends DataObject {
 
-	protected static $error_email = "";
+	private static $error_email = "";
 		static function set_error_email($s) {self::$error_email = $s;}
 		static function get_error_email() {return self::$error_email;}
 
@@ -32,30 +32,30 @@ class TemplateOverviewBug extends DataObject {
 		"Page" => "SiteTree"
 	);
 
-	public static $searchable_fields = array(
+	private static $searchable_fields = array(
 		"Title" => "PartialMatchFilter",
 		"NeedsMoreInformation",
 		"Fixed",
 		"TemplateID"
 	);
 
-	public static $summary_fields = array(
+	private static $summary_fields = array(
 		"Title",
 		"NeedsMoreInformation",
 		"Fixed",
 		"Template.Title" => "Template"
 	);
 
-	public static $field_labels = array(
+	private static $field_labels = array(
 		"Title" => "Short Description (e.g. newsletter page does not open)",
 		"Member" => "Reported by",
 	);
 
-	public static $singular_name = "Bug report";
+	private static $singular_name = "Bug report";
 
-	public static $plural_name = "Bug reports";
+	private static $plural_name = "Bug reports";
 	//CRUD settings
-	public static $default_sort = "Fixed, LastEdited DESC, Created DESC";
+	private static $default_sort = "Fixed, LastEdited DESC, Created DESC";
 
 
 
@@ -93,7 +93,9 @@ class TemplateOverviewBug extends DataObject {
 				new DropdownField(
 					"TemplateID",
 					"Relevant page type (if any)",
-					array(0 => "please select")+$templates->map('ID','ClassNameLinkFancy')->toArray()
+					array(0 => "please select")+$templates
+						->map('ID','ClassNameLinkFancy')
+						->toArray()
 				)
 			);
 		}

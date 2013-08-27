@@ -6,14 +6,13 @@
 
 class TemplateOverviewDescriptionModelAdmin extends ModelAdmin {
 
-
 	public $showImportForm = false;
 
-	public static $managed_models = array("TemplateOverviewBug", "TemplateOverviewDescription", "TemplateOverviewTestItem", "TemplateOverviewTestItemEntry");
+	private static $managed_models = array("TemplateOverviewBug", "TemplateOverviewDescription", "TemplateOverviewTestItem", "TemplateOverviewTestItemEntry");
 
-	public static $url_segment = 'templates';
+	private static $url_segment = 'templates';
 
-	public static $menu_title = 'Bugs';
+	private static $menu_title = 'Bugs';
 
 	public static function get_full_url_segment($action = null){
 		$obj = singleton("TemplateOverviewDescriptionModelAdmin");

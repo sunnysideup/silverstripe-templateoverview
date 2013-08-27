@@ -72,16 +72,42 @@ class TemplateOverviewPageExtension extends Extension {
 
 	function TemplateOverviewBugs() {
 		$templateID = 0;
-		if($templateOverviewDescription = TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $this->owner->ClassName))->First()) {
+		if($templateOverviewDescription = TemplateOverviewDescription::get()
+			->filter(array("ClassNameLink" => $this->owner->ClassName))
+			->First()
+		) {
 			$templateID = $templateOverviewDescription->ID;
 		}
 		return TemplateOverviewBug::get()
-			->where("\"Fixed\" <> 1 AND (((\"TemplateID\" = 0 AND \"PageID\" = 0 ) OR \"TemplateID\" = ".$templateID.") OR ((\"PageID\" = 0 AND \"TemplateID\")  OR \"PageID\" = ".$this->owner->ID.")  )")
+			->where("
+				\"Fixed\" <> 1 AND
+				(
+					(
+						(
+							\"TemplateID\" = 0 AND
+							\"PageID\" = 0
+						)
+						OR
+						\"TemplateID\" = ".$templateID."
+					)
+					OR
+					(
+						(
+							\"PageID\" = 0 AND
+							\"TemplateID\"
+						)
+						OR
+						\"PageID\" = ".$this->owner->ID."
+					)
+				)"
+			)
 			->sort(array("PageID" => "DESC", "TemplateID => DESC"));
 	}
 
 	function TemplateDescriptionForThisClass(){
-		return TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $this->owner->ClassName))->First();
+		return TemplateOverviewDescription::get()
+			->filter(array("ClassNameLink" => $this->owner->ClassName))
+			->First();
 	}
 
 }

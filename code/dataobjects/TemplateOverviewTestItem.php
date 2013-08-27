@@ -33,32 +33,32 @@ class TemplateOverviewTestItem extends DataObject {
 	);
 
 
-	public static $casting = array(); //adds computed fields that can also have a type (e.g.
+	private static $casting = array(); //adds computed fields that can also have a type (e.g.
 
-	public static $searchable_fields = array(
+	private static $searchable_fields = array(
 		"Title" => "PartialMatchFilter",
 		"HowToTestThis" => "PartialMatchFilter",
 		"HowToCheckIfItWorked" => "PartialMatchFilter"
 	);
 
-	public static $field_labels = array(
+	private static $field_labels = array(
 		"Title" => "Name",
 		"HowToTestThis" => "How to test this?",
 		"HowToCheckIfItWorked" => "How to check if it worked?",
 		"Sort" => "Sorting index number"
 	);
-	public static $summary_fields = array(
+	private static $summary_fields = array(
 		"Title" => "Name"
 	); //note no => for relational fields
 
-	public static $singular_name = "Test Item";
+	private static $singular_name = "Test Item";
 
-	public static $plural_name = "Test Items";
+	private static $plural_name = "Test Items";
 	//CRUD settings
 
-	public static $default_sort = "Sort ASC, Title ASC";
+	private static $default_sort = "Sort ASC, Title ASC";
 
-	public static $defaults = array(
+	private static $defaults = array(
 		"Sort" => 100
 	);//use fieldName => Default Value
 

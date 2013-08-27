@@ -12,23 +12,23 @@ class TemplateOverviewTestItemEntry extends DataObject {
 		"TemplateOverviewTestItem" => "TemplateOverviewTestItem"
 	);
 
-	public static $searchable_fields = array(
+	private static $searchable_fields = array(
 		"TemplateOverviewTestItemID",
 		"MemberID",
 		"Completed",
 		"PositiveResult"
 	);
-	public static $field_labels = array(
+	private static $field_labels = array(
 		"Completed" => "Test done",
 		"PositiveResult" => "Test OK",
 		"Member" => "Tested By",
 	);
 
-	public static $singular_name = "Test Item Entry";
+	private static $singular_name = "Test Item Entry";
 
-	public static $plural_name = "Test Item Entries";
+	private static $plural_name = "Test Item Entries";
 	//CRUD settings
-	public static $default_sort = "LastEdited DESC, Created DESC";
+	private static $default_sort = "LastEdited DESC, Created DESC";
 
 
 

@@ -21,7 +21,8 @@ class TemplateOverviewTestPage extends Page {
 				foreach($classObjects as $classObject) {
 					$className = $classObject->ClassNameLink;
 					if($className && class_exists($className) && $className != "TemplateOverviewTestPage") {
-						$page = $className::get()->filter(array("ClassName" => $className));
+						$page = $className::get()
+							->filter(array("ClassName" => $className));
 						if($page->count()) {
 							$url1 = Director::absoluteURL($page->Link());
 							$url2 = Director::absoluteURL("/admin/show/".$page->ID);

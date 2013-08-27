@@ -7,7 +7,7 @@
 
 class ErrorNotifierController extends Controller {
 
-	protected static $email_to_send_error_to = '';
+	private static $email_to_send_error_to = '';
 		static function set_email_to_send_error_to($v) {self::$email_to_send_error_to = $v;}
 		static function get_email_to_send_error_to() {return self::$email_to_send_error_to;}
 
@@ -21,8 +21,8 @@ class ErrorNotifierController extends Controller {
 		} else {
 			$url = Director::baseURL();
 		}
-		$folder = Folder::findOrMake("ErrorScreenshots");
-		
+		$folder = Folder::find_or_make("ErrorScreenshots");
+
 		$whatDidYouTryDoField = new TextareaField('WhatDidYouTryToDo', 'What did you try to do');
 		$whatDidYouTryDoField->setRows(3);
 

@@ -30,16 +30,16 @@ class TemplateOverviewDescription extends DataObject {
 		"TemplateOverviewTestItems" => "TemplateOverviewTestItem"
 	);
 
-	public static $searchable_fields = array(
+	private static $searchable_fields = array(
 		"ClassNameLink" => "PartialMatchFilter"
 	);
 
-	public static $summary_fields = array(
+	private static $summary_fields = array(
 		"ClassNameLink",
 		"ToDoListHyperLink"
 	);
 
-	public static $field_labels = array(
+	private static $field_labels = array(
 		"ClassNameLink" => "Page Type Name",
 		"ToDoListHyperLink" => "Link to To Do List (e.g. http://www.my-project-management-tool.com/mypage/)",
 	);
@@ -62,7 +62,7 @@ class TemplateOverviewDescription extends DataObject {
 	 * Location where we keep the template overview designs.
 	 * @var String
 	 */
-	protected static $image_folder_name = "templateoverview/designz";
+	private static $image_folder_name = "templateoverview/designz";
 		static function get_image_folder_name() {return self::$image_folder_name; }
 		static function set_image_folder_name($s) {self::$image_folder_name = $s; }
 
@@ -70,7 +70,7 @@ class TemplateOverviewDescription extends DataObject {
 	 * Location where we keep the template overview designs.
 	 * @var String
 	 */
-	protected static $image_source_folder = "";
+	private static $image_source_folder = "";
 		static function get_image_source_folder() {return self::$image_source_folder; }
 		static function set_image_source_folder($s) {self::$image_source_folder = $s; }
 
@@ -137,11 +137,12 @@ class TemplateOverviewDescription extends DataObject {
 		}
 		if($fileList) {
 			$destinationDir = Director::baseFolder()."/assets/".self::get_image_folder_name()."/";
-			$destinationFolder = Folder::findOrMake(self::get_image_folder_name());
+			$destinationFolder = Folder::find_or_make(self::get_image_folder_name());
 		}
 		if($data && $templateOverviewPage) {
 			foreach($data as $className) {
-				$object = TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $className))->First();
+				$object = TemplateOverviewDescription::get()
+					->filter(array("ClassNameLink" => $className))->First();
 				if(!$object) {
 					$object = new TemplateOverviewDescription();
 					$object->ClassNameLink = $className;
@@ -169,7 +170,8 @@ class TemplateOverviewDescription extends DataObject {
 										if(!file_exists($destinationDir.$fileArray["FileName"])) {
 											copy($fileArray["FullLocation"], $destinationDir.$fileArray["FileName"]);
 										}
-										$image = $Image::get()->filter(array("ParentID" => $destinationFolder-ID, "Name" => $fileArray["FileName"]))->First();
+										$image = $Image::get()
+											->filter(array("ParentID" => $destinationFolder-ID, "Name" => $fileArray["FileName"]))->First();
 										if(!$image) {
 											$image = new Image();
 											$image->ParentID = $destinationFolder->ID;
@@ -203,7 +205,11 @@ class TemplateOverviewDescription extends DataObject {
 
 	protected function validate() {
 		if($this->ID) {
-			if(TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $this->ClassNameLink))->exclude(array("ID" => $this->ID))) {
+			if(
+				TemplateOverviewDescription::get()
+					->filter(array("ClassNameLink" => $this->ClassNameLink))
+					->exclude(array("ID" => $this->ID))
+			) {
 				return new ValidationResult(false, _t("TemplateOverviewDescription.ALREADYEXISTS", "This template already exists"));
 			}
 		}
