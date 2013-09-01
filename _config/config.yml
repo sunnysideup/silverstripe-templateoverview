@@ -1,0 +1,37 @@
+ErrorPage:
+  icon: "templateoverview/images/treeicons/ErrorPage"
+
+TemplateOverviewBug:
+  error_email: "a@b.com"
+
+
+TemplateOverviewPage:
+  auto_include: 1
+
+LeftAndMain:
+  css:
+    - "templateoverview/css/TemplateOverviewCMSHelp.css"
+
+LeftAndMain:
+  help_link: "admin/help/"
+
+TemplateOverviewDescription:
+  image_source_folder: "_dev/designs"
+
+CMSHelp:
+  help_file_directory_name: "_help"
+
+---
+only:
+  environment: 'dev'
+---
+SiteTree:
+  extensions:
+    - TemplateOverviewPageDecorator
+
+Content_Controller:
+  extensions:
+    - TemplateOverviewPageExtension
+---
+
+

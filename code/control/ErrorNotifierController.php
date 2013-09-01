@@ -8,8 +8,6 @@
 class ErrorNotifierController extends Controller {
 
 	private static $email_to_send_error_to = '';
-		static function set_email_to_send_error_to($v) {self::$email_to_send_error_to = $v;}
-		static function get_email_to_send_error_to() {return self::$email_to_send_error_to;}
 
 	protected $showThankYouNote = false;
 

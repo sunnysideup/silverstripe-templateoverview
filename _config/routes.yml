@@ -1,0 +1,7 @@
+---
+Name: templateoverviewroutes
+After: framework/routes#coreroutes
+---
+Director:
+  rules:
+    'error/report' : 'ErrorNotifierController'
