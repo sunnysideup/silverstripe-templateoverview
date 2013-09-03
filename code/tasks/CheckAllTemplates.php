@@ -78,7 +78,7 @@ class CheckAllTemplates extends BuildTask {
 			if($asAdmin) {
 				$this->createAndLoginUser();
 			}
-			echo $this->testURL($testOne);
+			echo $this->testURL($testOne, false);
 			$this->cleanup();
 		}
 
@@ -272,7 +272,7 @@ class CheckAllTemplates extends BuildTask {
 	 * ECHOES the result of testing the URL....
 	 * @param String $url
 	 */
-	private function testURL($url, $validate = true) {
+	private function testURL($url, $validate = false) {
 		if(strlen(trim($url)) < 1) {
 			user_error("empty url"); //Checks for empty strings.
 		}
