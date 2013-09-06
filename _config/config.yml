@@ -1,3 +1,7 @@
+---
+Name: TemplateOverviewMain
+---
+
 ErrorPage:
   icon: "templateoverview/images/treeicons/ErrorPage"
 
@@ -32,6 +36,6 @@ SiteTree:
 Content_Controller:
   extensions:
     - TemplateOverviewPageExtension
----
+
 
 
