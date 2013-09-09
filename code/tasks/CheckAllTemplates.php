@@ -410,13 +410,9 @@ class CheckAllTemplates extends BuildTask {
 			if($className != "Controller") {
 				$controllerReflectionClass = new ReflectionClass($className);
 				if(!$controllerReflectionClass->isAbstract()) {
-					if($className instanceOF SapphireTest) {
-						continue;
-					}
-					if($className instanceOF BuildTask) {
-						continue;
-					}
-					if($className instanceOF BuildTask) {
+					if($className instanceOF SapphireTest ||
+					   $className instanceOF BuildTask ||
+					   $className instanceOF TaskRunner) {
 						continue;
 					}
 					$methods = $this->getPublicMethodsNotInherited($className);
@@ -429,12 +425,17 @@ class CheckAllTemplates extends BuildTask {
 			}
 		}
 		$finalArray = array();
+		$doubleLinks = array();
 		foreach($array as $index  => $classNameMethodArray) {
 			if(stripos($classNameMethodArray[0], "Mailto") == NULL) {
 				//ob_flush();
 				//flush();
-				$class = singleton($classNameMethodArray[0]);
-				$finalArray[$index] = Director::absoluteURL($class->Link($classNameMethodArray[1]));
+				$classObject = singleton($classNameMethodArray[0]);
+				$link = Director::absoluteURL($classObject->Link($classNameMethodArray[1]));
+				if(!isset($doubleLinks[$link])) {
+					$finalArray[$index] = $link;
+				}
+				$doubleLinks[$link] = true;
 			}
 		}
 		return $finalArray;
