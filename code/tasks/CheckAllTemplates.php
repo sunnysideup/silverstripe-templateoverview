@@ -68,6 +68,11 @@ class CheckAllTemplates extends BuildTask {
 	private $password = "";
 
 	/**
+	 * @var Boolean
+	 */
+	private $w3validation = false;
+
+	/**
 	 * Main function
 	 * has two streams:
 	 * 1. check on url specified in GET variable.
@@ -84,7 +89,7 @@ class CheckAllTemplates extends BuildTask {
 			if($asAdmin) {
 				$this->createAndLoginUser();
 			}
-			echo $this->testURL($testOne, false);
+			echo $this->testURL($testOne, $this->w3validation);
 			$this->cleanup();
 		}
 
@@ -101,7 +106,7 @@ class CheckAllTemplates extends BuildTask {
 			$count = 0;
 			echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
 			<table border='1'>
-			<tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th></tr>";
+			<tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th><th class'error'>W3 Check</th></tr>";
 			foreach($sections as $isAdmin => $section) {
 				foreach($this->$section as $link) {
 					$count++;
@@ -110,6 +115,7 @@ class CheckAllTemplates extends BuildTask {
 					echo "
 						<tr id=\"$id\" class=".($isAdmin ? "isAdmin" : "notAdmin").">
 							<td><a href=\"/dev/tasks/CheckAllTemplates/?test=".urlencode($link)."&admin=".$isAdmin."\" style='color: purple' target='_blank'>$link</a></td>
+							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -164,7 +170,9 @@ class CheckAllTemplates extends BuildTask {
 							var ID = checker.item.ID;
 							jQuery('#'+ID).find('td')
 								.css('border', '1px solid blue');
-							jQuery('#'+ID).css('background-image', 'url(/templateoverview/images/loading.gif)');
+							jQuery('#'+ID).css('background-image', 'url(/cms/images/loading.gif)')
+								.css('background-repeat', 'no-repeat')
+								.css('background-position', 'top right');
 							jQuery.ajax({
 								url: checker.baseURL,
 								type: 'get',
@@ -327,7 +335,10 @@ class CheckAllTemplates extends BuildTask {
 
 		if($validate) {
 			$w3Obj = new CheckAllTemplates_W3cValidateApi();
-			$html .= $w3Obj->W3Validate($url);
+			$html .= "<td>".$w3Obj->W3Validate($url)."</td>";
+		}
+		else {
+			$html .= "<td>turned off</td>";
 		}
 		return $html;
 	}
@@ -623,17 +634,18 @@ class CheckAllTemplates_W3cValidateApi{
 
 	public function W3Validate($uri){
 		if(!$this->isPublicURL($uri)){
-			$msg1 = 'W3 Validator: NOT A PUBLIC URL';
+			$msg1 = 'NOT A PUBLIC URL';
 			$color1 = '#ccc';
+			$this->ValidErrors = "";
 		}
 		else {
 			$this->validate($uri);
 			if($this->ValidResult){
-				$msg1 = 'W3 Validator: PASS';
+				$msg1 = 'PASS';
 				$color1 = '#00CC00';
 			}
 			else {
-				$msg1 = 'W3 Validator: FAIL';
+				$msg1 = 'FAIL';
 				$color1 = '#FF3300';
 			}
 		}
