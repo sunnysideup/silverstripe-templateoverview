@@ -191,6 +191,12 @@ class CheckAllTemplates extends BuildTask {
 				}
 			</script>";
 		}
+		$otherLinks = $this->listOfAllControllerMethods();
+		echo "<h2>Also consider checking: </h2><ul>";
+		foreach($otherLinks as $link) {
+			echo "<li><a href=\"$link\">$link</a></li>";
+		}
+		echo "</ul>";
 	}
 
 	/**
@@ -306,7 +312,7 @@ class CheckAllTemplates extends BuildTask {
 
 		if($validate) {
 			$w3Obj = new CheckAllTemplates_W3cValidateApi();
-			$html .= $w3Obj->ui_validate($url);
+			$html .= $w3Obj->W3Validate($url);
 		}
 		return $html;
 	}
@@ -385,6 +391,79 @@ class CheckAllTemplates extends BuildTask {
 		return $models;
 	}
 
+	protected function  listOfAllControllerMethods(){
+		$array = array();
+		$classes = ClassInfo::subclassesFor("Controller");
+		//foreach($manifest as $class => $compareFilePath) {
+			//if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;
+		//}
+		$manifest = SS_ClassLoader::instance()->getManifest()->getClasses();
+		$baseFolder = Director::baseFolder();
+		$cmsBaseFolder = Director::baseFolder()."/cms/";
+		$frameworkBaseFolder = Director::baseFolder()."/framework/";
+		foreach($classes as $className) {
+			$lowerClassName = strtolower($className);
+			$location = $manifest[$lowerClassName];
+			if(strpos($location, $cmsBaseFolder) === 0 || strpos($location, $frameworkBaseFolder) === 0) {
+				continue;
+			}
+			if($className != "Controller") {
+				$controllerReflectionClass = new ReflectionClass($className);
+				if(!$controllerReflectionClass->isAbstract()) {
+					if($className instanceOF SapphireTest) {
+						continue;
+					}
+					if($className instanceOF BuildTask) {
+						continue;
+					}
+					if($className instanceOF BuildTask) {
+						continue;
+					}
+					$methods = $this->getPublicMethodsNotInherited($className);
+					foreach($methods as $method){
+						if(!in_array($method, array("index", "run", "init"))) {
+							$array[$className."_".$method] = array($className, $method);
+						}
+					}
+				}
+			}
+		}
+		$finalArray = array();
+		foreach($array as $index  => $classNameMethodArray) {
+			if(stripos($classNameMethodArray[0], "Mailto") == NULL) {
+				//ob_flush();
+				//flush();
+				$class = singleton($classNameMethodArray[0]);
+				$finalArray[$index] = Director::absoluteURL($class->Link($classNameMethodArray[1]));
+			}
+		}
+		return $finalArray;
+	}
+
+	private function getPublicMethodsNotInherited($className) {
+		$classReflection = new ReflectionClass($className);
+		$classMethods = $classReflection->getMethods();
+		$classMethodNames = array();
+		foreach ($classMethods as $index => $method) {
+			if ($method->getDeclaringClass()->getName() !== $className) {
+			 unset($classMethods[$index]);
+			}
+			else {
+				if($method->getName() == strtolower($method->getName()) && strpos($method->getName(), "_") == NULL)  {
+					/* Get a reflection object for the class method */
+					$reflect = new ReflectionMethod($className, $method->getName());
+					/* For private, use isPrivate().  For protected, use isProtected() */
+					/* See the Reflection API documentation for more definitions */
+					if($method->isPublic()) {
+							/* The method is one we're looking for, push it onto the return array */
+						$classMethodNames[] = $method->getName();
+					}
+				}
+			}
+		}
+		return $classMethodNames;
+	}
+
 	/**
 	 * Takes {@link #$classNames}, gets the URL of the first instance of it (will exclude extensions of the class) and
 	 * appends to the {@link #$urls} list to be checked
@@ -407,6 +486,7 @@ class CheckAllTemplates extends BuildTask {
 		}
 		return $return;
 	}
+
 
 
 }
@@ -518,20 +598,36 @@ class CheckAllTemplates_W3cValidateApi{
 		}
 	}
 
-	public function ui_validate($uri){
-		$this->validate($uri);
-
-		if($this->ValidResult){
-			$msg1 = 'W3 Validator: PASS';
-			$color1 = '#00CC00';
+	public function W3Validate($uri){
+		if(!$this->isPublicURL($uri)){
+			$msg1 = 'W3 Validator: NOT A PUBLIC URL';
+			$color1 = '#ccc';
 		}
 		else {
-			$msg1 = 'W3 Validator: FAIL';
-			$color1 = '#FF3300';
+			$this->validate($uri);
+			if($this->ValidResult){
+				$msg1 = 'W3 Validator: PASS';
+				$color1 = '#00CC00';
+			}
+			else {
+				$msg1 = 'W3 Validator: FAIL';
+				$color1 = '#FF3300';
+			}
 		}
 		$ui = '<div style="background:'.$color1.';"><strong>'.$msg1.'</strong>'.$this->ValidErrors.'</div>';
 		$this->Ui = $ui;
 		return $ui;
+	}
+
+	/**
+	 *
+	 * @param String $url
+	 * @return Boolean
+	 */
+	protected function isPublicURL($url){
+		$data = file_get_contents("http://isup.me/$url");
+		return strpos($data, "is up.");
+		//return @fsockopen($url, 80, $errno, $errstr, 30);
 	}
 
 }
