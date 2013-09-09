@@ -33,6 +33,12 @@ class CheckAllTemplates extends BuildTask {
 
 	/**
 	 * @var Array
+	 * all of the admin acessible links
+	 */
+	private $customLinks = array();
+
+	/**
+	 * @var Array
 	 * Pages to check by class name. For example, for "ClassPage", will check the first instance of the cart page.
 	 */
 	private $classNames = array();
@@ -88,7 +94,9 @@ class CheckAllTemplates extends BuildTask {
 			$this->classNames = $this->listOfAllClasses();
 			$this->modelAdmins = $this->ListOfAllModelAdmins();
 			$this->allNonAdmins = $this->prepareClasses();
+			$otherLinks = $this->listOfAllControllerMethods();
 			$this->allAdmins = $this->array_push_array($this->modelAdmins, $this->prepareClasses(1));
+			$this->allAdmins = $this->array_push_array($this->allAdmins, $this->customLinks);
 			$sections = array("allNonAdmins", "allAdmins");
 			$count = 0;
 			echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
@@ -190,13 +198,20 @@ class CheckAllTemplates extends BuildTask {
 					}
 				}
 			</script>";
+			echo "<h2>Want to add more tests?</h2>
+			<p>
+				By adding a public method <i>templateoverviewtests</i> to any controller,
+				returning an array of links, they will be included in the list above.
+			</p>
+			";
+			echo "<h3>Suggestions</h3>
+			<p>Below is a list of suggested controller links.</p>
+			<ul>";
+			foreach($otherLinks as $link) {
+				echo "<li><a href=\"$link\">$link</a></li>";
+			}
+			echo "</ul>";
 		}
-		$otherLinks = $this->listOfAllControllerMethods();
-		echo "<h2>Also consider checking: </h2><ul>";
-		foreach($otherLinks as $link) {
-			echo "<li><a href=\"$link\">$link</a></li>";
-		}
-		echo "</ul>";
 	}
 
 	/**
@@ -278,7 +293,7 @@ class CheckAllTemplates extends BuildTask {
 	 * ECHOES the result of testing the URL....
 	 * @param String $url
 	 */
-	private function testURL($url, $validate = false) {
+	private function testURL($url, $validate = true) {
 		if(strlen(trim($url)) < 1) {
 			user_error("empty url"); //Checks for empty strings.
 		}
@@ -417,8 +432,12 @@ class CheckAllTemplates extends BuildTask {
 					}
 					$methods = $this->getPublicMethodsNotInherited($className);
 					foreach($methods as $method){
-						if(!in_array($method, array("index", "run", "init"))) {
-							$array[$className."_".$method] = array($className, $method);
+						if($method == strtolower($method)) {
+							if(strpos($method, "_") == NULL) {
+								if(!in_array($method, array("index", "run", "init"))) {
+									$array[$className."_".$method] = array($className, $method);
+								}
+							}
 						}
 					}
 				}
@@ -431,11 +450,16 @@ class CheckAllTemplates extends BuildTask {
 				//ob_flush();
 				//flush();
 				$classObject = singleton($classNameMethodArray[0]);
-				$link = Director::absoluteURL($classObject->Link($classNameMethodArray[1]));
-				if(!isset($doubleLinks[$link])) {
-					$finalArray[$index] = $link;
+				if($classNameMethodArray[1] == "templateoverviewtests") {
+					$this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);
 				}
-				$doubleLinks[$link] = true;
+				else {
+					$link = Director::absoluteURL($classObject->Link($classNameMethodArray[1]));
+					if(!isset($doubleLinks[$link])) {
+						$finalArray[$index] = $link;
+					}
+					$doubleLinks[$link] = true;
+				}
 			}
 		}
 		return $finalArray;
@@ -450,15 +474,13 @@ class CheckAllTemplates extends BuildTask {
 			 unset($classMethods[$index]);
 			}
 			else {
-				if($method->getName() == strtolower($method->getName()) && strpos($method->getName(), "_") == NULL)  {
-					/* Get a reflection object for the class method */
-					$reflect = new ReflectionMethod($className, $method->getName());
-					/* For private, use isPrivate().  For protected, use isProtected() */
-					/* See the Reflection API documentation for more definitions */
-					if($method->isPublic()) {
-							/* The method is one we're looking for, push it onto the return array */
-						$classMethodNames[] = $method->getName();
-					}
+				/* Get a reflection object for the class method */
+				$reflect = new ReflectionMethod($className, $method->getName());
+				/* For private, use isPrivate().  For protected, use isProtected() */
+				/* See the Reflection API documentation for more definitions */
+				if($method->isPublic()) {
+						/* The method is one we're looking for, push it onto the return array */
+					$classMethodNames[] = $method->getName();
 				}
 			}
 		}
