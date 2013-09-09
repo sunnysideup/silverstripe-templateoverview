@@ -4,7 +4,7 @@
  * @description (see $this->description)
  *
  * @authors: Andrew Pett [at] sunny side up .co.nz, Nicolaas [at] Sunny Side Up .co.nz
- * @package: templateoveriew
+ * @package: templateoverview
  * @sub-package: tasks
  **/
 
