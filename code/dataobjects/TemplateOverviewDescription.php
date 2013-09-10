@@ -197,9 +197,38 @@ class TemplateOverviewDescription extends DataObject {
 				}
 			}
 		}
-		$helpDirectory = Director::baseFolder()."/".CMSHelp::get_help_file_directory_name()."/";
+		$helpDirectory = Director::baseFolder()."/".Config::inst()->get("CMSHelp", "help_file_directory_name")."/";
 		if(!file_exists($helpDirectory)) {
 			mkdir($helpDirectory);
+		}
+		$this->createManifestExcludeFile($helpDirectory);
+
+		$devDirectory = Director::baseFolder()."/".Config::inst()->get("CMSHelp", "dev_file_directory_name")."/";
+		if(!file_exists($devDirectory)) {
+			mkdir($devDirectory);
+		}
+		$this->createManifestExcludeFile($devDirectory);
+		$this->createHTACCESSDenyAll($devDirectory);
+	}
+
+	private function createManifestExcludeFile($dir){
+		$myFile = $dir.'_manifest_exclude';
+		if(!file_exists($myFile)) {
+			$handle = fopen($myFile, 'w') or user_error('Cannot open file:  '.$myFile);
+			$data = '';
+			fwrite($handle, $data);
+		}
+	}
+
+	private function createHTACCESSDenyAll($dir){
+		$myFile = $dir.'.htaccess';
+		if(!file_exists($myFile)) {
+			$handle = fopen($myFile, 'w') or user_error('Cannot open file:  '.$myFile);
+		$data = '
+Order Deny,Allow
+Deny from all
+		';
+			fwrite($handle, $data);
 		}
 	}
 

@@ -1,6 +1,6 @@
 ---
 Name: templateoverviewroutes
-After: framework/routes#coreroutes
+After: 'framework/routes#coreroutes'
 ---
 Director:
   rules:

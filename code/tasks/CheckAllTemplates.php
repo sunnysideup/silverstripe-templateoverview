@@ -325,7 +325,7 @@ class CheckAllTemplates extends BuildTask {
 		$error = "none";
 		$html = "";
 		if($httpCode == 200 ) {
-			$html .= "<td style='color:green'><a href='$url' style='color: grey!important; text-decoration: none;'>$url</a></td>";
+			$html .= "<td style='color:green'><a href='$url' style='color: grey!important; text-decoration: none;' target='_blank'>$url</a></td>";
 		}
 		else {
 			$error = "unexpected response";
@@ -333,7 +333,7 @@ class CheckAllTemplates extends BuildTask {
 		}
 		$html .= "<td style='text-align: right'>$httpCode</td><td style='text-align: right'>$timeTaken</td><td>$error</td>";
 
-		if($validate) {
+		if($validate && Director::isLive()) {
 			$w3Obj = new CheckAllTemplates_W3cValidateApi();
 			$html .= "<td>".$w3Obj->W3Validate($url)."</td>";
 		}

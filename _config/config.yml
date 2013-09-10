@@ -1,13 +1,11 @@
 ---
-Name: TemplateOverviewMain
+Name: templateoverview
+Before: 'mysite/*'
+After: 'framework/*','cms/*'
 ---
 
 ErrorPage:
   icon: "templateoverview/images/treeicons/ErrorPage"
-
-TemplateOverviewBug:
-  error_email: "a@b.com"
-
 
 TemplateOverviewPage:
   auto_include: 1
@@ -26,9 +24,12 @@ CMSHelp:
   help_file_directory_name: "_help"
 
 ---
+
 only:
   environment: 'dev'
+
 ---
+
 SiteTree:
   extensions:
     - TemplateOverviewPageDecorator
