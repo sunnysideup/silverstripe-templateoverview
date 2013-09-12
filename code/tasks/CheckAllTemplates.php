@@ -114,7 +114,7 @@ class CheckAllTemplates extends BuildTask {
 					$linkArray[] = array("IsAdmin" => $isAdmin, "Link" => $link, "ID" => $id);
 					echo "
 						<tr id=\"$id\" class=".($isAdmin ? "isAdmin" : "notAdmin").">
-							<td><a href=\"/dev/tasks/CheckAllTemplates/?test=".urlencode($link)."&admin=".$isAdmin."\" style='color: purple' target='_blank'>$link</a></td>
+							<td><a href=\"".Director::baseURL()."dev/tasks/CheckAllTemplates/?test=".urlencode($link)."&admin=".$isAdmin."\" style='color: purple' target='_blank'>$link</a></td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -607,7 +607,7 @@ class CheckAllTemplates_W3cValidateApi{
 
 	private function validate(){
 
-
+		sleep(1);
 
 		$this->makePostVars();
 
@@ -656,16 +656,16 @@ class CheckAllTemplates_W3cValidateApi{
 			//errors
 			$nodes = $doc->xpath('//m:markupvalidationresponse/m:errors/m:errorlist/m:error');
 			foreach ($nodes as $node) {
-					//line
-					$nodes = $node->xpath('m:line');
-					$line = strval($nodes[0]);
-					//col
-					$nodes = $node->xpath('m:col');
-					$col = strval($nodes[0]);
-					//message
-					$nodes = $node->xpath('m:message');
-					$message = strval($nodes[0]);
-					$this->errorList[] = $message."($line,$col)";
+				//line
+				$nodes = $node->xpath('m:line');
+				$line = strval($nodes[0]);
+				//col
+				$nodes = $node->xpath('m:col');
+				$col = strval($nodes[0]);
+				//message
+				$nodes = $node->xpath('m:message');
+				$message = strval($nodes[0]);
+				$this->errorList[] = $message."($line,$col)";
 			}
 		}
 		return $httpCode;
