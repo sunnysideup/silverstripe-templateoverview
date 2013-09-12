@@ -70,7 +70,7 @@ class CheckAllTemplates extends BuildTask {
 	/**
 	 * @var Boolean
 	 */
-	private $w3validation = false;
+	private $w3validation = true;
 
 	/**
 	 * Main function
@@ -226,11 +226,29 @@ class CheckAllTemplates extends BuildTask {
 	 * creates the basic curl
 	 *
 	 */
-	private function setupCurl(){
+	private function setupCurl($type = "GET"){
+		$user_agent='Mozilla/5.0 (Windows NT 6.1; rv:8.0) Gecko/20100101 Firefox/8.0';
+		$post = $type == "GET" ? false : true;
+		$options = array(
+			CURLOPT_CUSTOMREQUEST  =>$type,        //set request type post or get
+			CURLOPT_POST           =>$post,        //set to GET
+			CURLOPT_USERAGENT      => $user_agent, //set user agent
+			CURLOPT_COOKIEFILE     =>"cookie.txt", //set cookie file
+			CURLOPT_COOKIEJAR      =>"cookie.txt", //set cookie jar
+			CURLOPT_RETURNTRANSFER => true,     // return web page
+			CURLOPT_HEADER         => false,    // don't return headers
+			CURLOPT_FOLLOWLOCATION => true,     // follow redirects
+			CURLOPT_ENCODING       => "",       // handle all encodings
+			CURLOPT_AUTOREFERER    => true,     // set referer on redirect
+			CURLOPT_CONNECTTIMEOUT => 120,      // timeout on connect
+			CURLOPT_TIMEOUT        => 120,      // timeout on response
+			CURLOPT_MAXREDIRS      => 10,       // stop after 10 redirects
+		);
+
 		$this->ch = curl_init();
-		curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, TRUE);
+		curl_setopt_array( $this->ch, $options );
 	}
+
 
 
 	/**
@@ -254,18 +272,22 @@ class CheckAllTemplates extends BuildTask {
 			user_error("No admin group exists");
 		}
 		$this->member->Groups()->add($adminGroup);
+
 		curl_setopt($this->ch, CURLOPT_USERPWD, $this->username.":".$this->password);
 
 		$loginUrl = Director::absoluteURL('/Security/LoginForm');
+		curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, "POST");
 		curl_setopt($this->ch, CURLOPT_URL, $loginUrl);
 		curl_setopt($this->ch, CURLOPT_POST, 1);
 		curl_setopt($this->ch, CURLOPT_POSTFIELDS, 'Email='.$this->username.'&Password='.$this->password);
-		curl_setopt($this->ch, CURLOPT_COOKIEJAR, 'cookie.txt');
 
 
 		//execute the request (the login)
 		$loginContent = curl_exec($this->ch);
 		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+		$err               = curl_errno( $this->ch );
+		$errmsg            = curl_error( $this->ch );
+		$header            = curl_getinfo( $this->ch );
 		if($httpCode != 200) {
 			echo "<span style='color:red'>There was an error logging in!</span><br />";
 		}
@@ -305,19 +327,29 @@ class CheckAllTemplates extends BuildTask {
 		if(strlen(trim($url)) < 1) {
 			user_error("empty url"); //Checks for empty strings.
 		}
+		if(strpos($url, "/admin") === 0 || strpos($url, "admin") === 0 ) {
+			$validate = false;
+		}
 
 		$url = Director::absoluteURL($url);
 
+		//start basic CURL
 		curl_setopt($this->ch, CURLOPT_URL, $url);
-		$response = curl_exec($this->ch);
+		$response          = curl_exec($this->ch);
+
 		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
 		if($httpCode == "401") {
 			$this->createAndLoginUser();
 			return $this->testURL($url, false);
 		}
-		$timeTaken = curl_getinfo($this->ch, CURLINFO_TOTAL_TIME);
+		//get more curl!
+
+		$err               = curl_errno( $this->ch );
+		$errmsg            = curl_error( $this->ch );
+		$header            = curl_getinfo( $this->ch );
+		$length            = curl_getinfo($this->ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+		$timeTaken         = curl_getinfo($this->ch, CURLINFO_TOTAL_TIME);
 		$timeTaken = number_format((float)$timeTaken, 2, '.', '');
-		$length = curl_getinfo($this->ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
 		$possibleError = false;
 		if((strlen($response) < 500) || ($length < 500) || (substr($response, 0, 11) == "Fatal error")) {
 			$error = "<span style='color: red;'>short response / error response</span> ";
@@ -333,12 +365,12 @@ class CheckAllTemplates extends BuildTask {
 		}
 		$html .= "<td style='text-align: right'>$httpCode</td><td style='text-align: right'>$timeTaken</td><td>$error</td>";
 
-		if($validate && Director::isLive()) {
+		if($validate && $httpCode == 200 ) {
 			$w3Obj = new CheckAllTemplates_W3cValidateApi();
-			$html .= "<td>".$w3Obj->W3Validate($url)."</td>";
+			$html .= "<td>".$w3Obj->W3Validate("", $response)."</td>";
 		}
 		else {
-			$html .= "<td>turned off</td>";
+			$html .= "<td>n/a</td>";
 		}
 		return $html;
 	}
@@ -531,138 +563,151 @@ class CheckAllTemplates extends BuildTask {
 
    Scriptname: W3C Validation Api v1.0 (W3C Markup Validation Service)
 
-   Use:
-   		//Create new object
-			$validate = new W3cValidateApi;
-
-			//Example 1
-				$validate->setUri('http://google.com/');	//Set URL to check
-				echo $validate->makeValidationCall();		//Will return SOAP 1.2 response
-
-			//Example 2
-				$a = $validate->validate('http://google.com/');
-				if($a){
-					echo 'Verified!';
-				} else {
-					echo 'Not verified!<br>';
-					echo 'Errors found: ' . $validate->ValidErrors;
-				}
-
-			//Example 3
-				$validate->ui_validate('http://google.com/'); //Visual display
-
-			//Settings
-				$validate->Output 		//Set the type of output you want, default = soap12 or web
-				$validate->Uri 			//Set url to be checked
-				$validate->setUri($uri) //Set url to be checked and make callUrl, deafault way to set URL
-				$validate->SilentUi		//Set to false to prevent echo the vidual display
-				$validate->Sleep		//Default sleeptime is 1 sec after API call
 */
 
 class CheckAllTemplates_W3cValidateApi{
 
-	private $BaseUrl = 'http://validator.w3.org/check';
-	private $Output = 'soap12';
-	private $Uri = '';
-	private $Feedback;
-	private $CallUrl = '';
-	private $ValidResult = false;
-	private $ValidErrors = 0;
-	private $SilentUi = false;
-	private $Ui = '';
+	private $baseURL = 'http://validator.w3.org/check';
+	private $output = 'soap12';
+	private $uri = '';
+	private $fragment = '';
+	private $postVars = array();
+	private $validResult = false;
+	private $errorCount = 0;
+	private $errorList = array();
+	private $showErrors = true;
+
 
 	private function W3cValidateApi(){
 		//Nothing...
 	}
 
-	private function makeCallUrl(){
-		$this->CallUrl = $this->BaseUrl . "?output=" . $this->Output . "&uri=" . $this->Uri;
+	private function makePostVars(){
+		$this->postVars['output'] = $this->output;
+		if($this->fragment) {
+			$this->postVars['fragment'] = $this->fragment;
+		}
+		elseif($this->uri) {
+			$this->postVars['uri'] = $this->uri;
+		}
 	}
 
 	private function setUri($uri){
-		$this->Uri = $uri;
-		$this->makeCallUrl();
+		$this->uri = $uri;
+	}
+
+	private function setFragment($fragment){
+		$fragment = preg_replace('/\s+/', ' ', $fragment);
+		$this->fragment = $fragment;
 	}
 
 	private function makeValidationCall(){
-		if($this->CallUrl != '' && $this->Uri != '' && $this->Output != ''){
-			$handle = fopen($this->CallUrl, "rb");
-			$contents = '';
-			while (!feof($handle)) {
-				$contents .= fread($handle, 8192);
+		return $out;
+	}
+
+	private function validate(){
+
+
+
+		$this->makePostVars();
+
+
+		$user_agent= 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.1.4322)';
+		$options = array(
+			CURLOPT_CUSTOMREQUEST  =>"POST",        //set request type post or get
+			CURLOPT_POST           =>1,            //set to GET
+			CURLOPT_USERAGENT      => $user_agent, //"test from www.sunnysideup.co.nz",//$user_agent, //set user agent
+			CURLOPT_COOKIEFILE     =>"cookie.txt", //set cookie file
+			CURLOPT_COOKIEJAR      =>"cookie.txt", //set cookie jar
+			CURLOPT_RETURNTRANSFER => true,     // return web page
+			CURLOPT_HEADER         => false,    // don't return headers
+			CURLOPT_FOLLOWLOCATION => true,     // follow redirects
+			CURLOPT_ENCODING       => "",       // handle all encodings
+			CURLOPT_AUTOREFERER    => true,     // set referer on redirect
+			CURLOPT_CONNECTTIMEOUT => 120,      // timeout on connect
+			CURLOPT_TIMEOUT        => 120,      // timeout on response
+			CURLOPT_MAXREDIRS      => 10,       // stop after 10 redirects
+			CURLOPT_POSTFIELDS     => $this->postVars,
+			CURLOPT_URL            => $this->baseURL
+		);
+		// Initialize the curl session
+		$ch = curl_init();
+		curl_setopt_array( $ch, $options );
+		// Execute the session and capture the response
+		$out = curl_exec($ch);
+
+
+
+		//$err               = curl_errno( $ch );
+		//$errmsg            = curl_error( $ch );
+		//$header            = curl_getinfo( $ch );
+		$httpCode          = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		if($httpCode == 200) {
+			$doc = simplexml_load_string($out);
+			$doc->registerXPathNamespace('m', 'http://www.w3.org/2005/10/markup-validator');
+
+			//valid ??
+			$nodes = $doc->xpath('//m:markupvalidationresponse/m:validity');
+			$this->validResult = strval($nodes[0]) == "true" ? true : false;
+
+			//error count ??
+			$nodes = $doc->xpath('//m:markupvalidationresponse/m:errors/m:errorcount');
+			$this->errorCount = strval($nodes[0]);
+			//errors
+			$nodes = $doc->xpath('//m:markupvalidationresponse/m:errors/m:errorlist/m:error');
+			foreach ($nodes as $node) {
+					//line
+					$nodes = $node->xpath('m:line');
+					$line = strval($nodes[0]);
+					//col
+					$nodes = $node->xpath('m:col');
+					$col = strval($nodes[0]);
+					//message
+					$nodes = $node->xpath('m:message');
+					$message = strval($nodes[0]);
+					$this->errorList[] = $message."($line,$col)";
 			}
-			fclose($handle);
-			$this->Feedback = $contents;
-			return $contents;
 		}
-		else {
-			return false;
-		}
+		return $httpCode;
 	}
 
-	private function validate($uri){
-		if($uri != ''){
+	function get_headers_from_curl_response($response){
+
+		return $header;
+	}
+
+
+	public function W3Validate($uri = "", $fragment = ""){
+		if($uri){
 			$this->setUri($uri);
-		} else {
-			$this->makeCallUrl();
 		}
-
-		$this->makeValidationCall();
-
-		$a = strpos($this->Feedback, '<m:validity>', 0)+12;
-		$b = strpos($this->Feedback, '</m:validity>', $a);
-		$result = substr($this->Feedback, $a, $b-$a);
-		if($result == 'true'){
-			$result = true;
+		elseif($fragment){
+			$this->setFragment($fragment);
+		}
+		$this->validate();
+		if($this->validResult){
+			$type = 'PASS';
+			$color1 = '#00CC00';
 		}
 		else {
-			$result = false;
+			$type = 'FAIL';
+			$color1 = '#FF3300';
 		}
-		$this->ValidResult = $result;
-
-		if($result){
-			return $result;
-		}
-		else {
-			//<m:errorcount>3</m:errorcount>
-			$a = strpos($this->Feedback, '<m:errorcount>', $a)+14;
-			$b = strpos($this->Feedback, '</m:errorcount>', $a);
-			$errors = substr($this->Feedback, $a, $b-$a);
-			$this->ValidErrors = $errors;
-		}
-	}
-
-	public function W3Validate($uri){
-		if(!$this->isPublicURL($uri)){
-			$msg1 = 'NOT A PUBLIC URL';
-			$color1 = '#ccc';
-			$this->ValidErrors = "";
-		}
-		else {
-			$this->validate($uri);
-			if($this->ValidResult){
-				$msg1 = 'PASS';
-				$color1 = '#00CC00';
+		$errorDescription = "";
+		if($this->errorCount) {
+			$errorDescription = " - ".$this->errorCount."errors: ";
+			if($this->showErrors) {
+				if(count($this->errorList)) {
+					$errorDescription .= "<ul><li>".implode("</li><li>", $this->errorList)."</li></ul>";
+				}
 			}
 			else {
-				$msg1 = 'FAIL';
-				$color1 = '#FF3300';
+				$errorDescription .= '<a href="'.$this->baseURL.'?uri='.urlencode($uri).'">check</a>';
 			}
 		}
-		$ui = '<div style="background:'.$color1.';"><strong>'.$msg1.'</strong>'.$this->ValidErrors.'</div>';
-		$this->Ui = $ui;
-		return $ui;
+
+		return '<div style="background:'.$color1.';"><strong>'.$type.'</strong>'.$errorDescription.'</div>';
 	}
 
-	/**
-	 *
-	 * @param String $url
-	 * @return Boolean
-	 */
-	protected function isPublicURL($url){
-		$data = file_get_contents("http://isup.me/$url");
-		return strpos($data, "is up.");
-		//return @fsockopen($url, 80, $errno, $errstr, 30);
-	}
 
 }
