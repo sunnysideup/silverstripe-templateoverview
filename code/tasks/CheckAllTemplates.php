@@ -215,8 +215,13 @@ class CheckAllTemplates extends BuildTask {
 			echo "<h3>Suggestions</h3>
 			<p>Below is a list of suggested controller links.</p>
 			<ul>";
-			foreach($otherLinks as $link) {
-				echo "<li><a href=\"$link\">$link</a></li>";
+			$className = "";
+			foreach($otherLinks as $linkArray) {
+				if($linkArray["ClassName"] != $className) {
+					$className = $linkArray["ClassName"];
+					echo "</ul><h2>".$className."</h2><ul>";
+				}
+				echo "<li><a href=\"".$linkArray["Link"]."\">".$linkArray["Link"]."</a> ".$linkArray["Error"]."</li>";
 			}
 			echo "</ul>";
 		}
@@ -468,20 +473,17 @@ class CheckAllTemplates extends BuildTask {
 			if($className != "Controller") {
 				$controllerReflectionClass = new ReflectionClass($className);
 				if(!$controllerReflectionClass->isAbstract()) {
-					if($className instanceOF SapphireTest ||
-					   $className instanceOF BuildTask ||
-					   $className instanceOF TaskRunner) {
+					if(
+						$className == "Mailto" ||
+						$className instanceOF SapphireTest ||
+						$className instanceOF BuildTask ||
+						$className instanceOF TaskRunner
+					) {
 						continue;
 					}
-					$methods = $this->getPublicMethodsNotInherited($className);
-					foreach($methods as $method){
-						if($method == strtolower($method)) {
-							if(strpos($method, "_") == NULL) {
-								if(!in_array($method, array("index", "run", "init"))) {
-									$array[$className."_".$method] = array($className, $method);
-								}
-							}
-						}
+					$methods = $this->getPublicMethodsNotInherited($controllerReflectionClass, $className);
+					foreach($methods as $methodArray){
+						$array[$className."_".$methodArray["Method"]] = $methodArray;
 					}
 				}
 			}
@@ -489,27 +491,24 @@ class CheckAllTemplates extends BuildTask {
 		$finalArray = array();
 		$doubleLinks = array();
 		foreach($array as $index  => $classNameMethodArray) {
-			if(stripos($classNameMethodArray[0], "Mailto") == NULL) {
-				//ob_flush();
-				//flush();
-				$classObject = singleton($classNameMethodArray[0]);
-				if($classNameMethodArray[1] == "templateoverviewtests") {
+			if(stripos($classNameMethodArray["ClassName"], "Mailto") == NULL) {
+				$classObject = singleton($classNameMethodArray["ClassName"]);
+				if($classNameMethodArray["Method"] == "templateoverviewtests") {
 					$this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);
 				}
 				else {
-					$link = Director::absoluteURL($classObject->Link($classNameMethodArray[1]));
-					if(!isset($doubleLinks[$link])) {
-						$finalArray[$index] = $link;
+					$classNameMethodArray["Link"] = Director::absoluteURL($classObject->Link($classNameMethodArray["Method"]));
+					if(!isset($doubleLinks[$classNameMethodArray["Link"]])) {
+						$finalArray[] = $classNameMethodArray;
 					}
-					$doubleLinks[$link] = true;
+					$doubleLinks[$classNameMethodArray["Link"]] = true;
 				}
 			}
 		}
 		return $finalArray;
 	}
 
-	private function getPublicMethodsNotInherited($className) {
-		$classReflection = new ReflectionClass($className);
+	private function getPublicMethodsNotInherited($classReflection, $className) {
 		$classMethods = $classReflection->getMethods();
 		$classMethodNames = array();
 		foreach ($classMethods as $index => $method) {
@@ -517,13 +516,32 @@ class CheckAllTemplates extends BuildTask {
 			 unset($classMethods[$index]);
 			}
 			else {
+				$allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::FIRST_SET);
+				if(!is_array($allowedActionsArray)) {
+					$allowedActionsArray = array();
+				}
+				$methodName = $method->getName();
 				/* Get a reflection object for the class method */
-				$reflect = new ReflectionMethod($className, $method->getName());
+				$reflect = new ReflectionMethod($className, $methodName);
 				/* For private, use isPrivate().  For protected, use isProtected() */
 				/* See the Reflection API documentation for more definitions */
-				if($method->isPublic()) {
-						/* The method is one we're looking for, push it onto the return array */
-					$classMethodNames[] = $method->getName();
+				if($reflect->isPublic()) {
+					if($methodName == strtolower($methodName)) {
+						if(strpos($methodName, "_") == NULL) {
+							if(!in_array($methodName, array("index", "run", "init"))) {
+								/* The method is one we're looking for, push it onto the return array */
+								$error = "";
+								if(!in_array($methodName, $allowedActionsArray) && !isset($allowedActionsArray[$methodName])) {
+									$error = "Can not find ".$className."::".$methodName." in allowed_actions";
+								}
+								$classMethodNames[$methodName] = array(
+									"ClassName" => $className,
+									"Method" => $methodName,
+									"Error" => $error
+								);
+							}
+						}
+					}
 				}
 			}
 		}
