@@ -221,6 +221,11 @@ class TemplateOverviewPage extends Page {
 class TemplateOverviewPage_Controller extends Page_Controller {
 
 
+	private static $allowed_actions = array(
+		"showmore" => "ADMIN",
+		"clearalltemplatedescriptions" => "ADMIN"
+	);
+
 	function init() {
 		parent::init();
 		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");

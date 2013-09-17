@@ -7,6 +7,10 @@
 
 class ErrorNotifierController extends Controller {
 
+	private static $allowed_actions = array(
+		"senderror" => "ADMIN"
+	);
+
 	private static $email_to_send_error_to = '';
 
 	protected $showThankYouNote = false;

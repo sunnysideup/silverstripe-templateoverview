@@ -64,6 +64,11 @@ class TemplateOverviewTestPage extends Page {
 
 class TemplateOverviewTestPage_Controller extends Page_Controller {
 
+	private static $allowed_actions = array(
+		"createtest" => "ADMIN",
+		"testscreated" => "ADMIN"
+	);
+
 	function createtest() {
 		$tests = TemplateOverviewTestItem::get();
 		foreach($tests as $test) {
