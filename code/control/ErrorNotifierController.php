@@ -55,7 +55,7 @@ class ErrorNotifierController extends Controller {
 	}
 
 	function senderror($data, $form) {
-		mail(self::get_email_to_send_error_to(), "error on ".Director::absoluteURL(), print_r($data, true));
+		mail($this->Config()->get("email_to_send_error_to"), "error on ".Director::absoluteURL(), print_r($data, true));
 		$this->showThankYouNote = true;
 		return array();
 	}

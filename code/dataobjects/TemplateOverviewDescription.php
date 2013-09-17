@@ -63,16 +63,12 @@ class TemplateOverviewDescription extends DataObject {
 	 * @var String
 	 */
 	private static $image_folder_name = "templateoverview/designz";
-		static function get_image_folder_name() {return self::$image_folder_name; }
-		static function set_image_folder_name($s) {self::$image_folder_name = $s; }
 
 	/**
 	 * Location where we keep the template overview designs.
 	 * @var String
 	 */
 	private static $image_source_folder = "";
-		static function get_image_source_folder() {return self::$image_source_folder; }
-		static function set_image_source_folder($s) {self::$image_source_folder = $s; }
 
 	function canAdd() {
 		return false;
@@ -126,8 +122,8 @@ class TemplateOverviewDescription extends DataObject {
 		$data = ClassInfo::subclassesFor("SiteTree");
 		$templateOverviewPage = TemplateOverviewPage::get()->First();
 		$fileList = null;
-		if(self::get_image_source_folder()) {
-			$fileList = CMSHelp::get_list_of_files(self::get_image_source_folder());
+		if($this->Config()->get("image_source_folder")) {
+			$fileList = CMSHelp::get_list_of_files($this->Config()->get("image_source_folder"));
 			if(!is_array($fileList)) {
 				$fileList = null;
 			}
@@ -136,8 +132,8 @@ class TemplateOverviewDescription extends DataObject {
 			}
 		}
 		if($fileList) {
-			$destinationDir = Director::baseFolder()."/assets/".self::get_image_folder_name()."/";
-			$destinationFolder = Folder::find_or_make(self::get_image_folder_name());
+			$destinationDir = Director::baseFolder()."/assets/".$this->Config()->get("image_folder_name")."/";
+			$destinationFolder = Folder::find_or_make($this->Config()->get("image_folder_name"));
 		}
 		if($data && $templateOverviewPage) {
 			foreach($data as $className) {
@@ -166,7 +162,7 @@ class TemplateOverviewDescription extends DataObject {
 								foreach($classNameOptionArray as $potentialBase) {
 									if($base == $potentialBase) {
 										$i++;
-										$filename = "".self::get_image_folder_name()."/".$fileArray["FileName"];
+										$filename = "".$this->Config()->get("image_folder_name")."/".$fileArray["FileName"];
 										if(!file_exists($destinationDir.$fileArray["FileName"])) {
 											copy($fileArray["FullLocation"], $destinationDir.$fileArray["FileName"]);
 										}

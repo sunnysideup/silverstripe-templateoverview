@@ -15,17 +15,10 @@ class TemplateOverviewPage extends Page {
 	static $icon = "templateoverview/images/treeicons/TemplateOverviewPage";
 
 	private static $auto_include = false;
-		static function set_auto_include($value) {self::$auto_include = $value;}
-		static function get_auto_include() {return self::$auto_include;}
 
 	private static $parent_url_segment = "admin-only";
-		static function set_parent_url_segment($value) {self::$parent_url_segment = $value;}
-		static function get_parent_url_segment() {return self::$parent_url_segment;}
 
 	private static $classes_to_exclude = array("SiteTree", "TemplateOverviewPage","TemplateOverviewTestPage", "RedirectorPage", "VirtualPage");
-		static function set_classes_to_exclude($array) {self::$classes_to_exclude = $array;}
-		static function get_classes_to_exclude() {return self::$classes_to_exclude;}
-
 
 	static $defaults = array(
 		"URLSegment" => "templates",

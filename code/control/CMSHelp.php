@@ -7,8 +7,6 @@ class CMSHelp extends ContentController {
 	 *
 	 */
 	private static $help_file_directory_name = "_help";
-		static function set_help_file_directory_name($s) {self::$help_file_directory_name = $s;}
-		static function get_help_file_directory_name() {return self::$help_file_directory_name;}
 
 	/**
 	 *@var String name of the directory in which the help files are kept
@@ -22,9 +20,6 @@ class CMSHelp extends ContentController {
 	 *
 	 */
 	private static $url_segment = "admin/help";
-		static function set_url_segment($s) {self::$url_segment = $s;}
-		static function get_url_segment() {return self::$url_segment;}
-
 
 	/**
 	 * standard SS Method

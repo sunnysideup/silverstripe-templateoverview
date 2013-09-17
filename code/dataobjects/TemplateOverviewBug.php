@@ -3,10 +3,8 @@
 class TemplateOverviewBug extends DataObject {
 
 	private static $error_email = "";
-		static function set_error_email($s) {self::$error_email = $s;}
-		static function get_error_email() {return self::$error_email;}
 
-	static $db = array(
+	private static $db = array(
 		"Title" => "Varchar(255)",
 		"WhatWasExpected" => "Text",
 		"WhatActuallyHappened" => "Text",
@@ -19,7 +17,7 @@ class TemplateOverviewBug extends DataObject {
 		"NeedsMoreInformation" => "Boolean"
 	);
 
-	static $has_one = array(
+	private static $has_one = array(
 		"Screenshot1" => "Image",
 		"Screenshot2" => "Image",
 		"Screenshot3" => "Image",
@@ -56,8 +54,6 @@ class TemplateOverviewBug extends DataObject {
 	private static $plural_name = "Bug reports";
 	//CRUD settings
 	private static $default_sort = "Fixed, LastEdited DESC, Created DESC";
-
-
 
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
@@ -122,8 +118,6 @@ class TemplateOverviewBug extends DataObject {
 		return TemplateOverviewDescriptionModelAdmin::get_full_url_segment()."TemplateOverviewBug/".$this->ID."/edit/";
 	}
 
-
-
 	function onBeforeWrite() {
 		parent::onBeforeWrite();
 		$this->MemberID = Member::currentUserID();
@@ -132,10 +126,10 @@ class TemplateOverviewBug extends DataObject {
 	function onAfterWrite() {
 		if(!$this->Fixed) {
 			if($this->NeedsMoreInformation) {
-				$email = new Email(self::get_error_email(), Email::$admin_email_address, $subject = "bug needs more information on ".Director::absoluteBaseURL(), $body = "see ".Director::absoluteBaseURL().TemplateOverviewDescriptionModelAdmin::get_full_url_segment());
+				$email = new Email($this->Config()->get("error_email"), Email::$admin_email_address, $subject = "bug needs more information on ".Director::absoluteBaseURL(), $body = "see ".Director::absoluteBaseURL().Config::inst()->get("TemplateOverviewDescriptionModelAdmin", "full_url_segment"));
 			}
 			else {
-				$email = new Email(Email::$admin_email_address, self::get_error_email(), $subject = "new bug on ".Director::absoluteBaseURL(), $body = "see ".Director::absoluteBaseURL().TemplateOverviewDescriptionModelAdmin::get_full_url_segment());
+				$email = new Email(Email::$admin_email_address, $this->Config()->get("error_email"), $subject = "new bug on ".Director::absoluteBaseURL(), $body = "see ".Director::absoluteBaseURL().Config::inst()->get("TemplateOverviewDescriptionModelAdmin", "full_url_segment"));
 			}
 			$email->send();
 		}
