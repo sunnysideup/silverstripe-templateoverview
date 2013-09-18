@@ -356,16 +356,24 @@ class CheckAllTemplates extends BuildTask {
 		$timeTaken         = curl_getinfo($this->ch, CURLINFO_TOTAL_TIME);
 		$timeTaken = number_format((float)$timeTaken, 2, '.', '');
 		$possibleError = false;
-		if((strlen($response) < 500) || ($length < 500) || (substr($response, 0, 11) == "Fatal error")) {
-			$error = "<span style='color: red;'>short response / error response</span> ";
-		}
 		$error = "none";
+		if(substr($response, 0, 12) == "Fatal error") {
+			$error = "<span style='color: red;'>$response</span> ";
+			$possibleError = true;
+		}
+		if(strlen($response) < 2000) {
+			$error = "<span style='color: red;'>$response</span> ";
+			$possibleError = true;
+		}
+
 		$html = "";
-		if($httpCode == 200 ) {
+		if($httpCode == 200 && !$possibleError) {
 			$html .= "<td style='color:green'><a href='$url' style='color: grey!important; text-decoration: none;' target='_blank'>$url</a></td>";
 		}
 		else {
-			$error = "unexpected response";
+			if(!$possibleError) {
+				$error = "unexpected response";
+			}
 			$html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
 		}
 		$html .= "<td style='text-align: right'>$httpCode</td><td style='text-align: right'>$timeTaken</td><td>$error</td>";
