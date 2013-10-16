@@ -8,11 +8,13 @@
 class TemplateOverviewPage extends Page {
 
 	//parents and children in sitetree
-	static $allowed_children = array("TemplateOverviewTestPage"); //can also be "none";
-	static $default_child = "TemplateOverviewTestPage";
-	static $can_be_root = true;
+	private static $allowed_children = array("TemplateOverviewTestPage"); //can also be "none";
 
-	static $icon = "templateoverview/images/treeicons/TemplateOverviewPage";
+	private static $default_child = "TemplateOverviewTestPage";
+
+	private static $can_be_root = true;
+
+	private static $icon = "templateoverview/images/treeicons/TemplateOverviewPage";
 
 	private static $auto_include = false;
 
@@ -20,7 +22,7 @@ class TemplateOverviewPage extends Page {
 
 	private static $classes_to_exclude = array("SiteTree", "TemplateOverviewPage","TemplateOverviewTestPage", "RedirectorPage", "VirtualPage");
 
-	static $defaults = array(
+	private static $defaults = array(
 		"URLSegment" => "templates",
 		"ShowInMenus" => 0,
 		"ShowInSearch" => 0,
@@ -28,7 +30,7 @@ class TemplateOverviewPage extends Page {
 		"MenuTitle" => "Template overview",
 	);
 
-	static $has_many = array(
+	private static $has_many = array(
 		"TemplateOverviewDescriptions" => "TemplateOverviewDescription"
 	);
 

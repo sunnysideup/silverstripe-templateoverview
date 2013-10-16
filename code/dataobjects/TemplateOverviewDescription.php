@@ -9,13 +9,13 @@
 
 class TemplateOverviewDescription extends DataObject {
 
-	static $db = array(
+	private static $db = array(
 		"Description" => "Text",
 		"ToDoListHyperLink" => "Varchar(255)",
 		"ClassNameLink" => "Varchar(120)"
 	);
 
-	static $has_one = array(
+	private static $has_one = array(
 		"Parent" => "TemplateOverviewPage",
 		"Image1" => "Image",
 		"Image2" => "Image",
@@ -26,7 +26,7 @@ class TemplateOverviewDescription extends DataObject {
 		"Image7" => "Image"
 	);
 
-	static $belongs_many_many = array(
+	private static $belongs_many_many = array(
 		"TemplateOverviewTestItems" => "TemplateOverviewTestItem"
 	);
 
@@ -44,11 +44,11 @@ class TemplateOverviewDescription extends DataObject {
 		"ToDoListHyperLink" => "Link to To Do List (e.g. http://www.my-project-management-tool.com/mypage/)",
 	);
 
-	static $singular_name = 'Template Description';
+	private static $singular_name = 'Template Description';
 
-	static $plural_name = 'Template Descriptions';
+	private static $plural_name = 'Template Descriptions';
 
-	static $default_sort = 'ClassNameLink ASC';
+	private static $default_sort = 'ClassNameLink ASC';
 
 	static $indexes = array(
 		"ClassNameLink" => true,

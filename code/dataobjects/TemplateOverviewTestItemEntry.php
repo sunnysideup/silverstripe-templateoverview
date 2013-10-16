@@ -2,12 +2,12 @@
 
 class TemplateOverviewTestItemEntry extends DataObject {
 
-	static $db = array(
+	private static $db = array(
 		"Completed" => "Boolean",
 		"PositiveResult" => "Boolean"
 	);
 
-	static $has_one = array(
+	private static $has_one = array(
 		"Member" => "Member",
 		"TemplateOverviewTestItem" => "TemplateOverviewTestItem"
 	);

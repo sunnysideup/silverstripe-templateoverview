@@ -7,11 +7,12 @@
 class TemplateOverviewTestPage extends Page {
 
 	//parents and children in sitetree
-	static $allowed_children = "none"; //can also be "none";
-	static $can_be_root = false;
+	private static $allowed_children = "none"; //can also be "none";
+
+	private static $can_be_root = false;
 
 	//appearance
-	static $icon = "templateoverview/images/treeicons/TemplateOverviewTestPage";
+	private static $icon = "templateoverview/images/treeicons/TemplateOverviewTestPage";
 
 	function requireDefaultRecords(){
 		parent::requireDefaultRecords();

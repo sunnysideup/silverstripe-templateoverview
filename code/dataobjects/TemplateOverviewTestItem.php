@@ -10,7 +10,7 @@
  **/
 class TemplateOverviewTestItem extends DataObject {
 
-	static $db = array(
+	private static $db = array(
 		"Title" => "Varchar(255)",
 		"HowToTestThis" => "Text",
 		"HowToCheckIfItWorked" => "Text",
@@ -18,17 +18,17 @@ class TemplateOverviewTestItem extends DataObject {
 	);
 
 
-	static $has_one = array(
+	private static $has_one = array(
 		"Screenshot1" => "Image",
 		"Screenshot2" => "Image",
 		"Screenshot3" => "Image"
 	);
 
-	static $has_many = array(
+	private static $has_many = array(
 		"TemplateOverviewTestItemEntry" => "TemplateOverviewTestItemEntry"
 	);
 
-	static $many_many = array(
+	private static $many_many = array(
 		"TemplateOverviewDescriptions" => "TemplateOverviewDescription"
 	);
 
