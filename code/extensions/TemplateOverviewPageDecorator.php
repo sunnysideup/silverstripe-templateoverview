@@ -32,4 +32,8 @@ class TemplateOverviewPageDecorator extends SiteTreeExtension {
 		}
 	}
 
+	function EditLink(){
+			return "/admin/pages/edit/show/".$this->owner->ID;
+	}
+
 }

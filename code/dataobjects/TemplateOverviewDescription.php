@@ -50,11 +50,11 @@ class TemplateOverviewDescription extends DataObject {
 
 	private static $default_sort = 'ClassNameLink ASC';
 
-	static $indexes = array(
+	private static $indexes = array(
 		"ClassNameLink" => true,
 	);
 
-	static $casting = array(
+	private static $casting = array(
 		"Title" => "Varchar",
 	);
 
