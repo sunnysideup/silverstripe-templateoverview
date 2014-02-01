@@ -107,8 +107,8 @@ class CheckAllTemplates extends BuildTask {
 			echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
 			<table border='1'>
 			<tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th><th class'error'>W3 Check</th></tr>";
-			foreach($sections as $isAdmin => $section) {
-				foreach($this->$section as $link) {
+			foreach($sections as $isAdmin => $sectionVariable) {
+				foreach($this->$sectionVariable as $link) {
 					$count++;
 					$id = "ID".$count;
 					$linkArray[] = array("IsAdmin" => $isAdmin, "Link" => $link, "ID" => $id);
@@ -438,6 +438,9 @@ class CheckAllTemplates extends BuildTask {
 				if($modelAdmin != "ModelAdminEcommerceBaseClass") {
 					$obj = singleton($modelAdmin);
 					$modelAdminLink = $obj->Link();
+					$modelAdminLinkArray = explode("?", $modelAdminLink);
+					$modelAdminLink = $modelAdminLinkArray[0];
+					$extraVariablesLink = $modelAdminLinkArray[1];
 					$models[] = $modelAdminLink;
 					$modelsToAdd = $obj->getManagedModels();
 					if($modelsToAdd && count($modelsToAdd)) {
@@ -448,6 +451,7 @@ class CheckAllTemplates extends BuildTask {
 							if(!is_subclass_of($model, "DataObject")) {
 								continue;
 							}
+							$modelAdminLink;
 							$modelLink = $modelAdminLink.$model."/";
 							$models[] = $modelLink;
 							$models[] = $modelLink."EditForm/field/".$model."/item/new/";
