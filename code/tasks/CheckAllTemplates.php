@@ -440,7 +440,7 @@ class CheckAllTemplates extends BuildTask {
 					$modelAdminLink = $obj->Link();
 					$modelAdminLinkArray = explode("?", $modelAdminLink);
 					$modelAdminLink = $modelAdminLinkArray[0];
-					$extraVariablesLink = $modelAdminLinkArray[1];
+					//$extraVariablesLink = $modelAdminLinkArray[1];
 					$models[] = $modelAdminLink;
 					$modelsToAdd = $obj->getManagedModels();
 					if($modelsToAdd && count($modelsToAdd)) {
