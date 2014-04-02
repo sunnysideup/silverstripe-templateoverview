@@ -3,7 +3,7 @@
 	"type": "silverstripe-module",
 	"description": "adds development tools for building silverstripe websites, in particular around managing page types.",
 	"homepage": "http://www.silverstripe-webdevelopment.com",
-	"keywords": ["templateoverview", "silverstripe"],
+	"keywords": ["templateoverview", "silverstripe", "review", "page types", "template review"],
 	"license": "Sunny Side Up (BSD-3-Clause and CUSTOM)",
 	"authors":[
 		{
