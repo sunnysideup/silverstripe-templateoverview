@@ -101,14 +101,13 @@ class TemplateOverviewPage extends Page {
 					}
 					else {
 						$obj = null;
-						$objects = $className::get()
+						$obj = $className::get()
 							->filter(array("ClassName" => $className))
 							->sort("RAND() ASC")
-							->limit(1);
-						if($objects->count()) {
-							$obj = $objects->First();
-							$count = SiteTree::get()
-								->filter(array("ClassName" => $obj->ClassName))->count();
+							->limit(1)
+							->first();
+						if($obj) {
+							$count = SiteTree::get()->filter(array("ClassName" => $obj->ClassName))->count();
 						}
 						else {
 							$obj = $className::create();

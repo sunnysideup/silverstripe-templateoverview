@@ -73,6 +73,11 @@ class CheckAllTemplates extends BuildTask {
 	private $w3validation = true;
 
 	/**
+	 * @var Boolean
+	 */
+	private $debug = true;
+
+	/**
 	 * Main function
 	 * has two streams:
 	 * 1. check on url specified in GET variable.
@@ -80,30 +85,32 @@ class CheckAllTemplates extends BuildTask {
 	 *
 	 */
 	public function run($request) {
-		$asAdmin = empty($_REQUEST["admin"]) ? false : true;
-		$testOne = isset($_REQUEST["test"]) ? $_GET["test"] : null;
+		ini_set('max_execution_time', 3000);
+		$asAdmin = empty($_REQUEST["admin"]) ? false : true;$this->debugme(__LINE__);
+		$testOne = isset($_REQUEST["test"]) ? $_GET["test"] : null;$this->debugme(__LINE__);
 
 		//1. actually test a URL and return the data
 		if($testOne) {
-			$this->setupCurl();
+			$this->setupCurl();$this->debugme(__LINE__);
 			if($asAdmin) {
-				$this->createAndLoginUser();
+				$this->createAndLoginUser();$this->debugme(__LINE__);
 			}
-			echo $this->testURL($testOne, $this->w3validation);
-			$this->cleanup();
+			echo $this->testURL($testOne, $this->w3validation);$this->debugme(__LINE__);
+			$this->cleanup();$this->debugme(__LINE__);
+
 		}
 
 		//2. create a list of
 		else {
-			Requirements::javascript(THIRDPARTY_DIR . '//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js');
-			$this->classNames = $this->listOfAllClasses();
-			$this->modelAdmins = $this->ListOfAllModelAdmins();
-			$this->allNonAdmins = $this->prepareClasses();
-			$otherLinks = $this->listOfAllControllerMethods();
-			$this->allAdmins = $this->array_push_array($this->modelAdmins, $this->prepareClasses(1));
-			$this->allAdmins = $this->array_push_array($this->allAdmins, $this->customLinks);
-			$sections = array("allNonAdmins", "allAdmins");
-			$count = 0;
+			Requirements::javascript(THIRDPARTY_DIR . '//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js');$this->debugme(__LINE__);
+			$this->classNames = $this->listOfAllClasses();$this->debugme(__LINE__);
+			$this->modelAdmins = $this->ListOfAllModelAdmins();$this->debugme(__LINE__);
+			$this->allNonAdmins = $this->prepareClasses();$this->debugme(__LINE__);
+			$otherLinks = $this->listOfAllControllerMethods();$this->debugme(__LINE__);
+			$this->allAdmins = $this->array_push_array($this->modelAdmins, $this->prepareClasses(1));$this->debugme(__LINE__);
+			$this->allAdmins = $this->array_push_array($this->allAdmins, $this->customLinks);$this->debugme(__LINE__);
+			$sections = array("allNonAdmins", "allAdmins");$this->debugme(__LINE__);
+			$count = 0;$this->debugme(__LINE__);
 			echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
 			<table border='1'>
 			<tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th><th class'error'>W3 Check</th></tr>";
@@ -405,25 +412,25 @@ class CheckAllTemplates extends BuildTask {
 	 * @return Array(String)
 	 */
 	private function listOfAllClasses(){
-		$pages = array();
-		$list = null;
+		$pages = array();$this->debugme(__LINE__);
+		$list = null;$this->debugme(__LINE__);
 		if(class_exists("TemplateOverviewPage")) {
-			$templateOverviewPage = TemplateOverviewPage::get()->First();
+			$templateOverviewPage = TemplateOverviewPage::get()->First();$this->debugme(__LINE__);
 			if(!$templateOverviewPage) {
-				$templateOverviewPage = singleton("TemplateOverviewPage");
+				$templateOverviewPage = singleton("TemplateOverviewPage");$this->debugme(__LINE__);
 			}
-			$list = $templateOverviewPage->ListOfAllClasses();
+			$list = $templateOverviewPage->ListOfAllClasses();$this->debugme(__LINE__);
 			foreach($list as $page) {
-				$pages[] = $page->ClassName;
+				$pages[] = $page->ClassName;$this->debugme(__LINE__);
 			}
 		}
 		if(!count($pages)) {
-			$list = ClassInfo::subclassesFor("SiteTree");
+			$list = ClassInfo::subclassesFor("SiteTree");$this->debugme(__LINE__);
 			foreach($list as $page) {
-				$pages[] = $page;
+				$pages[] = $page;$this->debugme(__LINE__);
 			}
 		}
-		return $pages;
+		return $pages;$this->debugme(__LINE__);
 	}
 
 	/**
@@ -431,39 +438,39 @@ class CheckAllTemplates extends BuildTask {
 	 * @return Array(String)
 	 */
 	private function ListOfAllModelAdmins(){
-		$models = array();
-		$modelAdmins = CMSMenu::get_cms_classes("ModelAdmin");
+		$models = array();$this->debugme(__LINE__);
+		$modelAdmins = CMSMenu::get_cms_classes("ModelAdmin");$this->debugme(__LINE__);
 		if($modelAdmins && count($modelAdmins)) {
 			foreach($modelAdmins as $modelAdmin) {
 				if($modelAdmin != "ModelAdminEcommerceBaseClass") {
-					$obj = singleton($modelAdmin);
-					$modelAdminLink = $obj->Link();
-					$modelAdminLinkArray = explode("?", $modelAdminLink);
-					$modelAdminLink = $modelAdminLinkArray[0];
-					//$extraVariablesLink = $modelAdminLinkArray[1];
-					$models[] = $modelAdminLink;
-					$modelsToAdd = $obj->getManagedModels();
+					$obj = singleton($modelAdmin);$this->debugme(__LINE__);
+					$modelAdminLink = $obj->Link();$this->debugme(__LINE__);
+					$modelAdminLinkArray = explode("?", $modelAdminLink);$this->debugme(__LINE__);
+					$modelAdminLink = $modelAdminLinkArray[0];$this->debugme(__LINE__);
+					//$extraVariablesLink = $modelAdminLinkArray[1];$this->debugme(__LINE__);
+					$models[] = $modelAdminLink;$this->debugme(__LINE__);
+					$modelsToAdd = $obj->getManagedModels();$this->debugme(__LINE__);
 					if($modelsToAdd && count($modelsToAdd)) {
 						foreach($modelsToAdd as $key => $model) {
 							if(is_array($model) || !is_subclass_of($model, "DataObject")) {
-								$model = $key;
+								$model = $key;$this->debugme(__LINE__);
 							}
 							if(!is_subclass_of($model, "DataObject")) {
-								continue;
+								continue;$this->debugme(__LINE__);
 							}
-							$modelAdminLink;
-							$modelLink = $modelAdminLink.$model."/";
-							$models[] = $modelLink;
-							$models[] = $modelLink."EditForm/field/".$model."/item/new/";
+							$modelAdminLink;$this->debugme(__LINE__);
+							$modelLink = $modelAdminLink.$model."/";$this->debugme(__LINE__);
+							$models[] = $modelLink;$this->debugme(__LINE__);
+							$models[] = $modelLink."EditForm/field/".$model."/item/new/";$this->debugme(__LINE__);
 							if($item = $model::get()->limit(1)->First()) {
-								$models[] = $modelLink."EditForm/field/".$model."/item/".$item->ID."/edit";
+								$models[] = $modelLink."EditForm/field/".$model."/item/".$item->ID."/edit";$this->debugme(__LINE__);
 							}
 						}
 					}
 				}
 			}
 		}
-		return $models;
+		return $models;$this->debugme(__LINE__);
 	}
 
 	protected function  listOfAllControllerMethods(){
@@ -739,5 +746,8 @@ class CheckAllTemplates_W3cValidateApi{
 		return '<div style="background:'.$color1.';"><strong>'.$type.'</strong>'.$errorDescription.'</div>';
 	}
 
+	private function debugme($lineNumber) {
+		if($this->debug) {echo "<br />".$lineNumber .": ".round(memory_get_usage() / 1048576)."MB"; flush();ob_flush(); }
+	}
 
 }
