@@ -470,27 +470,28 @@ class CheckAllTemplates extends BuildTask {
 				}
 			}
 		}
-		return $models;$this->debugme(__LINE__);
+		$this->debugme(__LINE__);
+		return $models;
 	}
 
 	protected function  listOfAllControllerMethods(){
-		$array = array();
-		$classes = ClassInfo::subclassesFor("Controller");
+		$array = array();$this->debugme(__LINE__);
+		$classes = ClassInfo::subclassesFor("Controller");$this->debugme(__LINE__);
 		//foreach($manifest as $class => $compareFilePath) {
-			//if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;
+			//if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;$this->debugme(__LINE__);
 		//}
-		$manifest = SS_ClassLoader::instance()->getManifest()->getClasses();
-		$baseFolder = Director::baseFolder();
-		$cmsBaseFolder = Director::baseFolder()."/cms/";
-		$frameworkBaseFolder = Director::baseFolder()."/framework/";
+		$manifest = SS_ClassLoader::instance()->getManifest()->getClasses();$this->debugme(__LINE__);
+		$baseFolder = Director::baseFolder();$this->debugme(__LINE__);
+		$cmsBaseFolder = Director::baseFolder()."/cms/";$this->debugme(__LINE__);
+		$frameworkBaseFolder = Director::baseFolder()."/framework/";$this->debugme(__LINE__);
 		foreach($classes as $className) {
-			$lowerClassName = strtolower($className);
-			$location = $manifest[$lowerClassName];
+			$lowerClassName = strtolower($className);$this->debugme(__LINE__);
+			$location = $manifest[$lowerClassName];$this->debugme(__LINE__);
 			if(strpos($location, $cmsBaseFolder) === 0 || strpos($location, $frameworkBaseFolder) === 0) {
-				continue;
+				continue;$this->debugme(__LINE__);
 			}
 			if($className != "Controller") {
-				$controllerReflectionClass = new ReflectionClass($className);
+				$controllerReflectionClass = new ReflectionClass($className);$this->debugme(__LINE__);
 				if(!$controllerReflectionClass->isAbstract()) {
 					if(
 						$className == "Mailto" ||
@@ -498,50 +499,50 @@ class CheckAllTemplates extends BuildTask {
 						$className instanceOF BuildTask ||
 						$className instanceOF TaskRunner
 					) {
-						continue;
+						continue;$this->debugme(__LINE__);
 					}
-					$methods = $this->getPublicMethodsNotInherited($controllerReflectionClass, $className);
+					$methods = $this->getPublicMethodsNotInherited($controllerReflectionClass, $className);$this->debugme(__LINE__);
 					foreach($methods as $methodArray){
-						$array[$className."_".$methodArray["Method"]] = $methodArray;
+						$array[$className."_".$methodArray["Method"]] = $methodArray;$this->debugme(__LINE__);
 					}
 				}
 			}
 		}
-		$finalArray = array();
-		$doubleLinks = array();
+		$finalArray = array();$this->debugme(__LINE__);
+		$doubleLinks = array();$this->debugme(__LINE__);
 		foreach($array as $index  => $classNameMethodArray) {
 			if(stripos($classNameMethodArray["ClassName"], "Mailto") == NULL) {
-				$classObject = singleton($classNameMethodArray["ClassName"]);
+				$classObject = singleton($classNameMethodArray["ClassName"]);$this->debugme(__LINE__);
 				if($classNameMethodArray["Method"] == "templateoverviewtests") {
-					$this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);
+					$this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);$this->debugme(__LINE__);
 				}
 				else {
-					$classNameMethodArray["Link"] = Director::absoluteURL($classObject->Link($classNameMethodArray["Method"]));
+					$classNameMethodArray["Link"] = Director::absoluteURL($classObject->Link($classNameMethodArray["Method"]));$this->debugme(__LINE__);
 					if(!isset($doubleLinks[$classNameMethodArray["Link"]])) {
-						$finalArray[] = $classNameMethodArray;
+						$finalArray[] = $classNameMethodArray;$this->debugme(__LINE__);
 					}
-					$doubleLinks[$classNameMethodArray["Link"]] = true;
+					$doubleLinks[$classNameMethodArray["Link"]] = true;$this->debugme(__LINE__);
 				}
 			}
 		}
-		return $finalArray;
+		return $finalArray;$this->debugme(__LINE__);
 	}
 
 	private function getPublicMethodsNotInherited($classReflection, $className) {
-		$classMethods = $classReflection->getMethods();
-		$classMethodNames = array();
+		$classMethods = $classReflection->getMethods();$this->debugme(__LINE__);
+		$classMethodNames = array();$this->debugme(__LINE__);
 		foreach ($classMethods as $index => $method) {
 			if ($method->getDeclaringClass()->getName() !== $className) {
-			 unset($classMethods[$index]);
+			 unset($classMethods[$index]);$this->debugme(__LINE__);
 			}
 			else {
-				$allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::FIRST_SET);
+				$allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::FIRST_SET);$this->debugme(__LINE__);
 				if(!is_array($allowedActionsArray)) {
-					$allowedActionsArray = array();
+					$allowedActionsArray = array();$this->debugme(__LINE__);
 				}
-				$methodName = $method->getName();
+				$methodName = $method->getName();$this->debugme(__LINE__);
 				/* Get a reflection object for the class method */
-				$reflect = new ReflectionMethod($className, $methodName);
+				$reflect = new ReflectionMethod($className, $methodName);$this->debugme(__LINE__);
 				/* For private, use isPrivate().  For protected, use isProtected() */
 				/* See the Reflection API documentation for more definitions */
 				if($reflect->isPublic()) {
@@ -549,22 +550,22 @@ class CheckAllTemplates extends BuildTask {
 						if(strpos($methodName, "_") == NULL) {
 							if(!in_array($methodName, array("index", "run", "init"))) {
 								/* The method is one we're looking for, push it onto the return array */
-								$error = "";
+								$error = "";$this->debugme(__LINE__);
 								if(!in_array($methodName, $allowedActionsArray) && !isset($allowedActionsArray[$methodName])) {
-									$error = "Can not find ".$className."::".$methodName." in allowed_actions";
+									$error = "Can not find ".$className."::".$methodName." in allowed_actions";$this->debugme(__LINE__);
 								}
 								$classMethodNames[$methodName] = array(
 									"ClassName" => $className,
 									"Method" => $methodName,
 									"Error" => $error
-								);
+								);$this->debugme(__LINE__);
 							}
 						}
 					}
 				}
 			}
 		}
-		return $classMethodNames;
+		return $classMethodNames;$this->debugme(__LINE__);
 	}
 
 	/**
@@ -574,23 +575,26 @@ class CheckAllTemplates extends BuildTask {
 	 */
 	private function prepareClasses($publicOrAdmin = 0) {
 		//first() will return null or the object
-		$return = array();
+		$return = array();$this->debugme(__LINE__);
 		foreach($this->classNames as $class) {
-			$page = $class::get()->exclude(array("ClassName" => $this->arrayExcept($this->classNames, $class)))->first();
+			$page = $class::get()->exclude(array("ClassName" => $this->arrayExcept($this->classNames, $class)))->first();$this->debugme(__LINE__);
 			if($page) {
 				if($publicOrAdmin) {
-					$url = "/admin/pages/edit/show/".$page->ID;
+					$url = "/admin/pages/edit/show/".$page->ID;$this->debugme(__LINE__);
 				}
 				else {
-					$url = $page->link();
+					$url = $page->link();$this->debugme(__LINE__);
 				}
-				$return[] = $url;
+				$return[] = $url;$this->debugme(__LINE__);
 			}
 		}
-		return $return;
+		return $return;$this->debugme(__LINE__);
 	}
 
 
+	private function debugme($lineNumber, $variable ="") {
+		if($this->debug) {echo "<br />".$lineNumber .": ".round(memory_get_usage() / 1048576)."MB"."=====".$variable;  flush();ob_flush(); }
+	}
 
 }
 
@@ -746,8 +750,5 @@ class CheckAllTemplates_W3cValidateApi{
 		return '<div style="background:'.$color1.';"><strong>'.$type.'</strong>'.$errorDescription.'</div>';
 	}
 
-	private function debugme($lineNumber) {
-		if($this->debug) {echo "<br />".$lineNumber .": ".round(memory_get_usage() / 1048576)."MB"; flush();ob_flush(); }
-	}
 
 }
