@@ -264,7 +264,7 @@ class CheckAllTemplates extends BuildTask {
 		$this->username = "TEMPLATEOVERVIEW_URLCHECKER___";
 		$this->password = rand(1000000000,9999999999);
 		//Make temporary admin member
-		$adminMember = Member::get()->filter(array("Email" => $this->username))->first();
+		$adminMember = Member::get()->filter(array("Email" => $this->username))->limit(1)->first();
 		if($adminMember != NULL) {
 			$adminMember->delete();
 		}
@@ -272,7 +272,7 @@ class CheckAllTemplates extends BuildTask {
 		$this->member->Email = $this->username;
 		$this->member->Password = $this->password;
 		$this->member->write();
-		$adminGroup = Group::get()->filter(array("code" => "administrators"))->first();
+		$adminGroup = Group::get()->filter(array("code" => "administrators"))->limit(1)->first();
 		if(!$adminGroup) {
 			user_error("No admin group exists");
 		}
@@ -455,7 +455,7 @@ class CheckAllTemplates extends BuildTask {
 							$modelLink = $modelAdminLink.$model."/";
 							$models[] = $modelLink;
 							$models[] = $modelLink."EditForm/field/".$model."/item/new/";
-							if($item = $model::get()->First()) {
+							if($item = $model::get()->limit(1)->First()) {
 								$models[] = $modelLink."EditForm/field/".$model."/item/".$item->ID."/edit";
 							}
 						}

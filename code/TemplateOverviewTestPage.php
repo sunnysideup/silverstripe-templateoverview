@@ -23,10 +23,10 @@ class TemplateOverviewTestPage extends Page {
 					$className = $classObject->ClassNameLink;
 					if($className && class_exists($className) && $className != "TemplateOverviewTestPage") {
 						$page = $className::get()
-							->filter(array("ClassName" => $className));
-						if($page->count()) {
+							->filter(array("ClassName" => $className))->first();
+						if($page) {
 							$url1 = Director::absoluteURL($page->Link());
-							$url2 = Director::absoluteURL("/admin/show/".$page->ID);
+							$url2 = Director::absoluteURL("/admin/pages/show/".$page->ID);
 							$this->checkURL($url1);
 							$this->checkURL($url2);
 						}

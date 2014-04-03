@@ -90,7 +90,7 @@ class TemplateOverviewPage extends Page {
 						$objects = $className::get()
 							->filter(array("ClassName" => $className))
 							->sort("RAND() ASC")
-							->limit(25, 0);
+							->limit(25);
 						$count = 0;
 						if($objects->count()) {
 							foreach($objects as $obj) {
@@ -111,7 +111,7 @@ class TemplateOverviewPage extends Page {
 								->filter(array("ClassName" => $obj->ClassName))->count();
 						}
 						else {
-							$obj = singleton($className);
+							$obj = $className::create();
 							$count = 0;
 						}
 						$object = $this->createPageObject($obj, $count, $className);
@@ -241,7 +241,7 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 			$className = $obj->ClassName;
 			$data = $className::get()
 				->filter(array("ClassName" => $obj->ClassName))
-				->limit(500);
+				->limit(200);
 			$array = array(
 				"Results" => $data,
 				"MoreDetail" => TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $obj->ClassName))
