@@ -75,7 +75,7 @@ class CheckAllTemplates extends BuildTask {
 	/**
 	 * @var Boolean
 	 */
-	private $debug = true;
+	private $debug = false;
 
 	/**
 	 * Main function
@@ -86,6 +86,9 @@ class CheckAllTemplates extends BuildTask {
 	 */
 	public function run($request) {
 		ini_set('max_execution_time', 3000);
+		if(isset($_GET["debugme"])) {
+			$this->debug = true;
+		}
 		$asAdmin = empty($_REQUEST["admin"]) ? false : true;$this->debugme(__LINE__);
 		$testOne = isset($_REQUEST["test"]) ? $_GET["test"] : null;$this->debugme(__LINE__);
 
