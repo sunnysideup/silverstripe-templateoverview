@@ -168,6 +168,18 @@ class CheckAllTemplates extends BuildTask {
 								checker.stop = true;
 							}
 						);
+						this.initShowMoreClick();
+					},
+
+					initShowMoreClick: function(){
+						jQuery(\"table\").on(
+							\"click\",
+							\"a.showMoreClick\",
+							function(event){
+								event.preventDefault();
+								jQuery(this).parent().find(\"ul\").slideToggle();
+							}
+						)
 					},
 
 					checkURL: function(){
@@ -742,7 +754,7 @@ class CheckAllTemplates_W3cValidateApi{
 			$errorDescription = " - ".$this->errorCount."errors: ";
 			if($this->showErrors) {
 				if(count($this->errorList)) {
-					$errorDescription .= "<ul><li>".implode("</li><li>", $this->errorList)."</li></ul>";
+					$errorDescription .= "<ul style=\"display: none;\"><li>".implode("</li><li>", $this->errorList)."</li></ul>";
 				}
 			}
 			else {
@@ -750,7 +762,7 @@ class CheckAllTemplates_W3cValidateApi{
 			}
 		}
 
-		return '<div style="background:'.$color1.';"><strong>'.$type.'</strong>'.$errorDescription.'</div>';
+		return '<div style="background:'.$color1.';"><a href="#" class="showMoreClick">'.$type.'</a></strong>'.$errorDescription.'</div>';
 	}
 
 
