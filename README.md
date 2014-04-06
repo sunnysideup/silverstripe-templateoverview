@@ -1,21 +1,41 @@
 ###############################################
-TemplateOverviewPage
-Pre 0.1 proof of concept
+Template Overview Page
 ###############################################
+
+Provides the developer with a bunch of tools to
+review the page types used on a website.
+
+Make sure to check out the
+/dev/tasks/CheckAllTemplates
+task as this will provide you with a very useful
+implementation of the poorman's template checker.
+
 
 Developer
 -----------------------------------------------
 Nicolaas Francken [at] sunnysideup.co.nz
 
+
 Requirements
 -----------------------------------------------
-SilverStripe 3.0 or greater.
+see composer.json
 HIGHLY RECOMMENDED:
-prettyphoto: http://sunny.svnrepository.com/svn/sunny-side-up-general/prettyPhoto
+prettyphoto:
+- http://sunny.svnrepository.com/svn/sunny-side-up-general/prettyPhoto OR
+- https://github.com/sunnysideup/silverstripe-prettyphoto
+
 
 Documentation
 -----------------------------------------------
-this module allows you to review all your classes
+Please contact author for more details.
+
+Any bug reports and/or feature requests will be
+looked at in detail
+
+We are also very happy to provide personalised support
+for this module in exchange for a small donation.
+
+This module allows you to review all your classes
 (templates) used on a website.
 
 It has a page type that lists all templates used on the website (with links and icons).
@@ -39,15 +59,17 @@ e. review stats (last changed, etc... for the template).
 These fields are added as Many_Many (image object and testing object).
 The reason for this is to minimise the footprint on the SiteTree table.
 
+
 Installation Instructions
 -----------------------------------------------
 1. Find out how to add modules to SS and add module as per usual.
-2. copy configurations from this module's _config.php file
-into mysite/_config.php file and edit settings as required.
-NB. the idea is not to edit the module at all, but instead customise
-it from your mysite folder, so that you can upgrade the module without redoing the settings.
-3. to any page template, add the following function:
 
+2. Review configs and add entries to mysite/_config/config.yml
+(or similar) as necessary.
+In the _config/ folder of this module
+you should to find some examples of config options (if any).
+
+3. to any page template, add the following function:
 
 	function getHowToMakeThisTemplateWorkArray() {
 		$a = array();
