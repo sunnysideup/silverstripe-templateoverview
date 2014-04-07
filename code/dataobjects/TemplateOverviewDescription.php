@@ -228,7 +228,7 @@ Deny from all
 		}
 	}
 
-	protected function validate() {
+	public function validate() {
 		if($this->ID) {
 			if(
 				TemplateOverviewDescription::get()
