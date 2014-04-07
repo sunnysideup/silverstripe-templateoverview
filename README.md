@@ -1,6 +1,4 @@
-###############################################
-Template Overview Page
-###############################################
+Template Overview Page================================================================================
 
 Provides the developer with a bunch of tools to
 review the page types used on a website.
