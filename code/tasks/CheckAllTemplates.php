@@ -592,7 +592,8 @@ class CheckAllTemplates extends BuildTask {
 		//first() will return null or the object
 		$return = array();$this->debugme(__LINE__);
 		foreach($this->classNames as $class) {
-			$page = $class::get()->exclude(array("ClassName" => $this->arrayExcept($this->classNames, $class)))->first();$this->debugme(__LINE__);
+			$this->debugme(__LINE__, $class);
+			$page = $class::get()->limit(1)->exclude(array("ClassName" => $this->arrayExcept($this->classNames, $class)))->first();$this->debugme(__LINE__, $class);
 			if($page) {
 				if($publicOrAdmin) {
 					$url = "/admin/pages/edit/show/".$page->ID;$this->debugme(__LINE__);
@@ -608,7 +609,7 @@ class CheckAllTemplates extends BuildTask {
 
 
 	private function debugme($lineNumber, $variable ="") {
-		if($this->debug) {echo "<br />".$lineNumber .": ".round(memory_get_usage() / 1048576)."MB"."=====".$variable;  flush();ob_flush(); }
+		if($this->debug) {echo "<br />".$lineNumber .": ".round(memory_get_usage() / 1048576)."MB"."=====".$variable;  ob_flush();flush(); }
 	}
 
 }
