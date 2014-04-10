@@ -51,7 +51,7 @@ class CMSHelp extends ContentController {
 	 * @return String -
 	 */
 	function Link($action = "") {
-		return "/".self::$url_segment."/";
+		return "/".$this->config()->get("url_segment")."/";
 	}
 
 	/**

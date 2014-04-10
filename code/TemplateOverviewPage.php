@@ -55,7 +55,7 @@ class TemplateOverviewPage extends Page {
 
 	public function requireDefaultRecords() {
 		parent::requireDefaultRecords();
-		if(self::$auto_include) {
+		if($this->config()->get("auto_include")) {
 			$check = TemplateOverviewPage::get()->First();
 			if(!$check) {
 				$page = new TemplateOverviewPage();
@@ -65,7 +65,7 @@ class TemplateOverviewPage extends Page {
 				$page->PageTitle = "Templates overview";
 				$page->Sort = 99998;
 				$page->URLSegment = "templates";
-				$parent = Page::get()->filter(array("URLSegment" => self::$parent_url_segment))->First();
+				$parent = Page::get()->filter(array("URLSegment" => $this->config()->get("parent_url_segment"))->First();
 				if($parent) {
 					$page->ParentID = $parent->ID;
 				}
@@ -85,7 +85,7 @@ class TemplateOverviewPage extends Page {
 			$ArrayOfAllClasses =  Array();
 			$classes = ClassInfo::subclassesFor("SiteTree");
 			foreach($classes as $className) {
-				if(!in_array($className, self::$classes_to_exclude)) {
+				if(!in_array($className, $this->config()->get("classes_to_exclude"))) {
 					if($this->showAll) {
 						$objects = $className::get()
 							->filter(array("ClassName" => $className))
