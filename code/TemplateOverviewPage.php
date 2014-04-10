@@ -65,7 +65,7 @@ class TemplateOverviewPage extends Page {
 				$page->PageTitle = "Templates overview";
 				$page->Sort = 99998;
 				$page->URLSegment = "templates";
-				$parent = Page::get()->filter(array("URLSegment" => $this->config()->get("parent_url_segment")->First()));
+				$parent = Page::get()->filter(array("URLSegment" => $this->config()->get("parent_url_segment")))->First();
 				if($parent) {
 					$page->ParentID = $parent->ID;
 				}
