@@ -16,6 +16,8 @@ class TemplateOverviewPage extends Page {
 
 	private static $icon = "templateoverview/images/treeicons/TemplateOverviewPage";
 
+	private static $description = "This page allows you to view all the html that can be used in the typography section";
+
 	private static $auto_include = false;
 
 	private static $parent_url_segment = "admin-only";

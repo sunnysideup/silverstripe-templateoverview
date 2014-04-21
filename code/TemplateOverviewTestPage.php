@@ -14,6 +14,9 @@ class TemplateOverviewTestPage extends Page {
 	//appearance
 	private static $icon = "templateoverview/images/treeicons/TemplateOverviewTestPage";
 
+	private static $description = "This page allows you open all pages to check if all of them can be opened";
+
+
 	function requireDefaultRecords(){
 		parent::requireDefaultRecords();
 		if(isset($_REQUEST["checkallpages"])) {
