@@ -614,7 +614,8 @@ class CheckAllTemplates extends BuildTask {
 
 
 	private function debugme($lineNumber, $variable ="") {
-		if($this->debug) {echo "<br />".$lineNumber .": ".round(memory_get_usage() / 1048576)."MB"."=====".print_r($variable, 1);
+		if($this->debug) {
+			echo "<br />".$lineNumber .": ".round(memory_get_usage() / 1048576)."MB"."=====".print_r($variable, 1);
 			ob_flush();
 			flush();
 		}
