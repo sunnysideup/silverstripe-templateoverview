@@ -16,6 +16,17 @@ class TemplateOverviewTestPage extends Page {
 
 	private static $description = "This page allows you open all pages to check if all of them can be opened";
 
+		/**
+	 * Standard SS variable.
+	 */
+	private static $singular_name = "Template Overview Test Page";
+		function i18n_singular_name() { return _t("TemplateOverviewTestPage.SINGULARNAME", "Template Overview Test Page");}
+
+	/**
+	 * Standard SS variable.
+	 */
+	private static $plural_name = "Template Overview Test Pages";
+		function i18n_plural_name() { return _t("TemplateOverviewTestPage.PLURALNAME", "Template Overview Test Pages");}
 
 	function requireDefaultRecords(){
 		parent::requireDefaultRecords();

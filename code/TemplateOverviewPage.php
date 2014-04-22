@@ -18,6 +18,18 @@ class TemplateOverviewPage extends Page {
 
 	private static $description = "This page allows you to view all the html that can be used in the typography section";
 
+		/**
+	 * Standard SS variable.
+	 */
+	private static $singular_name = "Template Overview Page";
+		function i18n_singular_name() { return _t("TemplateOverviewPage.SINGULARNAME", "Template Overview Page");}
+
+	/**
+	 * Standard SS variable.
+	 */
+	private static $plural_name = "Template Overview Pages";
+		function i18n_plural_name() { return _t("TemplateOverviewPage.PLURALNAME", "Template Overview Pages");}
+
 	private static $auto_include = false;
 
 	private static $parent_url_segment = "admin-only";
