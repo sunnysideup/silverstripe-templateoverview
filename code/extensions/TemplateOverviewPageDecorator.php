@@ -10,7 +10,7 @@
 class TemplateOverviewPageDecorator extends SiteTreeExtension {
 
 
-	function updateCMSFields(FieldList $fields) {
+	function updateSettingsFields(FieldList $fields) {
 		if(method_exists($this->owner,'getHowToMakeThisTemplateWorkArray')) {
 			$array = $this->owner->getHowToMakeThisTemplateWorkArray();
 			if(is_array($array) && count($array)) {
