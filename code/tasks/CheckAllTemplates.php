@@ -105,7 +105,6 @@ class CheckAllTemplates extends BuildTask {
 
 		//2. create a list of
 		else {
-			Requirements::javascript(THIRDPARTY_DIR . '//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js');$this->debugme(__LINE__);
 			$this->classNames = $this->listOfAllClasses();$this->debugme(__LINE__);
 			$this->modelAdmins = $this->ListOfAllModelAdmins();$this->debugme(__LINE__);
 			$this->allNonAdmins = $this->prepareClasses();$this->debugme(__LINE__);
@@ -135,7 +134,7 @@ class CheckAllTemplates extends BuildTask {
 			}
 			echo "
 			</table>
-			<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js' ></script>
+			<script src='/".THIRDPARTY_DIR . "/jquery/jquery.js' ></script>
 			<script type='text/javascript'>
 
 				jQuery(document).ready(
