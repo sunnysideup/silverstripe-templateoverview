@@ -53,7 +53,7 @@ class TemplateOverviewBug extends DataObject {
 
 	private static $plural_name = "Bug reports";
 	//CRUD settings
-	private static $default_sort = "Fixed, LastEdited DESC, Created DESC";
+	private static $default_sort = "\"Fixed\" ASC, \"LastEdited\" DESC, \"Created\" DESC";
 
 	function getCMSFields() {
 		$fields = parent::getCMSFields();

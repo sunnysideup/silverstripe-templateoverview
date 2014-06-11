@@ -10,6 +10,7 @@
 class TemplateOverviewDescription extends DataObject {
 
 	private static $db = array(
+		"Title" => "Varchar",
 		"Description" => "Text",
 		"ToDoListHyperLink" => "Varchar(255)",
 		"ClassNameLink" => "Varchar(120)"
@@ -41,7 +42,7 @@ class TemplateOverviewDescription extends DataObject {
 
 	private static $field_labels = array(
 		"ClassNameLink" => "Page Type Name",
-		"ToDoListHyperLink" => "Link to To Do List (e.g. http://www.my-project-management-tool.com/mypage/)",
+		"ToDoListHyperLink" => "Link to To Do"
 	);
 
 	private static $singular_name = 'Template Description';
@@ -51,11 +52,11 @@ class TemplateOverviewDescription extends DataObject {
 	private static $default_sort = 'ClassNameLink ASC';
 
 	private static $indexes = array(
-		"ClassNameLink" => true,
+		"ClassNameLink" => true
 	);
 
 	private static $casting = array(
-		"Title" => "Varchar",
+		"Title" => "Varchar"
 	);
 
 	/**
@@ -70,7 +71,7 @@ class TemplateOverviewDescription extends DataObject {
 	 */
 	private static $image_source_folder = "";
 
-	function canAdd() {
+	function canCreate($member = null) {
 		return false;
 	}
 
@@ -250,5 +251,8 @@ Deny from all
 		parent::onBeforeWrite();
 	}
 
+	function forTemplate(){
+		return $this->ClassNameLink;
+	}
 
 }
