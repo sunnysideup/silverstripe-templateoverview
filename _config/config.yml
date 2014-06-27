@@ -34,7 +34,7 @@ SiteTree:
   extensions:
     - TemplateOverviewPageDecorator
 
-Content_Controller:
+ContentController:
   extensions:
     - TemplateOverviewPageExtension
 
