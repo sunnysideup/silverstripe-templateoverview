@@ -190,10 +190,10 @@ class TemplateOverviewPage extends Page {
 		$listArray["ClassName"] = $className;
 		$listArray["Count"] = $count;
 		$listArray["ID"] = $obj->ID;
-		$listArray["TypoURLSegment"] = $this->URLSegment;
-		$listArray["Title"] = $obj->Title;
-		$listArray["FullLink"] = Director::absoluteURL($obj->Link());
-		$listArray["URLSegment"] = $obj->URLSegment;
+		$listArray["TypoURLSegment"] = $this->Link();
+		$listArray["Title"] = $obj->MenuTitle;
+		$listArray["PreviewLink"] = $obj->PreviewLink();
+		$listArray["CMSEditLink"] = $obj->CMSEditLink();
 		$staticIcon = $obj->stat("icon", true);
 		if(is_array($staticIcon)) {
 			$iconArray = $obj->stat("icon");

@@ -19,6 +19,6 @@
 	<% end_with %>
 <% end_if %>
 <% loop Results %>
-<li class="example moreDetailLI">{$Pos}. <a href="$URLSegment">$Title</a> - <a href="/admin/show/$ID">CMS view</a></li>
+<li class="example moreDetailLI">{$Pos}. <a href="$PreviewLink">$Title</a> | <a href="$CMSEditLink">IN CMS</a></li>
 <% end_loop %>
 

@@ -18,9 +18,13 @@
 		<% end_if %>
 		<span class="typo-heading">$Count x $ClassName - template</span>
 		<% if ShowAll %>
-		<span class="typo-fullLink"><a href="$FullLink">$FullLink</a> :: $Title</span>
+		<span class="typo-fullLink"><a href="$PreviewLink">$Title</a></span> | <a href="$CMSEditLink">CMS view</a>
 		<% else %>
-		<span class="typo-fullLink"><em>example:</em> <a href="$FullLink">$FullLink :: $Title</a></span>
+		<span class="typo-fullLink">
+			<em>example:</em>
+			<a href="$FullLink">$Title</a> |
+			<a href="$CMSEditLink">IN CMS</a>
+		</span>
 		<span class="typo-more"><em>more:</em> <a href="$TypoURLSegment/showmore/$ID" class="typo-seemore" rel="entry-for-$URLSegment">more examples and details (if any)</a></span>
 		<span class="typo-less"><em>less:</em> <a href="#" class="typo-seeless" rel="entry-for-$URLSegment">hide it again!</a></span>
 		<ol id="entry-for-$URLSegment" class="MoreDetailOL"><li style="display: none;">&nbsp;</li></ol>
