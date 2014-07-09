@@ -61,7 +61,7 @@ class CMSHelp extends ContentController {
 	 */
 	function HelpFiles(){
 		$dos = new ArrayList();
-		$fileArray = self::get_list_of_files(self::get_help_file_directory_name());
+		$fileArray = self::get_list_of_files($this->Config()->get("help_file_directory_name"));
 		if($fileArray && count($fileArray)) {
 			$linkArray = array();
 			foreach($fileArray as $file) {
