@@ -94,14 +94,14 @@ class TemplateOverviewPageExtension extends Extension {
 					(
 						(
 							\"PageID\" = 0 AND
-							\"TemplateID\"
+							\"TemplateID\"  = ".$templateID."
 						)
 						OR
 						\"PageID\" = ".$this->owner->ID."
 					)
 				)"
 			)
-			->sort(array("PageID" => "DESC", "TemplateID => DESC"));
+			->sort(array("PageID" => "DESC", "TemplateID" => "DESC"));
 	}
 
 	function TemplateDescriptionForThisClass(){
