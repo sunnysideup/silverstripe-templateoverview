@@ -190,6 +190,7 @@ class TemplateOverviewPage extends Page {
 		$listArray["ClassName"] = $className;
 		$listArray["Count"] = $count;
 		$listArray["ID"] = $obj->ID;
+		$listArray["URLSegment"] = $obj->URLSegment;
 		$listArray["TypoURLSegment"] = $this->Link();
 		$listArray["Title"] = $obj->MenuTitle;
 		$listArray["PreviewLink"] = $obj->PreviewLink();
@@ -207,8 +208,7 @@ class TemplateOverviewPage extends Page {
 			$icon = $icon."-file.gif";
 		}
 		$listArray["Icon"] = $icon;
-		$object = new ArrayData($listArray);
-		return $object;
+		return new ArrayData($listArray);
 	}
 
 	//not used!
@@ -257,7 +257,7 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 				->limit(200);
 			$array = array(
 				"Results" => $data,
-				"MoreDetail" => TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $obj->ClassName))
+				"MoreDetail" => TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $obj->ClassName))->First()
 			);
 		}
 		else {

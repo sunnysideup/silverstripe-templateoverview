@@ -15,13 +15,8 @@ class TemplateOverviewPageExtension extends Extension {
 		return TemplateOverviewPage::get()->First();
 	}
 
-	public function BugManagementLink() {
-		return TemplateOverviewDescriptionModelAdmin::get_full_url_segment("TemplateOverviewBug");
-	}
-
 	public function IncludeTemplateOverviewDevelopmentFooter() {
 		if(Director::isDev()) {
-			Requirements::javascript($this->owner->project()."/javascript/TemplateOverviewOverlay.js");
 			Requirements::javascript("templateoverview/javascript/TemplateOverviewExtension.js");
 			Requirements::themedCSS("TemplateOverviewExtension", "templateoverview");
 			return true;
@@ -68,40 +63,6 @@ class TemplateOverviewPageExtension extends Extension {
 			}
 		}
 		return $this->templateList;
-	}
-
-	function TemplateOverviewBugs() {
-		$templateID = 0;
-		if($templateOverviewDescription = TemplateOverviewDescription::get()
-			->filter(array("ClassNameLink" => $this->owner->ClassName))
-			->First()
-		) {
-			$templateID = $templateOverviewDescription->ID;
-		}
-		return TemplateOverviewBug::get()
-			->where("
-				\"Fixed\" <> 1 AND
-				(
-					(
-						(
-							\"TemplateID\" = 0 AND
-							\"PageID\" = 0
-						)
-						OR
-						\"TemplateID\" = ".$templateID."
-					)
-					OR
-					(
-						(
-							\"PageID\" = 0 AND
-							\"TemplateID\"  = ".$templateID."
-						)
-						OR
-						\"PageID\" = ".$this->owner->ID."
-					)
-				)"
-			)
-			->sort(array("PageID" => "DESC", "TemplateID" => "DESC"));
 	}
 
 	function TemplateDescriptionForThisClass(){

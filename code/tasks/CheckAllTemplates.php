@@ -89,30 +89,30 @@ class CheckAllTemplates extends BuildTask {
 		if(isset($_GET["debugme"])) {
 			$this->debug = true;
 		}
-		$asAdmin = empty($_REQUEST["admin"]) ? false : true;$this->debugme(__LINE__);
-		$testOne = isset($_REQUEST["test"]) ? $_GET["test"] : null;$this->debugme(__LINE__);
+		$asAdmin = empty($_REQUEST["admin"]) ? false : true;
+		$testOne = isset($_REQUEST["test"]) ? $_GET["test"] : null;
 
 		//1. actually test a URL and return the data
 		if($testOne) {
-			$this->setupCurl();$this->debugme(__LINE__);
+			$this->setupCurl();
 			if($asAdmin) {
-				$this->createAndLoginUser();$this->debugme(__LINE__);
+				$this->createAndLoginUser();
 			}
-			echo $this->testURL($testOne, $this->w3validation);$this->debugme(__LINE__);
-			$this->cleanup();$this->debugme(__LINE__);
+			echo $this->testURL($testOne, $this->w3validation);
+			$this->cleanup();
 
 		}
 
 		//2. create a list of
 		else {
-			$this->classNames = $this->listOfAllClasses();$this->debugme(__LINE__);
-			$this->modelAdmins = $this->ListOfAllModelAdmins();$this->debugme(__LINE__);
-			$this->allNonAdmins = $this->prepareClasses();$this->debugme(__LINE__);
-			$otherLinks = $this->listOfAllControllerMethods();$this->debugme(__LINE__);
-			$this->allAdmins = $this->array_push_array($this->modelAdmins, $this->prepareClasses(1));$this->debugme(__LINE__);
-			$this->allAdmins = $this->array_push_array($this->allAdmins, $this->customLinks);$this->debugme(__LINE__);
-			$sections = array("allNonAdmins", "allAdmins");$this->debugme(__LINE__);
-			$count = 0;$this->debugme(__LINE__);
+			$this->classNames = $this->listOfAllClasses();
+			$this->modelAdmins = $this->ListOfAllModelAdmins();
+			$this->allNonAdmins = $this->prepareClasses();
+			$otherLinks = $this->listOfAllControllerMethods();
+			$this->allAdmins = $this->array_push_array($this->modelAdmins, $this->prepareClasses(1));
+			$this->allAdmins = $this->array_push_array($this->allAdmins, $this->customLinks);
+			$sections = array("allNonAdmins", "allAdmins");
+			$count = 0;
 			echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
 			<table border='1'>
 			<tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th><th class'error'>W3 Check</th></tr>";
@@ -426,25 +426,25 @@ class CheckAllTemplates extends BuildTask {
 	 * @return Array(String)
 	 */
 	private function listOfAllClasses(){
-		$pages = array();$this->debugme(__LINE__);
-		$list = null;$this->debugme(__LINE__);
+		$pages = array();
+		$list = null;
 		if(class_exists("TemplateOverviewPage")) {
-			$templateOverviewPage = TemplateOverviewPage::get()->First();$this->debugme(__LINE__);
+			$templateOverviewPage = TemplateOverviewPage::get()->First();
 			if(!$templateOverviewPage) {
-				$templateOverviewPage = singleton("TemplateOverviewPage");$this->debugme(__LINE__);
+				$templateOverviewPage = singleton("TemplateOverviewPage");
 			}
-			$list = $templateOverviewPage->ListOfAllClasses();$this->debugme(__LINE__);
+			$list = $templateOverviewPage->ListOfAllClasses();
 			foreach($list as $page) {
-				$pages[] = $page->ClassName;$this->debugme(__LINE__);
+				$pages[] = $page->ClassName;
 			}
 		}
 		if(!count($pages)) {
-			$list = ClassInfo::subclassesFor("SiteTree");$this->debugme(__LINE__);
+			$list = ClassInfo::subclassesFor("SiteTree");
 			foreach($list as $page) {
-				$pages[] = $page;$this->debugme(__LINE__);
+				$pages[] = $page;
 			}
 		}
-		return $pages;$this->debugme(__LINE__);
+		return $pages;
 	}
 
 	/**
@@ -452,60 +452,60 @@ class CheckAllTemplates extends BuildTask {
 	 * @return Array(String)
 	 */
 	private function ListOfAllModelAdmins(){
-		$models = array();$this->debugme(__LINE__);
-		$modelAdmins = CMSMenu::get_cms_classes("ModelAdmin");$this->debugme(__LINE__);
+		$models = array();
+		$modelAdmins = CMSMenu::get_cms_classes("ModelAdmin");
 		if($modelAdmins && count($modelAdmins)) {
 			foreach($modelAdmins as $modelAdmin) {
 				if($modelAdmin != "ModelAdminEcommerceBaseClass") {
-					$obj = singleton($modelAdmin);$this->debugme(__LINE__);
-					$modelAdminLink = $obj->Link();$this->debugme(__LINE__);
-					$modelAdminLinkArray = explode("?", $modelAdminLink);$this->debugme(__LINE__);
-					$modelAdminLink = $modelAdminLinkArray[0];$this->debugme(__LINE__);
-					//$extraVariablesLink = $modelAdminLinkArray[1];$this->debugme(__LINE__);
-					$models[] = $modelAdminLink;$this->debugme(__LINE__);
-					$modelsToAdd = $obj->getManagedModels();$this->debugme(__LINE__);
+					$obj = singleton($modelAdmin);
+					$modelAdminLink = $obj->Link();
+					$modelAdminLinkArray = explode("?", $modelAdminLink);
+					$modelAdminLink = $modelAdminLinkArray[0];
+					//$extraVariablesLink = $modelAdminLinkArray[1];
+					$models[] = $modelAdminLink;
+					$modelsToAdd = $obj->getManagedModels();
 					if($modelsToAdd && count($modelsToAdd)) {
 						foreach($modelsToAdd as $key => $model) {
 							if(is_array($model) || !is_subclass_of($model, "DataObject")) {
-								$model = $key;$this->debugme(__LINE__);
+								$model = $key;
 							}
 							if(!is_subclass_of($model, "DataObject")) {
-								continue;$this->debugme(__LINE__);
+								continue;
 							}
-							$modelAdminLink;$this->debugme(__LINE__);
-							$modelLink = $modelAdminLink.$model."/";$this->debugme(__LINE__);
-							$models[] = $modelLink;$this->debugme(__LINE__);
-							$models[] = $modelLink."EditForm/field/".$model."/item/new/";$this->debugme(__LINE__);
+							$modelAdminLink;
+							$modelLink = $modelAdminLink.$model."/";
+							$models[] = $modelLink;
+							$models[] = $modelLink."EditForm/field/".$model."/item/new/";
 							if($item = $model::get()->limit(1)->First()) {
-								$models[] = $modelLink."EditForm/field/".$model."/item/".$item->ID."/edit";$this->debugme(__LINE__);
+								$models[] = $modelLink."EditForm/field/".$model."/item/".$item->ID."/edit";
 							}
 						}
 					}
 				}
 			}
 		}
-		$this->debugme(__LINE__);
+
 		return $models;
 	}
 
 	protected function  listOfAllControllerMethods(){
-		$array = array();$this->debugme(__LINE__);
-		$classes = ClassInfo::subclassesFor("Controller");$this->debugme(__LINE__);
+		$array = array();
+		$classes = ClassInfo::subclassesFor("Controller");
 		//foreach($manifest as $class => $compareFilePath) {
-			//if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;$this->debugme(__LINE__);
+			//if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;
 		//}
-		$manifest = SS_ClassLoader::instance()->getManifest()->getClasses();$this->debugme(__LINE__);
-		$baseFolder = Director::baseFolder();$this->debugme(__LINE__);
-		$cmsBaseFolder = Director::baseFolder()."/cms/";$this->debugme(__LINE__);
-		$frameworkBaseFolder = Director::baseFolder()."/framework/";$this->debugme(__LINE__);
+		$manifest = SS_ClassLoader::instance()->getManifest()->getClasses();
+		$baseFolder = Director::baseFolder();
+		$cmsBaseFolder = Director::baseFolder()."/cms/";
+		$frameworkBaseFolder = Director::baseFolder()."/framework/";
 		foreach($classes as $className) {
-			$lowerClassName = strtolower($className);$this->debugme(__LINE__);
-			$location = $manifest[$lowerClassName];$this->debugme(__LINE__);
+			$lowerClassName = strtolower($className);
+			$location = $manifest[$lowerClassName];
 			if(strpos($location, $cmsBaseFolder) === 0 || strpos($location, $frameworkBaseFolder) === 0) {
-				continue;$this->debugme(__LINE__);
+				continue;
 			}
 			if($className != "Controller") {
-				$controllerReflectionClass = new ReflectionClass($className);$this->debugme(__LINE__);
+				$controllerReflectionClass = new ReflectionClass($className);
 				if(!$controllerReflectionClass->isAbstract()) {
 					if(
 						$className == "Mailto" ||
@@ -513,50 +513,50 @@ class CheckAllTemplates extends BuildTask {
 						$className instanceOF BuildTask ||
 						$className instanceOF TaskRunner
 					) {
-						continue;$this->debugme(__LINE__);
+						continue;
 					}
-					$methods = $this->getPublicMethodsNotInherited($controllerReflectionClass, $className);$this->debugme(__LINE__);
+					$methods = $this->getPublicMethodsNotInherited($controllerReflectionClass, $className);
 					foreach($methods as $methodArray){
-						$array[$className."_".$methodArray["Method"]] = $methodArray;$this->debugme(__LINE__);
+						$array[$className."_".$methodArray["Method"]] = $methodArray;
 					}
 				}
 			}
 		}
-		$finalArray = array();$this->debugme(__LINE__);
-		$doubleLinks = array();$this->debugme(__LINE__);
+		$finalArray = array();
+		$doubleLinks = array();
 		foreach($array as $index  => $classNameMethodArray) {
 			if(stripos($classNameMethodArray["ClassName"], "Mailto") == NULL) {
-				$classObject = singleton($classNameMethodArray["ClassName"]);$this->debugme(__LINE__);
+				$classObject = singleton($classNameMethodArray["ClassName"]);
 				if($classNameMethodArray["Method"] == "templateoverviewtests") {
-					$this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);$this->debugme(__LINE__);
+					$this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);
 				}
 				else {
-					$classNameMethodArray["Link"] = Director::absoluteURL($classObject->Link($classNameMethodArray["Method"]));$this->debugme(__LINE__);
+					$classNameMethodArray["Link"] = Director::absoluteURL($classObject->Link($classNameMethodArray["Method"]));
 					if(!isset($doubleLinks[$classNameMethodArray["Link"]])) {
-						$finalArray[] = $classNameMethodArray;$this->debugme(__LINE__);
+						$finalArray[] = $classNameMethodArray;
 					}
-					$doubleLinks[$classNameMethodArray["Link"]] = true;$this->debugme(__LINE__);
+					$doubleLinks[$classNameMethodArray["Link"]] = true;
 				}
 			}
 		}
-		return $finalArray;$this->debugme(__LINE__);
+		return $finalArray;
 	}
 
 	private function getPublicMethodsNotInherited($classReflection, $className) {
-		$classMethods = $classReflection->getMethods();$this->debugme(__LINE__);
-		$classMethodNames = array();$this->debugme(__LINE__);
+		$classMethods = $classReflection->getMethods();
+		$classMethodNames = array();
 		foreach ($classMethods as $index => $method) {
 			if ($method->getDeclaringClass()->getName() !== $className) {
-			 unset($classMethods[$index]);$this->debugme(__LINE__);
+			 unset($classMethods[$index]);
 			}
 			else {
-				$allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::FIRST_SET);$this->debugme(__LINE__);
+				$allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::FIRST_SET);
 				if(!is_array($allowedActionsArray)) {
-					$allowedActionsArray = array();$this->debugme(__LINE__);
+					$allowedActionsArray = array();
 				}
-				$methodName = $method->getName();$this->debugme(__LINE__);
+				$methodName = $method->getName();
 				/* Get a reflection object for the class method */
-				$reflect = new ReflectionMethod($className, $methodName);$this->debugme(__LINE__);
+				$reflect = new ReflectionMethod($className, $methodName);
 				/* For private, use isPrivate().  For protected, use isProtected() */
 				/* See the Reflection API documentation for more definitions */
 				if($reflect->isPublic()) {
@@ -564,22 +564,22 @@ class CheckAllTemplates extends BuildTask {
 						if(strpos($methodName, "_") == NULL) {
 							if(!in_array($methodName, array("index", "run", "init"))) {
 								/* The method is one we're looking for, push it onto the return array */
-								$error = "";$this->debugme(__LINE__);
+								$error = "";
 								if(!in_array($methodName, $allowedActionsArray) && !isset($allowedActionsArray[$methodName])) {
-									$error = "Can not find ".$className."::".$methodName." in allowed_actions";$this->debugme(__LINE__);
+									$error = "Can not find ".$className."::".$methodName." in allowed_actions";
 								}
 								$classMethodNames[$methodName] = array(
 									"ClassName" => $className,
 									"Method" => $methodName,
 									"Error" => $error
-								);$this->debugme(__LINE__);
+								);
 							}
 						}
 					}
 				}
 			}
 		}
-		return $classMethodNames;$this->debugme(__LINE__);
+		return $classMethodNames;
 	}
 
 	/**
@@ -589,26 +589,26 @@ class CheckAllTemplates extends BuildTask {
 	 */
 	private function prepareClasses($publicOrAdmin = 0) {
 		//first() will return null or the object
-		$return = array();$this->debugme(__LINE__);
+		$return = array();
 		foreach($this->classNames as $class) {
 			$this->debugme(__LINE__, $class);
 			$excludedClasses = $this->arrayExcept($this->classNames, $class);
-			$page = $class::get(); $this->debugme(__LINE__);
-			$page = $page->limit(1);$this->debugme(__LINE__);
-			$page = $page->exclude(array("ClassName" => $excludedClasses)); $this->debugme(__LINE__);
+			$page = $class::get();
+			$page = $page->limit(1);
+			$page = $page->exclude(array("ClassName" => $excludedClasses));
 
-			$page = $page->first();$this->debugme(__LINE__);
+			$page = $page->first();
 			if($page) {
 				if($publicOrAdmin) {
-					$url = "/admin/pages/edit/show/".$page->ID;$this->debugme(__LINE__);
+					$url = "/admin/pages/edit/show/".$page->ID;
 				}
 				else {
-					$url = $page->link();$this->debugme(__LINE__);
+					$url = $page->link();
 				}
-				$return[] = $url;$this->debugme(__LINE__);
+				$return[] = $url;
 			}
 		}
-		return $return;$this->debugme(__LINE__);
+		return $return;
 	}
 
 

@@ -1,5 +1,5 @@
 <h1 id="allclasses">Templates used on this website ($TotalCount): </h1>
-<ul id="classList">
+<ul id="ClassList">
 <% loop ListOfAllClasses %>
 	<% if Count %>
 	<li style="background-image: url({$Icon});" id="sectionFor-$ClassName">

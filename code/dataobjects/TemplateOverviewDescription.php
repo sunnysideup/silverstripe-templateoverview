@@ -27,10 +27,6 @@ class TemplateOverviewDescription extends DataObject {
 		"Image7" => "Image"
 	);
 
-	private static $belongs_many_many = array(
-		"TemplateOverviewTestItems" => "TemplateOverviewTestItem"
-	);
-
 	private static $searchable_fields = array(
 		"ClassNameLink" => "PartialMatchFilter"
 	);
@@ -90,7 +86,7 @@ class TemplateOverviewDescription extends DataObject {
 	}
 
 	function ModelAdminLink() {
-		return TemplateOverviewDescriptionModelAdmin::get_full_url_segment()."/".$this->ClassName."/".$this->ID."/edit/";
+		return TemplateOverviewDescriptionModelAdmin::get_full_url_segment().$this->ClassName."/EditForm/field/TemplateOverviewDescription/item/".$this->ID."/edit/";
 	}
 
 	function getCMSFields() {
@@ -146,6 +142,14 @@ class TemplateOverviewDescription extends DataObject {
 					$object->ParentID = $templateOverviewPage->ID;
 					$object->write();
 					DB::alteration_message("adding template description for $className", "created");
+				}
+				else {
+					$otherObjects = TemplateOverviewDescription::get()
+					->filter(array("ClassNameLink" => $className))->exclude(array("ID" => $object->ID));
+					foreach($otherObjects as $otherObject) {
+						DB::alteration_message("Deleting superfluous TemplateOverviewDescription with Class Name Link: $className", "deleted");
+						$otherObject->delete();
+					}
 				}
 				if($fileList) {
 					$i = 0;

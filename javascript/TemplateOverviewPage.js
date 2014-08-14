@@ -1,8 +1,8 @@
 jQuery(document).ready(
 	function () {
-		if( jQuery("#classList").length > 0) {
+		if( jQuery("#ClassList").length > 0) {
 			jQuery(".typo-less").hide();
-			jQuery("#classList .typo-seemore").click(
+			jQuery("#ClassList .typo-seemore").click(
 				function() {
 					var url = jQuery(this).attr("href");
 					var id = jQuery(this).attr("rel");
