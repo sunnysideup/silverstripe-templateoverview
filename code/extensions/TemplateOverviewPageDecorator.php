@@ -25,15 +25,9 @@ class TemplateOverviewPageDecorator extends SiteTreeExtension {
 			->filter(array("ClassNameLink" => $this->owner->ClassName))
 			->First();
 		if($obj) {
-			if($obj->ToDoListHyperLink) {
-				$fields->replaceField("ToDo", new LiteralField("ToDo", '<p><a href="'.$obj->ToDoListHyperLink.'" target="todo">review to do items...</a></p>'));
-			}
 			$fields->addFieldToTab("Root.Help", new LiteralField("MoreHelp", $obj->renderWith("TemplateOverviewPageCMSDetail")));
 		}
 	}
 
-	function EditLink(){
-			return "/admin/pages/edit/show/".$this->owner->ID;
-	}
 
 }

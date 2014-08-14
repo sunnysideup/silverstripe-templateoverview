@@ -1,4 +1,5 @@
-Template Overview Page================================================================================
+Template Overview Page
+================================================
 
 Provides the developer with a bunch of tools to
 review the page types used on a website.
@@ -11,20 +12,23 @@ implementation of the poorman's template checker.
 
 Developer
 -----------------------------------------------
+
 Nicolaas Francken [at] sunnysideup.co.nz
 
 
 Requirements
 -----------------------------------------------
+
 see composer.json
 HIGHLY RECOMMENDED:
 prettyphoto:
-- http://sunny.svnrepository.com/svn/sunny-side-up-general/prettyPhoto OR
-- https://github.com/sunnysideup/silverstripe-prettyphoto
+* http://sunny.svnrepository.com/svn/sunny-side-up-general/prettyPhoto OR
+* https://github.com/sunnysideup/silverstripe-prettyphoto
 
 
 Documentation
 -----------------------------------------------
+
 Please contact author for more details.
 
 Any bug reports and/or feature requests will be
@@ -36,61 +40,39 @@ for this module in exchange for a small donation.
 This module allows you to review all your classes
 (templates) used on a website.
 
-It has a page type that lists all templates used on the website (with links and icons).
+It has a page type that lists all templates used on the website.
 
-It also allows you to add:
-
-<% include TemplateOverviewPageDevelopmentFooter %> at the bottom of your Page.ss file.
+You can also include a footer on every page with information about the template being used.
 
 When logged-in as admin, the TemplateDevelopment template include allows you to
 visit the front-end of the website and:
 
-a. upload and view designs
-b. view and edit to do field (as per SS standard install)
-c. add a testing entry:
-	- it will automatically note browser operating system etc... you are using
-	- date
-	- notes (i.e. tested on ie6 by so and so on 12/12/2012)
-d. link through to edit page in the CMS
-e. review stats (last changed, etc... for the template).
-
-These fields are added as Many_Many (image object and testing object).
-The reason for this is to minimise the footprint on the SiteTree table.
+1. upload and view designs
+2. link through to edit page in the CMS
+3. review stats (last changed, etc... for the template).
 
 
 Installation Instructions
 -----------------------------------------------
+
 1. Find out how to add modules to SS and add module as per usual.
 
-2. Review configs and add entries to mysite/_config/config.yml
-(or similar) as necessary.
-In the _config/ folder of this module
-you can usually find some examples of config options (if any).
+2. Review configs and add entries to mysite/_config/config.yml (or similar) as necessary.
+	In the /_config/ folder of this module you can usually find
+	some examples of config options (if any).
 
-3. to any page template, add the following function:
+3. to any page template, add the following function
+	To provide help instructions.
 
-	function getHowToMakeThisTemplateWorkArray() {
-		$a = array();
-		//OR $a = parent::getHowToMakeThisTemplateWorkArray();
-		$a[] = "Select header and three items for section one";
-		$a[] = "Select header and three items for section two";
-		return $a;
-	}
-
-To provide help instructions.
+			function getHowToMakeThisTemplateWorkArray() {
+				$a = array();
+				//OR $a = parent::getHowToMakeThisTemplateWorkArray();
+				$a[] = "Select header and three items for section one";
+				$a[] = "Select header and three items for section two";
+				return $a;
+			}
 
 
+4. [OPTIONAL] add to the bottom of your Page.ss file:
 
-Adding Overlays
------------------------------------------------
-If you create a file:
-
-TemplateOverviewOverlay.js in your project folder
-e.g.
-
-mysite/javascript/TemplateOverviewOverlay.js
-
-using TemplateOverviewOverlayExample.js as the example
-then you can create useful overlays.  These overlays
-can show the design graphic over your own design, allowing
-visual checks of your css work.
+		<% include TemplateOverviewPageDevelopmentFooter %>
