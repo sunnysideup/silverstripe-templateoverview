@@ -12,8 +12,10 @@ var templateoverviewextension = {
 
 	loadingAreaSelector: "#TemplateOverviewPageDevelopmentFooterLoadHere",
 
+	classToClickToSeeMoreDetails: ".seeFullTemplateDetails",
+
 	init: function() {
-		jQuery(".IncludeTemplateOverviewDevelopmentFooterClickHere").click(
+		jQuery(templateoverviewextension.classToClickToSeeMoreDetails).click(
 			function() {
 				templateoverviewextension.javascriptImporter(templateoverviewextension.prettyphotoJSlocation);
 				templateoverviewextension.cssImporter(templateoverviewextension.prettyphotoCSSlocation);
