@@ -8,9 +8,7 @@
 class TemplateOverviewPage extends Page {
 
 	//parents and children in sitetree
-	private static $allowed_children = array("TemplateOverviewTestPage"); //can also be "none";
-
-	private static $default_child = "TemplateOverviewTestPage";
+	private static $allowed_children = "none" //can also be "none";
 
 	private static $can_be_root = true;
 
@@ -34,7 +32,7 @@ class TemplateOverviewPage extends Page {
 
 	private static $parent_url_segment = "admin-only";
 
-	private static $classes_to_exclude = array("SiteTree", "TemplateOverviewPage","TemplateOverviewTestPage", "RedirectorPage", "VirtualPage");
+	private static $classes_to_exclude = array("SiteTree", "TemplateOverviewPage", "RedirectorPage", "VirtualPage");
 
 	private static $defaults = array(
 		"URLSegment" => "templates",
