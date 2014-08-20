@@ -8,7 +8,7 @@
 class TemplateOverviewPage extends Page {
 
 	//parents and children in sitetree
-	private static $allowed_children = "none" //can also be "none";
+	private static $allowed_children = "none"; //can also be "none"
 
 	private static $can_be_root = true;
 
