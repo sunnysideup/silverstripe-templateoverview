@@ -525,22 +525,29 @@ class CheckAllTemplates extends BuildTask {
 		$finalArray = array();
 		$doubleLinks = array();
 		foreach($array as $index  => $classNameMethodArray) {
-			if(stripos($classNameMethodArray["ClassName"], "Mailto") == NULL) {
-				$classObject = singleton($classNameMethodArray["ClassName"]);
-				if($classNameMethodArray["Method"] == "templateoverviewtests") {
-					$this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);
+			$classObject = singleton($classNameMethodArray["ClassName"]);
+			if($classNameMethodArray["Method"] == "templateoverviewtests" && 1 == 2) {
+				$this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);
+			}
+			else {
+				$link = $classObject->Link($classNameMethodArray["Method"]);
+				if($link == $classNameMethodArray["ClassName"]."/") {
+					$link = $classNameMethodArray["ClassName"]."/".$classNameMethodArray["Method"]."/";
 				}
-				else {
-					$classNameMethodArray["Link"] = Director::absoluteURL($classObject->Link($classNameMethodArray["Method"]));
-					if(!isset($doubleLinks[$classNameMethodArray["Link"]])) {
-						$finalArray[] = $classNameMethodArray;
-					}
-					$doubleLinks[$classNameMethodArray["Link"]] = true;
+				$classNameMethodArray["Link"] = $link;
+				if($classNameMethodArray["Link"][0] != "/") {
+					$classNameMethodArray["Link"] = Director::baseURL().$classNameMethodArray["Link"];
 				}
+				if(!isset($doubleLinks[$link])) {
+					$finalArray[] = $classNameMethodArray;
+				}
+				$doubleLinks[$link] = true;
 			}
 		}
 		return $finalArray;
 	}
+
+
 
 	private function getPublicMethodsNotInherited($classReflection, $className) {
 		$classMethods = $classReflection->getMethods();
@@ -553,6 +560,9 @@ class CheckAllTemplates extends BuildTask {
 				$allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::FIRST_SET);
 				if(!is_array($allowedActionsArray)) {
 					$allowedActionsArray = array();
+				}
+				else {
+					//return $allowedActionsArray;
 				}
 				$methodName = $method->getName();
 				/* Get a reflection object for the class method */
@@ -568,6 +578,9 @@ class CheckAllTemplates extends BuildTask {
 								if(!in_array($methodName, $allowedActionsArray) && !isset($allowedActionsArray[$methodName])) {
 									$error = "Can not find ".$className."::".$methodName." in allowed_actions";
 								}
+								else {
+									unset($allowedActionsArray[$className]);
+								}
 								$classMethodNames[$methodName] = array(
 									"ClassName" => $className,
 									"Method" => $methodName,
@@ -577,6 +590,24 @@ class CheckAllTemplates extends BuildTask {
 						}
 					}
 				}
+				if(count($allowedActionsArray)) {
+					$classSpecificAllowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);
+					if(is_array($classSpecificAllowedActionsArray) && count($classSpecificAllowedActionsArray)) {
+						foreach($allowedActionsArray as $methodName => $methodNameWithoutKey) {
+							if(is_numeric($methodName)) {
+								$methodName = $methodNameWithoutKey;
+							}
+							if(isset($classSpecificAllowedActionsArray[$methodName])) {
+								$classMethodNames[$methodName] = array(
+									"ClassName" => $className,
+									"Method" => $methodName,
+									"Error" => "May not follow the right method name formatting (all lower case)"
+								);
+							}
+						}
+					}
+				}
+
 			}
 		}
 		return $classMethodNames;
