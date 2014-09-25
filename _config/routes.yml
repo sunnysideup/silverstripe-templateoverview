@@ -2,6 +2,7 @@
 Name: templateoverviewroutes
 After: 'framework/routes#coreroutes'
 ---
+
 Director:
   rules:
-    'admin/help' : 'CMSHelp'
+    'admin/help': 'CMSHelp'
