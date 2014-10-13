@@ -22,7 +22,7 @@
 		<% else %>
 		<span class="typo-fullLink">
 			<em>example:</em>
-			<a href="$FullLink">$Title</a> |
+			<a href="$PreviewLink">$Title</a> |
 			<a href="$CMSEditLink">IN CMS</a>
 		</span>
 		<span class="typo-more"><em>more:</em> <a href="$TypoURLSegment/showmore/$ID" class="typo-seemore" rel="entry-for-$URLSegment">more examples and details (if any)</a></span>
