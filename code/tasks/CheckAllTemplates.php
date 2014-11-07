@@ -614,23 +614,35 @@ class CheckAllTemplates extends BuildTask {
 	}
 
 	/**
-	 * Takes {@link #$classNames}, gets the URL of the first instance of it (will exclude extensions of the class) and
+	 * Takes {@link #$classNames}, gets the URL of the first instance of it
+	 * (will exclude extensions of the class) and
 	 * appends to the {@link #$urls} list to be checked
 	 * @return Array(String)
 	 */
-	private function prepareClasses($publicOrAdmin = 0) {
+	private function prepareClasses($pageInCMS = 0) {
 		//first() will return null or the object
 		$return = array();
 		foreach($this->classNames as $class) {
 			$this->debugme(__LINE__, $class);
 			$excludedClasses = $this->arrayExcept($this->classNames, $class);
-			$page = $class::get();
-			$page = $page->limit(1);
-			$page = $page->exclude(array("ClassName" => $excludedClasses));
-
-			$page = $page->first();
+			if($pageInCMS) {
+				$page = $class::get();
+				$page = $page->limit(1);
+				$page = $page->exclude(array("ClassName" => $excludedClasses));
+				$page = $page->sort("RAND()");
+				$page = $page->first();
+			}
+			else {
+				$page = Versioned::get_one_by_stage(
+					$class,
+					"Live",
+					"ClassName NOT IN ('".implode("', '", $excludedClasses)."')",
+					false,
+					"RAND()"
+				);
+			}
 			if($page) {
-				if($publicOrAdmin) {
+				if($pageInCMS) {
 					$url = "/admin/pages/edit/show/".$page->ID;
 				}
 				else {
