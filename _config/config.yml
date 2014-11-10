@@ -24,10 +24,8 @@ CMSHelp:
   help_file_directory_name: "_help"
 
 ---
-
 only:
   environment: 'dev'
-
 ---
 
 SiteTree:
