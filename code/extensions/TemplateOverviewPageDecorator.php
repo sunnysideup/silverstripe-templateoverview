@@ -11,7 +11,7 @@ class TemplateOverviewPageDecorator extends SiteTreeExtension {
 
 
 	function updateSettingsFields(FieldList $fields) {
-		if(method_exists($this->owner,'getHowToMakeThisTemplateWorkArray')) {
+		if($this->owner->hasMethod('getHowToMakeThisTemplateWorkArray')) {
 			$array = $this->owner->getHowToMakeThisTemplateWorkArray();
 			if(is_array($array) && count($array)) {
 				$fields->addFieldToTab("Root.Help", new LiteralField(
