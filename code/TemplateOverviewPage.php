@@ -96,6 +96,9 @@ class TemplateOverviewPage extends Page {
 		if(!self::$list_of_all_classes)  {
 			$ArrayOfAllClasses =  Array();
 			$classes = ClassInfo::subclassesFor("SiteTree");
+
+			$classesToRemove = array();
+
 			foreach($classes as $className) {
 				if(!in_array($className, $this->config()->get("classes_to_exclude"))) {
 					if($this->showAll) {
@@ -106,7 +109,12 @@ class TemplateOverviewPage extends Page {
 						$count = 0;
 						if($objects->count()) {
 							foreach($objects as $obj) {
-								$object = $this->createPageObject($obj, $count++, $className);
+								if(!$count) {
+									if($ancestorToHide = $obj->stat('hide_ancestor')) {
+										$classesToRemove[] = $ancestorToHide;
+									}
+								}
+								$object = $this->createPageObject($obj, $count++);
 								$ArrayOfAllClasses[$object->indexNumber] = clone $object;
 							}
 						}
@@ -125,9 +133,23 @@ class TemplateOverviewPage extends Page {
 							$obj = $className::create();
 							$count = 0;
 						}
-						$object = $this->createPageObject($obj, $count, $className);
+						if($ancestorToHide = $obj->stat('hide_ancestor')) {
+							$classesToRemove[] = $ancestorToHide;
+						}
+						$object = $this->createPageObject($obj, $count);
 						$object->TemplateOverviewDescription = $this->TemplateDetails($className);
 						$ArrayOfAllClasses[$object->indexNumber] = clone $object;
+					}
+				}
+			}
+
+			//remove the hidden ancestors...
+			if($classesToRemove && count($classesToRemove)) {
+				$classesToRemove = array_unique($classesToRemove);
+				// unset from $classes
+				foreach($ArrayOfAllClasses as $tempKey => $tempClass) {
+					if(in_array($tempClass->ClassName, $classesToRemove)) {
+						unset($ArrayOfAllClasses[$tempKey]);
 					}
 				}
 			}
@@ -180,12 +202,18 @@ class TemplateOverviewPage extends Page {
 		return count(ClassInfo::subclassesFor("SiteTree"))-1;
 	}
 
-	private function createPageObject($obj, $count, $className) {
+	/**
+	 * @param SiteTree $obj
+	 * @param Int $count
+	 * @param String $ClassName
+	 * @return ArrayData
+	 */
+	private function createPageObject($obj, $count) {
 		$this->counter++;
 		$listArray = array();
 		$indexNumber = (10000 * $count) + $this->counter;
 		$listArray["indexNumber"] = $indexNumber;
-		$listArray["ClassName"] = $className;
+		$listArray["ClassName"] = $obj->ClassName;
 		$listArray["Count"] = $count;
 		$listArray["ID"] = $obj->ID;
 		$listArray["URLSegment"] = $obj->URLSegment;
