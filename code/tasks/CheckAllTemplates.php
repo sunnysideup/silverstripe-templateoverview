@@ -16,6 +16,10 @@ class CheckAllTemplates extends BuildTask {
 	 */
 	protected $title = 'Check URLs for HTTP errors';
 
+	/**
+	 *
+	 * @inheritdoc
+	 */
 	protected $description = "Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited in ModelAdmin, checking for HTTP response errors (e.g. 404). Click start to run.";
 
 	/**
@@ -95,6 +99,7 @@ class CheckAllTemplates extends BuildTask {
 	 * 1. check on url specified in GET variable.
 	 * 2. create a list of urls to check
 	 *
+	 * @param HTTPRequest
 	 */
 	public function run($request) {
 		ini_set('max_execution_time', 3000);
