@@ -10,6 +10,10 @@
 
 class CheckAllTemplates extends BuildTask {
 
+	/**
+	 *
+	 * @inheritdoc
+	 */
 	protected $title = 'Check URLs for HTTP errors';
 
 	protected $description = "Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited in ModelAdmin, checking for HTTP response errors (e.g. 404). Click start to run.";
@@ -76,6 +80,14 @@ class CheckAllTemplates extends BuildTask {
 	 * @var Boolean
 	 */
 	private $debug = false;
+
+	/**
+	 * this variable can help with situations where there are
+	 * unfixable bugs in Live and you want to run the tests
+	 * on Draft instead... (or vice versa)
+	 * @var String (Live or '')
+	 */
+	private $stage = '';
 
 	/**
 	 * Main function
@@ -617,33 +629,36 @@ class CheckAllTemplates extends BuildTask {
 	 * Takes {@link #$classNames}, gets the URL of the first instance of it
 	 * (will exclude extensions of the class) and
 	 * appends to the {@link #$urls} list to be checked
+	 *
+	 * @param Boolean $pageInCMS
+	 *
 	 * @return Array(String)
 	 */
-	private function prepareClasses($pageInCMS = 0) {
+	private function prepareClasses($pageInCMS = false) {
 		//first() will return null or the object
 		$return = array();
 		foreach($this->classNames as $class) {
 			$this->debugme(__LINE__, $class);
 			$excludedClasses = $this->arrayExcept($this->classNames, $class);
 			if($pageInCMS) {
-				$page = $class::get();
-				$page = $page->limit(1);
-				$page = $page->exclude(array("ClassName" => $excludedClasses));
-				$page = $page->sort("RAND()");
-				$page = $page->first();
+				$stage = "";
 			}
 			else {
-				$page = Versioned::get_one_by_stage(
-					$class,
-					"Live",
-					"ClassName NOT IN ('".implode("', '", $excludedClasses)."')",
-					false,
-					"RAND()"
-				);
+				$stage = $this->stage;
 			}
+
+			$page = $class::get()
+				->limit(1)
+				->exclude(array("ClassName" => $excludedClasses))
+				->sort("RAND()");
+			$page = $page->setDataQueryParam(array(
+				'Versioned.mode' => 'stage',
+				'Versioned.stage' => $stage
+			));
+			$page = $page->first();
 			if($page) {
 				if($pageInCMS) {
-					$url = "/admin/pages/edit/show/".$page->ID;
+					$url = $page->CMSEditLink();
 				}
 				else {
 					$url = $page->link();
