@@ -95,8 +95,8 @@ class TemplateOverviewPage extends Page {
 	public function ListOfAllClasses($checkCurrentClass = true) {
 		if(!self::$list_of_all_classes)  {
 			$ArrayOfAllClasses =  Array();
-			$classes = ClassInfo::subclassesFor("SiteTree");
-
+			//$classes = ClassInfo::subclassesFor("SiteTree");
+			$classes = SiteTree::page_type_classes();
 			$classesToRemove = array();
 
 			foreach($classes as $className) {
