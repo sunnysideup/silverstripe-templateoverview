@@ -257,6 +257,8 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 
 	private static $allowed_actions = array(
 		"showmore" => "ADMIN",
+		"quicklist" => "ADMIN",
+		"listofobjectsused" => "ADMIN",
 		"clearalltemplatedescriptions" => "ADMIN"
 	);
 
@@ -293,8 +295,6 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 	}
 
 
-
-
 	function ConfigurationDetails() {
 		$m = Member::currentUser();
 		if($m) {
@@ -324,5 +324,44 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 	function TestTaskLink(){
 		return "/dev/tasks/CheckAllTemplates/";
 	}
+
+	function QuickListLink(){
+		return $this->Link("quicklist");
+	}
+
+	function ImagesListLink(){
+		return $this->Link("listofobjectsused/Image");
+	}
+
+	function quicklist() {
+		$list = $this->ListOfAllClasses();
+		foreach($list as $item) {
+			DB::alteration_message($item->ClassName);
+		}
+	}
+
+	function listofobjectsused($request) {
+		$classWeAreLookingFor = $request->param("ID");
+		$classWeAreLookingFor = singleton($classWeAreLookingFor);
+		if($classWeAreLookingFor instanceof DataObject) {
+			$list = $this->ListOfAllClasses();
+			foreach($list as $item) {
+				$config = Config::inst();
+				$listOfImages = $config->get($item->ClassName, "has_one")
+				 + $config->get($item->ClassName, "has_many")
+				 + $config->get($item->ClassName, "many_many");
+				foreach ($listOfImages as $fieldName => $potentialImage) {
+					$innerSingleton = singleton($potentialImage);
+					if($innerSingleton instanceof $classWeAreLookingFor) {
+						DB::alteration_message($item->ClassName.".". $fieldName);
+					}
+				}
+			}
+		}
+		else {
+			user_error("Please specify the ID for the model you are looking for - e.g. /listofobjectsused/Image/", E_USER_ERROR);
+		}
+	}
+
 }
 
