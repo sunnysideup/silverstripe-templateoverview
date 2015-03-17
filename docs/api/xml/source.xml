@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<source xmlns="http://xml.phpdox.net/src">
+  <dir name="/var/www/_modules/templateoverview/trunk">
+    <file name="_config.php" size="216" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="ef74aa2594b76aa79e351d1418d7cfd56418e481" xml="tokens/_config.php.xml"/>
+    <dir name="code">
+      <dir name="control">
+        <file name="CMSHelp.php" size="4062" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="5b4044553d765ed63b0a0f28e75587a37e4832d4" xml="tokens/code/control/CMSHelp.php.xml"/>
+        <file name="ErrorNotifierController.php" size="2056" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="b780881d9db78746b61cf1e083d1e9a8cf8430f3" xml="tokens/code/control/ErrorNotifierController.php.xml"/>
+      </dir>
+      <dir name="extensions">
+        <file name="TemplateOverviewPageExtension.php" size="1661" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="880be99375a20aecd070c3679752241da4a6a1f6" xml="tokens/code/extensions/TemplateOverviewPageExtension.php.xml"/>
+        <file name="TemplateOverviewPageDecorator.php" size="1060" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="62879400e8df2a1ae974e2701837f613714d48d5" xml="tokens/code/extensions/TemplateOverviewPageDecorator.php.xml"/>
+      </dir>
+      <file name="TemplateOverviewPage.php" size="10787" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="9d54185462eb988a81b68c7de891631850c0c4ab" xml="tokens/code/TemplateOverviewPage.php.xml"/>
+      <dir name="tasks">
+        <file name="CheckAllTemplates.php" size="25541" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="2d7c29e149e16a3176e0526e77fb55c0b65032a7" xml="tokens/code/tasks/CheckAllTemplates.php.xml"/>
+      </dir>
+      <dir name="cms">
+        <file name="TemplateOverviewDescriptionModelAdmin.php" size="548" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="a4f00da27bf354ba7826457c67b6b83b9a6c5e87" xml="tokens/code/cms/TemplateOverviewDescriptionModelAdmin.php.xml"/>
+      </dir>
+      <dir name="dataobjects">
+        <file name="TemplateOverviewDescription.php" size="8874" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="a1e19cccc260b1f38b985ea639d1c4290624dcd1" xml="tokens/code/dataobjects/TemplateOverviewDescription.php.xml"/>
+      </dir>
+    </dir>
+  </dir>
+</source>

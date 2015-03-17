@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>phpDox - CheckAllTemplates</title>
+    <link rel="stylesheet" type="text/css" href="../css/style.css" media="screen"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  </head>
+  <body>
+    <nav class="topnav">
+      <ul>
+        <li>
+          <div class="logo"><span>/**</span>phpDox</div>
+        </li>
+        <li class="separator">
+          <a href="../index.xhtml">Overview</a>
+        </li>
+        <li class="separator">
+          <a href="../namespaces.xhtml">Namespaces</a>
+        </li>
+        <li>
+          <a href="../classes.xhtml">Classes</a>
+        </li>
+        <li class="separator">
+          <a href="../source/index.xhtml">Source</a>
+        </li>
+      </ul>
+    </nav>
+    <div id="mainstage">
+      <div class="box">
+        <ul class="breadcrumb">
+          <li>
+            <a href="../index.xhtml">Overview</a>
+          </li>
+          <li class="separator">
+            <a href="../classes.xhtml">Classes</a>
+          </li>
+          <li class="separator">CheckAllTemplates</li>
+        </ul>
+      </div>
+      <nav class="box">
+        <ul>
+          <li>
+            <a href="#introduction">Introduction</a>
+          </li>
+          <li>
+            <a href="#synopsis">Synopsis</a>
+          </li>
+          <li>
+            <a href="#hierarchy">Hierarchy</a>
+          </li>
+          <li>
+            <a href="#members">Members</a>
+          </li>
+          <li>
+            <a href="#methods">Methods</a>
+          </li>
+          <li>
+            <a href="../source/code/tasks/CheckAllTemplates.php.xhtml#line11">Source</a>
+          </li>
+        </ul>
+      </nav>
+      <section>
+        <h1 id="introduction"><small>\</small>CheckAllTemplates</h1>
+        <h4/>
+        <p/>
+        <ul/>
+        <h2 id="synopsis">Synopsis</h2>
+        <div class="synopsis">class CheckAllTemplates
+                extends <a title="BuildTask" href="../classes/BuildTask.xhtml">BuildTask</a>
+            {<br/><ul class="none"><li>// members</li><li>protected string <a href="#members">$title</a>;
+                    </li><li>protected string <a href="#members">$description</a>;
+                    </li><li>private array <a href="#members">$modelAdmins</a>;
+                    </li><li>private <span title="Array">Array</span> <a href="#members">$allOpenLinks</a>;
+                    </li><li>private <span title="Array">Array</span> <a href="#members">$allAdmins</a>;
+                    </li><li>private <span title="Array">Array</span> <a href="#members">$customLinks</a>;
+                    </li><li>private <span title="Array">Array</span> <a href="#members">$classNames</a>;
+                    </li><li>private <span title="curlHolder">curlHolder</span> <a href="#members">$ch</a>;
+                    </li><li>private <span title="Member">Member</span> <a href="#members">$member</a>;
+                    </li><li>private <span title="String">String</span> <a href="#members">$username</a>;
+                    </li><li>private <span title="String">String</span> <a href="#members">$password</a>;
+                    </li><li>private <span title="Boolean">Boolean</span> <a href="#members">$w3validation</a>;
+                    </li><li>private <span title="Boolean">Boolean</span> <a href="#members">$debug</a>;
+                    </li><li>private <span title="String">String</span> <a href="#members">$stage</a>;
+                    </li></ul><ul class="none"><li>// methods</li><li>public void <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/run.xhtml">run</a>()
+                    </li><li>private void <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/setupCurl.xhtml">setupCurl</a>()
+                    </li><li>private void <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/createAndLoginUser.xhtml">createAndLoginUser</a>()
+                    </li><li>private void <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/cleanup.xhtml">cleanup</a>()
+                    </li><li>private Array <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/arrayExcept.xhtml">arrayExcept</a>()
+                    </li><li>private void <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/testURL.xhtml">testURL</a>()
+                    </li><li>private void <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/array_push_array.xhtml">array_push_array</a>()
+                    </li><li>private Array(String) <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/listOfAllClasses.xhtml">listOfAllClasses</a>()
+                    </li><li>private Array(String) <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/ListOfAllModelAdmins.xhtml">ListOfAllModelAdmins</a>()
+                    </li><li>protected void <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/listOfAllControllerMethods.xhtml">listOfAllControllerMethods</a>()
+                    </li><li>private void <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/getPublicMethodsNotInherited.xhtml">getPublicMethodsNotInherited</a>()
+                    </li><li>private Array(String) <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/prepareClasses.xhtml">prepareClasses</a>()
+                    </li><li>private void <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/debugme.xhtml">debugme</a>()
+                    </li></ul>
+
+            }<br/></div>
+        <h2 id="hierarchy">Hierarchy</h2>
+        <div class="styled">
+          <h4>Extends</h4>
+          <ul>
+            <li>
+              <a href="../classes/BuildTask.xhtml">BuildTask</a>
+            </li>
+          </ul>
+        </div>
+        <h2 id="members">Members</h2>
+        <div class="styled members">
+          <h4>private</h4>
+          <ul class="members">
+            <li id="allAdmins"><strong>$allAdmins</strong>
+                —
+                <a href="#">Array</a></li>
+            <li id="allOpenLinks"><strong>$allOpenLinks</strong>
+                —
+                <a href="#">Array</a></li>
+            <li id="ch"><strong>$ch</strong>
+                —
+                <a href="#">curlHolder</a></li>
+            <li id="classNames"><strong>$classNames</strong>
+                —
+                <a href="#">Array</a></li>
+            <li id="customLinks"><strong>$customLinks</strong>
+                —
+                <a href="#">Array</a></li>
+            <li id="debug"><strong>$debug</strong>
+                —
+                <a href="#">Boolean</a></li>
+            <li id="member"><strong>$member</strong>
+                —
+                <a href="#">Member</a><br/><span class="indent">temporary Admin used to log in.</span></li>
+            <li id="modelAdmins">
+              <strong>$modelAdmins</strong>
+              <br/>
+              <span class="indent">List of URLs to be checked. Excludes front end pages (Cart pages etc).</span>
+            </li>
+            <li id="password"><strong>$password</strong>
+                —
+                <a href="#">String</a><br/><span class="indent">temporary password for temporary admin</span></li>
+            <li id="stage"><strong>$stage</strong>
+                —
+                <a href="#">String</a><br/><span class="indent">this variable can help with situations where there are unfixable bugs in Live and you want to run the tests on Draft instead... (or vice versa)</span></li>
+            <li id="username"><strong>$username</strong>
+                —
+                <a href="#">String</a><br/><span class="indent">temporary username for temporary admin</span></li>
+            <li id="w3validation"><strong>$w3validation</strong>
+                —
+                <a href="#">Boolean</a></li>
+          </ul>
+          <h4>protected</h4>
+          <ul class="members">
+            <li id="description">
+              <strong>$description</strong>
+            </li>
+            <li id="title">
+              <strong>$title</strong>
+            </li>
+          </ul>
+        </div>
+        <h2 id="methods">Methods</h2>
+        <div class="styled">
+          <h4>private</h4>
+          <ul>
+            <li id="ListOfAllModelAdmins"><a title="CheckAllTemplates" href="../classes/CheckAllTemplates/ListOfAllModelAdmins.xhtml">ListOfAllModelAdmins()</a>
+                — returns a list of all model admin links</li>
+            <li id="arrayExcept"><a title="CheckAllTemplates" href="../classes/CheckAllTemplates/arrayExcept.xhtml">arrayExcept()</a>
+                — Takes an array, takes one item out, and returns new array</li>
+            <li id="array_push_array"><a title="CheckAllTemplates" href="../classes/CheckAllTemplates/array_push_array.xhtml">array_push_array()</a>
+                — Pushes an array of items to an array</li>
+            <li id="cleanup"><a title="CheckAllTemplates" href="../classes/CheckAllTemplates/cleanup.xhtml">cleanup()</a>
+                — removes the temporary user and cleans up the curl connection.</li>
+            <li id="createAndLoginUser"><a title="CheckAllTemplates" href="../classes/CheckAllTemplates/createAndLoginUser.xhtml">createAndLoginUser()</a>
+                — creates and logs in a temporary user.</li>
+            <li id="debugme">
+              <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/debugme.xhtml">debugme()</a>
+            </li>
+            <li id="getPublicMethodsNotInherited">
+              <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/getPublicMethodsNotInherited.xhtml">getPublicMethodsNotInherited()</a>
+            </li>
+            <li id="listOfAllClasses"><a title="CheckAllTemplates" href="../classes/CheckAllTemplates/listOfAllClasses.xhtml">listOfAllClasses()</a>
+                — returns a lis of all SiteTree Classes</li>
+            <li id="prepareClasses"><a title="CheckAllTemplates" href="../classes/CheckAllTemplates/prepareClasses.xhtml">prepareClasses()</a>
+                — Takes {@link #$classNames}, gets the URL of the first instance of it (will exclude extensions of the class) and appends to the {@link #$urls} list to be checked</li>
+            <li id="setupCurl"><a title="CheckAllTemplates" href="../classes/CheckAllTemplates/setupCurl.xhtml">setupCurl()</a>
+                — creates the basic curl</li>
+            <li id="testURL"><a title="CheckAllTemplates" href="../classes/CheckAllTemplates/testURL.xhtml">testURL()</a>
+                — ECHOES the result of testing the URL....</li>
+          </ul>
+          <h4>protected</h4>
+          <ul>
+            <li id="listOfAllControllerMethods">
+              <a title="CheckAllTemplates" href="../classes/CheckAllTemplates/listOfAllControllerMethods.xhtml">listOfAllControllerMethods()</a>
+            </li>
+          </ul>
+          <h4>public</h4>
+          <ul>
+            <li id="run"><a title="CheckAllTemplates" href="../classes/CheckAllTemplates/run.xhtml">run()</a>
+                — Main function has two streams: 1. check on url specified in GET variable.</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+    <footer>
+      <span/>
+    </footer>
+  </body>
+</html>

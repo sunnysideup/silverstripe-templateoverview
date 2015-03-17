@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<source xmlns="http://xml.phpdox.net/token">
+  <file xmlns="http://xml.phpdox.net/src" path="/var/www/_modules/templateoverview/trunk/docs/en/phpdox/../../.." file="_config.php" realpath="/var/www/_modules/templateoverview/trunk/_config.php" size="216" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="ef74aa2594b76aa79e351d1418d7cfd56418e481" relative="_config.php"/>
+  <line no="1">
+    <token name="T_OPEN_TAG">&lt;?php</token>
+  </line>
+  <line no="2"/>
+  <line no="3">
+    <token name="T_DOC_COMMENT">/**</token>
+  </line>
+  <line no="4">
+    <token name="T_DOC_COMMENT"> * developed by www.sunnysideup.co.nz</token>
+  </line>
+  <line no="5">
+    <token name="T_DOC_COMMENT"> * author: Nicolaas - modules [at] sunnysideup.co.nz</token>
+  </line>
+  <line no="6">
+    <token name="T_DOC_COMMENT"> *</token>
+  </line>
+  <line no="7">
+    <token name="T_DOC_COMMENT"> **/</token>
+  </line>
+  <line no="8"/>
+  <line no="9">
+    <token name="T_STRING">Config</token>
+    <token name="T_DOUBLE_COLON">::</token>
+    <token name="T_STRING">inst</token>
+    <token name="T_PHPDOX_OPEN_BRACKET">(</token>
+    <token name="T_PHPDOX_CLOSE_BRACKET">)</token>
+    <token name="T_OBJECT_OPERATOR">-&gt;</token>
+    <token name="T_STRING">update</token>
+    <token name="T_PHPDOX_OPEN_BRACKET">(</token>
+    <token name="T_CONSTANT_ENCAPSED_STRING">"ErrorPage"</token>
+    <token name="T_PHPDOX_COMMA">,</token>
+    <token name="T_WHITESPACE"> </token>
+    <token name="T_CONSTANT_ENCAPSED_STRING">'icon'</token>
+    <token name="T_PHPDOX_COMMA">,</token>
+    <token name="T_WHITESPACE"> </token>
+    <token name="T_CONSTANT_ENCAPSED_STRING">"templateoverview/images/treeicons/ErrorPage"</token>
+    <token name="T_PHPDOX_CLOSE_BRACKET">)</token>
+    <token name="T_PHPDOX_SEMICOLON">;</token>
+  </line>
+  <line no="10"/>
+  <line no="11"/>
+  <line no="12"/>
+</source>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class xmlns="http://xml.phpdox.net/src" full="CheckAllTemplates_W3cValidateApi" namespace="" name="CheckAllTemplates_W3cValidateApi" abstract="false" final="false" start="696" end="841">
+  <file path="/var/www/_modules/templateoverview/trunk/docs/en/phpdox/../../../code/tasks" file="CheckAllTemplates.php" realpath="/var/www/_modules/templateoverview/trunk/code/tasks/CheckAllTemplates.php" size="25541" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="2d7c29e149e16a3176e0526e77fb55c0b65032a7" relative="code/tasks/CheckAllTemplates.php"/>
+  <member name="baseURL" type="string" default="'http://validator.w3.org/check'" visibility="private" line="698"/>
+  <member name="output" type="string" default="'soap12'" visibility="private" line="699"/>
+  <member name="uri" type="string" default="''" visibility="private" line="700"/>
+  <member name="fragment" type="string" default="''" visibility="private" line="701"/>
+  <member name="postVars" type="array" visibility="private" line="702"/>
+  <member name="validResult" type="{unknown}" default="false" visibility="private" line="703"/>
+  <member name="errorCount" type="integer" default="0" visibility="private" line="704"/>
+  <member name="errorList" type="array" visibility="private" line="705"/>
+  <member name="showErrors" type="{unknown}" default="true" visibility="private" line="706"/>
+  <method name="W3cValidateApi" start="709" end="711" abstract="false" final="false" static="false" visibility="private"/>
+  <method name="makePostVars" start="713" end="721" abstract="false" final="false" static="false" visibility="private"/>
+  <method name="setUri" start="723" end="725" abstract="false" final="false" static="false" visibility="private">
+    <parameter name="uri" byreference="false" type="{unknown}"/>
+  </method>
+  <method name="setFragment" start="727" end="730" abstract="false" final="false" static="false" visibility="private">
+    <parameter name="fragment" byreference="false" type="{unknown}"/>
+  </method>
+  <method name="makeValidationCall" start="732" end="734" abstract="false" final="false" static="false" visibility="private"/>
+  <method name="validate" start="736" end="800" abstract="false" final="false" static="false" visibility="private">
+    <inline>
+      <comment value="Initialize the curl session" line="761"/>
+      <comment value="Execute the session and capture the response" line="764"/>
+      <comment value="$err               = curl_errno( $ch );" line="769"/>
+      <comment value="$errmsg            = curl_error( $ch );" line="770"/>
+      <comment value="$header            = curl_getinfo( $ch );" line="771"/>
+      <comment value="valid ??" line="777"/>
+      <comment value="error count ??" line="781"/>
+      <comment value="errors" line="784"/>
+      <comment value="line" line="787"/>
+      <comment value="col" line="790"/>
+      <comment value="message" line="793"/>
+    </inline>
+  </method>
+  <method name="get_headers_from_curl_response" start="802" end="805" abstract="false" final="false" static="false" visibility="public">
+    <parameter name="response" byreference="false" type="{unknown}"/>
+  </method>
+  <method name="W3Validate" start="808" end="838" abstract="false" final="false" static="false" visibility="public">
+    <parameter name="uri" byreference="false" type="string" default="&quot;&quot;"/>
+    <parameter name="fragment" byreference="false" type="string" default="&quot;&quot;"/>
+  </method>
+</class>

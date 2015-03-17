@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class xmlns="http://xml.phpdox.net/src" full="ErrorNotifierController" namespace="" name="ErrorNotifierController" abstract="false" final="false" start="8" end="71">
+  <file path="/var/www/_modules/templateoverview/trunk/docs/en/phpdox/../../../code/control" file="ErrorNotifierController.php" realpath="/var/www/_modules/templateoverview/trunk/code/control/ErrorNotifierController.php" size="2056" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="b780881d9db78746b61cf1e083d1e9a8cf8430f3" relative="code/control/ErrorNotifierController.php"/>
+  <docblock>
+    <description compact="author nicolaas[at]sunnysideup.co.nz"/>
+  </docblock>
+  <extends full="Controller" namespace="" name="Controller"/>
+  <member name="allowed_actions" type="array" visibility="private" line="10"/>
+  <member name="email_to_send_error_to" type="string" default="''" visibility="private" line="14"/>
+  <member name="showThankYouNote" type="{unknown}" default="false" visibility="protected" line="16"/>
+  <method name="Form" start="18" end="55" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="senderror" start="57" end="61" abstract="false" final="false" static="false" visibility="public">
+    <parameter name="data" byreference="false" type="{unknown}"/>
+    <parameter name="form" byreference="false" type="{unknown}"/>
+  </method>
+  <method name="ShowThankYouNote" start="63" end="65" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="Link" start="67" end="69" abstract="false" final="false" static="false" visibility="public">
+    <parameter name="action" byreference="false" type="string" default="&quot;&quot;"/>
+  </method>
+</class>

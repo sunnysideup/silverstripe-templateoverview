@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class xmlns="http://xml.phpdox.net/src" full="TemplateOverviewDescription" namespace="" name="TemplateOverviewDescription" abstract="false" final="false" start="10" end="262">
+  <file path="/var/www/_modules/templateoverview/trunk/docs/en/phpdox/../../../code/dataobjects" file="TemplateOverviewDescription.php" realpath="/var/www/_modules/templateoverview/trunk/code/dataobjects/TemplateOverviewDescription.php" size="8874" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="a1e19cccc260b1f38b985ea639d1c4290624dcd1" relative="code/dataobjects/TemplateOverviewDescription.php"/>
+  <docblock>
+    <description compact="author nicolaas[at]sunnysideup.co.nz description: more details per template. Records are auto-added link: http://localhost/www.mysite.co.nz/admin/templates/TemplateOverviewDescription/13/edit"/>
+  </docblock>
+  <extends full="DataObject" namespace="" name="DataObject"/>
+  <member name="db" type="array" visibility="private" line="12"/>
+  <member name="has_one" type="array" visibility="private" line="19"/>
+  <member name="searchable_fields" type="array" visibility="private" line="30"/>
+  <member name="summary_fields" type="array" visibility="private" line="34"/>
+  <member name="field_labels" type="array" visibility="private" line="39"/>
+  <member name="singular_name" type="string" default="'Template Description'" visibility="private" line="44"/>
+  <member name="plural_name" type="string" default="'Template Descriptions'" visibility="private" line="46"/>
+  <member name="default_sort" type="string" default="'ClassNameLink ASC'" visibility="private" line="48"/>
+  <member name="indexes" type="array" visibility="private" line="50"/>
+  <member name="casting" type="array" visibility="private" line="54"/>
+  <member name="image_folder_name" type="string" default="&quot;templateoverview/designz&quot;" visibility="private" line="62">
+    <docblock>
+      <description compact="Location where we keep the template overview designs."/>
+      <var type="object">
+        <type full="String" namespace="" name="String"/>
+      </var>
+    </docblock>
+  </member>
+  <member name="image_source_folder" type="string" default="&quot;&quot;" visibility="private" line="68">
+    <docblock>
+      <description compact="Location where we keep the template overview designs."/>
+      <var type="object">
+        <type full="String" namespace="" name="String"/>
+      </var>
+    </docblock>
+  </member>
+  <method name="canCreate" start="70" end="72" abstract="false" final="false" static="false" visibility="public">
+    <parameter name="member" byreference="false" type="{unknown}" default="null"/>
+  </method>
+  <method name="canDelete" start="74" end="76" abstract="false" final="false" static="false" visibility="public">
+    <parameter name="member" byreference="false" type="{unknown}" default="null"/>
+  </method>
+  <method name="ClassNameLinkFancy" start="78" end="81" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="Title" start="83" end="83" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="getTitle" start="84" end="86" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="ModelAdminLink" start="88" end="90" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="getCMSFields" start="92" end="115" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="requireDefaultRecords" start="117" end="213" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="createManifestExcludeFile" start="215" end="222" abstract="false" final="false" static="false" visibility="private">
+    <parameter name="dir" byreference="false" type="{unknown}"/>
+  </method>
+  <method name="createHTACCESSDenyAll" start="224" end="234" abstract="false" final="false" static="false" visibility="private">
+    <parameter name="dir" byreference="false" type="{unknown}"/>
+  </method>
+  <method name="validate" start="236" end="247" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="onBeforeWrite" start="249" end="256" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="forTemplate" start="258" end="260" abstract="false" final="false" static="false" visibility="public"/>
+</class>

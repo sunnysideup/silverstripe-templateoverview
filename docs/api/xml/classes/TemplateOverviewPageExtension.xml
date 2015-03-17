@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class xmlns="http://xml.phpdox.net/src" full="TemplateOverviewPageExtension" namespace="" name="TemplateOverviewPageExtension" abstract="false" final="false" start="10" end="74">
+  <file path="/var/www/_modules/templateoverview/trunk/docs/en/phpdox/../../../code/extensions" file="TemplateOverviewPageExtension.php" realpath="/var/www/_modules/templateoverview/trunk/code/extensions/TemplateOverviewPageExtension.php" size="1661" time="2015-03-14T10:23:15+13:00" unixtime="1426281795" sha1="880be99375a20aecd070c3679752241da4a6a1f6" relative="code/extensions/TemplateOverviewPageExtension.php"/>
+  <docblock>
+    <description compact="author nicolaas[at]sunnysideup.co.nz description: adds functionality to controller for dev purposes only"/>
+  </docblock>
+  <extends full="Extension" namespace="" name="Extension"/>
+  <member name="templateList" type="{unknown}" default="null" visibility="protected" line="12"/>
+  <method name="TemplateOverviewPage" start="14" end="16" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="IncludeTemplateOverviewDevelopmentFooter" start="18" end="25" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="NextTemplateOverviewPage" start="27" end="40" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="PrevTemplateOverviewPage" start="42" end="56" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="TemplateList" start="58" end="66" abstract="false" final="false" static="false" visibility="public"/>
+  <method name="TemplateDescriptionForThisClass" start="68" end="72" abstract="false" final="false" static="false" visibility="public"/>
+</class>
