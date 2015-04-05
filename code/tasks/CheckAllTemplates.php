@@ -507,6 +507,7 @@ class CheckAllTemplates extends BuildTask {
 
 	protected function  listOfAllControllerMethods(){
 		$array = array();
+		$finalArray = array();
 		$classes = ClassInfo::subclassesFor("Controller");
 		//foreach($manifest as $class => $compareFilePath) {
 			//if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;
@@ -515,50 +516,53 @@ class CheckAllTemplates extends BuildTask {
 		$baseFolder = Director::baseFolder();
 		$cmsBaseFolder = Director::baseFolder()."/cms/";
 		$frameworkBaseFolder = Director::baseFolder()."/framework/";
-		foreach($classes as $className) {
-			$lowerClassName = strtolower($className);
-			$location = $manifest[$lowerClassName];
-			if(strpos($location, $cmsBaseFolder) === 0 || strpos($location, $frameworkBaseFolder) === 0) {
-				continue;
-			}
-			if($className != "Controller") {
-				$controllerReflectionClass = new ReflectionClass($className);
-				if(!$controllerReflectionClass->isAbstract()) {
-					if(
-						$className == "Mailto" ||
-						$className instanceOF SapphireTest ||
-						$className instanceOF BuildTask ||
-						$className instanceOF TaskRunner
-					) {
-						continue;
+		if(Director::isDev()) {
+			foreach($classes as $className) {
+				$lowerClassName = strtolower($className);
+				$location = $manifest[$lowerClassName];
+				if(strpos($location, $cmsBaseFolder) === 0 || strpos($location, $frameworkBaseFolder) === 0) {
+					continue;
+				}
+				if($className != "Controller") {
+					$controllerReflectionClass = new ReflectionClass($className);
+					if(!$controllerReflectionClass->isAbstract()) {
+						if(
+							$className == "HideMailto" ||
+							$className == "Mailto" ||
+							$className instanceOF SapphireTest ||
+							$className instanceOF BuildTask ||
+							$className instanceOF TaskRunner
+						) {
+							continue;
+						}
+						$methods = $this->getPublicMethodsNotInherited($controllerReflectionClass, $className);
+						foreach($methods as $methodArray){
+							$array[$className."_".$methodArray["Method"]] = $methodArray;
+						}
 					}
-					$methods = $this->getPublicMethodsNotInherited($controllerReflectionClass, $className);
-					foreach($methods as $methodArray){
-						$array[$className."_".$methodArray["Method"]] = $methodArray;
+				}
+			}
+			$finalArray = array();
+			$doubleLinks = array();
+			foreach($array as $index  => $classNameMethodArray) {
+				$classObject = singleton($classNameMethodArray["ClassName"]);
+				if($classNameMethodArray["Method"] == "templateoverviewtests" && 1 == 2) {
+					$this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);
+				}
+				else {
+					$link = $classObject->Link($classNameMethodArray["Method"]);
+					if($link == $classNameMethodArray["ClassName"]."/") {
+						$link = $classNameMethodArray["ClassName"]."/".$classNameMethodArray["Method"]."/";
 					}
+					$classNameMethodArray["Link"] = $link;
+					if($classNameMethodArray["Link"][0] != "/") {
+						$classNameMethodArray["Link"] = Director::baseURL().$classNameMethodArray["Link"];
+					}
+					if(!isset($doubleLinks[$link])) {
+						$finalArray[] = $classNameMethodArray;
+					}
+					$doubleLinks[$link] = true;
 				}
-			}
-		}
-		$finalArray = array();
-		$doubleLinks = array();
-		foreach($array as $index  => $classNameMethodArray) {
-			$classObject = singleton($classNameMethodArray["ClassName"]);
-			if($classNameMethodArray["Method"] == "templateoverviewtests" && 1 == 2) {
-				$this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);
-			}
-			else {
-				$link = $classObject->Link($classNameMethodArray["Method"]);
-				if($link == $classNameMethodArray["ClassName"]."/") {
-					$link = $classNameMethodArray["ClassName"]."/".$classNameMethodArray["Method"]."/";
-				}
-				$classNameMethodArray["Link"] = $link;
-				if($classNameMethodArray["Link"][0] != "/") {
-					$classNameMethodArray["Link"] = Director::baseURL().$classNameMethodArray["Link"];
-				}
-				if(!isset($doubleLinks[$link])) {
-					$finalArray[] = $classNameMethodArray;
-				}
-				$doubleLinks[$link] = true;
 			}
 		}
 		return $finalArray;
