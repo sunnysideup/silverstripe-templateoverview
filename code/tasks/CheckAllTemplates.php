@@ -131,6 +131,8 @@ class CheckAllTemplates extends BuildTask {
 			$sections = array("allNonAdmins", "allAdmins");
 			$count = 0;
 			echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
+			<p><strong>Tests Done:</strong> <span id=\"NumberOfTests\">0</span></p>
+			<p><strong>Average Response Time:</strong> <span id=\"AverageResponseTime\">0</span></p>
 			<table border='1'>
 			<tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th><th class'error'>W3 Check</th></tr>";
 			foreach($sections as $isAdmin => $sectionVariable) {
@@ -161,6 +163,11 @@ class CheckAllTemplates extends BuildTask {
 				);
 
 				var checker = {
+
+					totalResponseTime: 0,
+
+					numberOfTests: 0,
+
 					list: ".Convert::raw2json($linkArray).",
 
 					baseURL: '/dev/tasks/CheckAllTemplates/',
@@ -217,11 +224,19 @@ class CheckAllTemplates extends BuildTask {
 								data: {'test': testLink, 'admin': isAdmin},
 								success: function(data, textStatus){
 									checker.item = null;
-									jQuery('#'+ID).html(data).css('background-image', 'none');
-									jQuery('#'+ID).find('h1').remove();
+									jQuery('#'+ID)
+										.html(data)
+										.css('background-image', 'none')
+										.find('h1').remove();
 									checker.item = checker.list.shift();
 									jQuery('#'+ID).find('td').css('border', '1px solid green');
-
+									var responseTime = parseFloat(jQuery('#'+ID).find(\"td.tt\").text());
+									if(responseTime && typeof responseTime !== 'undefined') {
+										checker.numberOfTests++;
+										checker.totalResponseTime = checker.totalResponseTime + responseTime;
+										jQuery(\"#NumberOfTests\").text(checker.numberOfTests);
+										jQuery(\"#AverageResponseTime\").text(Math.round(100 * (checker.totalResponseTime / checker.numberOfTests)) / 100);
+									}
 									window.setTimeout(
 										function() {checker.checkURL();},
 										1000
@@ -414,7 +429,7 @@ class CheckAllTemplates extends BuildTask {
 			}
 			$html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
 		}
-		$html .= "<td style='text-align: right'>$httpCode</td><td style='text-align: right'>$timeTaken</td><td>$error</td>";
+		$html .= "<td style='text-align: right'>$httpCode</td><td style='text-align: right' class=\"tt\">$timeTaken</td><td>$error</td>";
 
 		if($validate && $httpCode == 200 ) {
 			$w3Obj = new CheckAllTemplates_W3cValidateApi();
