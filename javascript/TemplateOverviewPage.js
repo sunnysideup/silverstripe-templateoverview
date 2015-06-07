@@ -18,7 +18,7 @@ jQuery(document).ready(
 					return false;
 				}
 			);
-			jQuery("#classList .typo-seeless").click(
+			jQuery("#ClassList .typo-seeless").click(
 				function() {
 					var id = jQuery(this).attr("rel");
 					jQuery("#" + id).hide();
