@@ -254,7 +254,6 @@ class TemplateOverviewPage extends Page {
 
 class TemplateOverviewPage_Controller extends Page_Controller {
 
-
 	private static $allowed_actions = array(
 		"showmore" => "ADMIN",
 		"quicklist" => "ADMIN",
@@ -264,6 +263,9 @@ class TemplateOverviewPage_Controller extends Page_Controller {
 
 	function init() {
 		parent::init();
+		if(!Director::is_cli() && !Director::isDev() && !Permission::check('ADMIN')) {
+			return Security::permissionFailure();
+		}
 		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
 		Requirements::javascript('templateoverview/javascript/TemplateOverviewPage.js');
 		Requirements::css("templateoverview/css/TemplateOverviewPage.css");
