@@ -5,365 +5,381 @@
  */
 
 
-class TemplateOverviewPage extends Page {
+class TemplateOverviewPage extends Page
+{
 
-	//parents and children in sitetree
-	private static $allowed_children = "none";
+    //parents and children in sitetree
+    private static $allowed_children = "none";
 
-	private static $can_be_root = true;
+    private static $can_be_root = true;
 
-	private static $icon = "templateoverview/images/treeicons/TemplateOverviewPage";
+    private static $icon = "templateoverview/images/treeicons/TemplateOverviewPage";
 
-	private static $description = "This page allows you to view all the html that can be used in the typography section";
+    private static $description = "This page allows you to view all the html that can be used in the typography section";
 
-		/**
-	 * Standard SS variable.
-	 */
-	private static $singular_name = "Template Overview Page";
-		function i18n_singular_name() { return _t("TemplateOverviewPage.SINGULARNAME", "Template Overview Page");}
+        /**
+     * Standard SS variable.
+     */
+    private static $singular_name = "Template Overview Page";
+    public function i18n_singular_name()
+    {
+        return _t("TemplateOverviewPage.SINGULARNAME", "Template Overview Page");
+    }
 
-	/**
-	 * Standard SS variable.
-	 */
-	private static $plural_name = "Template Overview Pages";
-		function i18n_plural_name() { return _t("TemplateOverviewPage.PLURALNAME", "Template Overview Pages");}
+    /**
+     * Standard SS variable.
+     */
+    private static $plural_name = "Template Overview Pages";
+    public function i18n_plural_name()
+    {
+        return _t("TemplateOverviewPage.PLURALNAME", "Template Overview Pages");
+    }
 
-	private static $auto_include = false;
+    private static $auto_include = false;
 
-	private static $parent_url_segment = "admin-only";
+    private static $parent_url_segment = "admin-only";
 
-	private static $classes_to_exclude = array("SiteTree", "TemplateOverviewPage", "RedirectorPage", "VirtualPage");
+    private static $classes_to_exclude = array("SiteTree", "TemplateOverviewPage", "RedirectorPage", "VirtualPage");
 
-	private static $defaults = array(
-		"URLSegment" => "templates",
-		"ShowInMenus" => 0,
-		"ShowInSearch" => 0,
-		"Title" => "Template overview (internal use only)",
-		"MenuTitle" => "Template overview",
-	);
+    private static $defaults = array(
+        "URLSegment" => "templates",
+        "ShowInMenus" => 0,
+        "ShowInSearch" => 0,
+        "Title" => "Template overview (internal use only)",
+        "MenuTitle" => "Template overview",
+    );
 
-	private static $has_many = array(
-		"TemplateOverviewDescriptions" => "TemplateOverviewDescription"
-	);
+    private static $has_many = array(
+        "TemplateOverviewDescriptions" => "TemplateOverviewDescription"
+    );
 
-	public function canCreate($member = null) {
-		return SiteTree::get()->filter(array("ClassName" => 'TemplateOverviewPage'))->count() ? false : true;
-	}
-
-
-	protected $counter = 0;
-
-	protected $showAll = false;
-
-	private static $list_of_all_classes = null;
-
-	public function getCMSFields() {
-		$fields = parent::getCMSFields();
-		$gridFieldConfig = GridFieldConfig_RelationEditor::create();
-		$gridfield = new GridField("TemplateOverviewDescriptions", "TemplateOverviewDescription", $this->TemplateOverviewDescriptions(), $gridFieldConfig);
-		$fields->addFieldToTab('Root.Descriptions', $gridfield);
-		return $fields;
-	}
-
-	public function requireDefaultRecords() {
-		parent::requireDefaultRecords();
-		if($this->config()->get("auto_include")) {
-			$check = TemplateOverviewPage::get()->First();
-			if(!$check) {
-				$page = new TemplateOverviewPage();
-				$page->ShowInMenus = 0;
-				$page->ShowInSearch = 0;
-				$page->Title = "Templates overview";
-				$page->PageTitle = "Templates overview";
-				$page->Sort = 99998;
-				$page->URLSegment = "templates";
-				$parent = Page::get()->filter(array("URLSegment" => $this->config()->get("parent_url_segment")))->First();
-				if($parent) {
-					$page->ParentID = $parent->ID;
-				}
-				$page->writeToStage('Stage');
-				$page->publish('Stage', 'Live');
-				$page->URLSegment = "templates";
-				$page->writeToStage('Stage');
-				$page->publish('Stage', 'Live');
-				DB::alteration_message("TemplateOverviewPage","created");
-			}
-		}
-	}
+    public function canCreate($member = null)
+    {
+        return SiteTree::get()->filter(array("ClassName" => 'TemplateOverviewPage'))->count() ? false : true;
+    }
 
 
-	public function ListOfAllClasses($checkCurrentClass = true) {
-		if(!self::$list_of_all_classes)  {
-			$ArrayOfAllClasses =  Array();
-			//$classes = ClassInfo::subclassesFor("SiteTree");
-			$classes = SiteTree::page_type_classes();
-			$classesToRemove = array();
+    protected $counter = 0;
 
-			foreach($classes as $className) {
-				if(!in_array($className, $this->config()->get("classes_to_exclude"))) {
-					if($this->showAll) {
-						$objects = $className::get()
-							->filter(array("ClassName" => $className))
-							->sort("RAND() ASC")
-							->limit(25);
-						$count = 0;
-						if($objects->count()) {
-							foreach($objects as $obj) {
-								if(!$count) {
-									if($ancestorToHide = $obj->stat('hide_ancestor')) {
-										$classesToRemove[] = $ancestorToHide;
-									}
-								}
-								$object = $this->createPageObject($obj, $count++);
-								$ArrayOfAllClasses[$object->indexNumber] = clone $object;
-							}
-						}
-					}
-					else {
-						$obj = null;
-						$obj = $className::get()
-							->filter(array("ClassName" => $className))
-							->sort("RAND() ASC")
-							->limit(1)
-							->first();
-						if($obj) {
-							$count = SiteTree::get()->filter(array("ClassName" => $obj->ClassName))->count();
-						}
-						else {
-							$obj = $className::create();
-							$count = 0;
-						}
-						if($ancestorToHide = $obj->stat('hide_ancestor')) {
-							$classesToRemove[] = $ancestorToHide;
-						}
-						$object = $this->createPageObject($obj, $count);
-						$object->TemplateOverviewDescription = $this->TemplateDetails($className);
-						$ArrayOfAllClasses[$object->indexNumber] = clone $object;
-					}
-				}
-			}
+    protected $showAll = false;
 
-			//remove the hidden ancestors...
-			if($classesToRemove && count($classesToRemove)) {
-				$classesToRemove = array_unique($classesToRemove);
-				// unset from $classes
-				foreach($ArrayOfAllClasses as $tempKey => $tempClass) {
-					if(in_array($tempClass->ClassName, $classesToRemove)) {
-						unset($ArrayOfAllClasses[$tempKey]);
-					}
-				}
-			}
-			ksort($ArrayOfAllClasses);
-			self::$list_of_all_classes =  new ArrayList();
-			$currentClassname = '';
-			if($checkCurrentClass) {
-				if($c = Controller::curr()) {
-					if($d = $c->dataRecord) {
-						$currentClassname = $d->ClassName;
-					}
-				}
-			}
-			if(count($ArrayOfAllClasses)) {
-				foreach($ArrayOfAllClasses as $item) {
-					if($item->ClassName == $currentClassname) {
-						$item->LinkingMode = "current";
-					}
-					else {
-						$item->LinkingMode = "link";
-					}
-					self::$list_of_all_classes->push($item);
-				}
-			}
-		}
-		return self::$list_of_all_classes;
-	}
+    private static $list_of_all_classes = null;
 
-	function ShowAll () {
-		$this->showAll = true;
-		return array();
-	}
+    public function getCMSFields()
+    {
+        $fields = parent::getCMSFields();
+        $gridFieldConfig = GridFieldConfig_RelationEditor::create();
+        $gridfield = new GridField("TemplateOverviewDescriptions", "TemplateOverviewDescription", $this->TemplateOverviewDescriptions(), $gridFieldConfig);
+        $fields->addFieldToTab('Root.Descriptions', $gridfield);
+        return $fields;
+    }
+
+    public function requireDefaultRecords()
+    {
+        parent::requireDefaultRecords();
+        if ($this->config()->get("auto_include")) {
+            $check = TemplateOverviewPage::get()->First();
+            if (!$check) {
+                $page = new TemplateOverviewPage();
+                $page->ShowInMenus = 0;
+                $page->ShowInSearch = 0;
+                $page->Title = "Templates overview";
+                $page->PageTitle = "Templates overview";
+                $page->Sort = 99998;
+                $page->URLSegment = "templates";
+                $parent = Page::get()->filter(array("URLSegment" => $this->config()->get("parent_url_segment")))->First();
+                if ($parent) {
+                    $page->ParentID = $parent->ID;
+                }
+                $page->writeToStage('Stage');
+                $page->publish('Stage', 'Live');
+                $page->URLSegment = "templates";
+                $page->writeToStage('Stage');
+                $page->publish('Stage', 'Live');
+                DB::alteration_message("TemplateOverviewPage", "created");
+            }
+        }
+    }
 
 
-	protected function TemplateDetails($className) {
-		$obj = TemplateOverviewDescription::get()
-			->filter(array("ClassNameLink" => $className))
-			->First();
-		if(!$obj) {
-			$obj = new TemplateOverviewDescription();
-			$obj->ClassNameLink = $className;
-			$obj->ParentID = $this->ID;
-			$obj->write();
-		}
-		DB::query("UPDATE TemplateOverviewDescription SET ParentID = ".$this->ID.";");
-		return $obj;
-	}
+    public function ListOfAllClasses($checkCurrentClass = true)
+    {
+        if (!self::$list_of_all_classes) {
+            $ArrayOfAllClasses =  array();
+            //$classes = ClassInfo::subclassesFor("SiteTree");
+            $classes = SiteTree::page_type_classes();
+            $classesToRemove = array();
 
-	public function TotalCount () {
-		return count(ClassInfo::subclassesFor("SiteTree"))-1;
-	}
+            foreach ($classes as $className) {
+                if (!in_array($className, $this->config()->get("classes_to_exclude"))) {
+                    if ($this->showAll) {
+                        $objects = $className::get()
+                            ->filter(array("ClassName" => $className))
+                            ->sort("RAND() ASC")
+                            ->limit(25);
+                        $count = 0;
+                        if ($objects->count()) {
+                            foreach ($objects as $obj) {
+                                if (!$count) {
+                                    if ($ancestorToHide = $obj->stat('hide_ancestor')) {
+                                        $classesToRemove[] = $ancestorToHide;
+                                    }
+                                }
+                                $object = $this->createPageObject($obj, $count++);
+                                $ArrayOfAllClasses[$object->indexNumber] = clone $object;
+                            }
+                        }
+                    } else {
+                        $obj = null;
+                        $obj = $className::get()
+                            ->filter(array("ClassName" => $className))
+                            ->sort("RAND() ASC")
+                            ->limit(1)
+                            ->first();
+                        if ($obj) {
+                            $count = SiteTree::get()->filter(array("ClassName" => $obj->ClassName))->count();
+                        } else {
+                            $obj = $className::create();
+                            $count = 0;
+                        }
+                        if ($ancestorToHide = $obj->stat('hide_ancestor')) {
+                            $classesToRemove[] = $ancestorToHide;
+                        }
+                        $object = $this->createPageObject($obj, $count);
+                        $object->TemplateOverviewDescription = $this->TemplateDetails($className);
+                        $ArrayOfAllClasses[$object->indexNumber] = clone $object;
+                    }
+                }
+            }
 
-	/**
-	 * @param SiteTree $obj
-	 * @param Int $count
-	 * @param String $ClassName
-	 * @return ArrayData
-	 */
-	private function createPageObject($obj, $count) {
-		$this->counter++;
-		$listArray = array();
-		$indexNumber = (10000 * $count) + $this->counter;
-		$listArray["indexNumber"] = $indexNumber;
-		$listArray["ClassName"] = $obj->ClassName;
-		$listArray["Count"] = $count;
-		$listArray["ID"] = $obj->ID;
-		$listArray["URLSegment"] = $obj->URLSegment;
-		$listArray["TypoURLSegment"] = $this->Link();
-		$listArray["Title"] = $obj->MenuTitle;
-		$listArray["PreviewLink"] = $obj->PreviewLink();
-		$listArray["CMSEditLink"] = $obj->CMSEditLink();
-		$staticIcon = $obj->stat("icon", true);
-		if(is_array($staticIcon)) {
-			$iconArray = $obj->stat("icon");
-			$icon = $iconArray[0];
-		}
-		else {
-			$icon = $obj->stat("icon");
-		}
-		$iconFile = Director::baseFolder().'/'.$icon;
-		if(!file_exists($iconFile)) {
-			$icon = $icon."-file.gif";
-		}
-		$listArray["Icon"] = $icon;
-		return new ArrayData($listArray);
-	}
+            //remove the hidden ancestors...
+            if ($classesToRemove && count($classesToRemove)) {
+                $classesToRemove = array_unique($classesToRemove);
+                // unset from $classes
+                foreach ($ArrayOfAllClasses as $tempKey => $tempClass) {
+                    if (in_array($tempClass->ClassName, $classesToRemove)) {
+                        unset($ArrayOfAllClasses[$tempKey]);
+                    }
+                }
+            }
+            ksort($ArrayOfAllClasses);
+            self::$list_of_all_classes =  new ArrayList();
+            $currentClassname = '';
+            if ($checkCurrentClass) {
+                if ($c = Controller::curr()) {
+                    if ($d = $c->dataRecord) {
+                        $currentClassname = $d->ClassName;
+                    }
+                }
+            }
+            if (count($ArrayOfAllClasses)) {
+                foreach ($ArrayOfAllClasses as $item) {
+                    if ($item->ClassName == $currentClassname) {
+                        $item->LinkingMode = "current";
+                    } else {
+                        $item->LinkingMode = "link";
+                    }
+                    self::$list_of_all_classes->push($item);
+                }
+            }
+        }
+        return self::$list_of_all_classes;
+    }
 
-	//not used!
-	function NoSubClasses($obj) {
-		$array = ClassInfo::subclassesFor($obj->ClassName);
-		if(count($array)) {
-			foreach($array as $class) {
-				if($class::get()->byID($obj->ID)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
+    public function ShowAll()
+    {
+        $this->showAll = true;
+        return array();
+    }
 
+
+    protected function TemplateDetails($className)
+    {
+        $obj = TemplateOverviewDescription::get()
+            ->filter(array("ClassNameLink" => $className))
+            ->First();
+        if (!$obj) {
+            $obj = new TemplateOverviewDescription();
+            $obj->ClassNameLink = $className;
+            $obj->ParentID = $this->ID;
+            $obj->write();
+        }
+        DB::query("UPDATE TemplateOverviewDescription SET ParentID = ".$this->ID.";");
+        return $obj;
+    }
+
+    public function TotalCount()
+    {
+        return count(ClassInfo::subclassesFor("SiteTree"))-1;
+    }
+
+    /**
+     * @param SiteTree $obj
+     * @param Int $count
+     * @param String $ClassName
+     * @return ArrayData
+     */
+    private function createPageObject($obj, $count)
+    {
+        $this->counter++;
+        $listArray = array();
+        $indexNumber = (10000 * $count) + $this->counter;
+        $listArray["indexNumber"] = $indexNumber;
+        $listArray["ClassName"] = $obj->ClassName;
+        $listArray["Count"] = $count;
+        $listArray["ID"] = $obj->ID;
+        $listArray["URLSegment"] = $obj->URLSegment;
+        $listArray["TypoURLSegment"] = $this->Link();
+        $listArray["Title"] = $obj->MenuTitle;
+        $listArray["PreviewLink"] = $obj->PreviewLink();
+        $listArray["CMSEditLink"] = $obj->CMSEditLink();
+        $staticIcon = $obj->stat("icon", true);
+        if (is_array($staticIcon)) {
+            $iconArray = $obj->stat("icon");
+            $icon = $iconArray[0];
+        } else {
+            $icon = $obj->stat("icon");
+        }
+        $iconFile = Director::baseFolder().'/'.$icon;
+        if (!file_exists($iconFile)) {
+            $icon = $icon."-file.gif";
+        }
+        $listArray["Icon"] = $icon;
+        return new ArrayData($listArray);
+    }
+
+    //not used!
+    public function NoSubClasses($obj)
+    {
+        $array = ClassInfo::subclassesFor($obj->ClassName);
+        if (count($array)) {
+            foreach ($array as $class) {
+                if ($class::get()->byID($obj->ID)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }
 
-class TemplateOverviewPage_Controller extends Page_Controller {
+class TemplateOverviewPage_Controller extends Page_Controller
+{
 
-	private static $allowed_actions = array(
-		"showmore" => "ADMIN",
-		"quicklist" => "ADMIN",
-		"listofobjectsused" => "ADMIN",
-		"clearalltemplatedescriptions" => "ADMIN"
-	);
+    private static $allowed_actions = array(
+        "showmore" => "ADMIN",
+        "quicklist" => "ADMIN",
+        "listofobjectsused" => "ADMIN",
+        "clearalltemplatedescriptions" => "ADMIN"
+    );
 
-	function init() {
-		parent::init();
-		if(!Director::is_cli() && !Director::isDev() && !Permission::check('ADMIN')) {
-			return Security::permissionFailure();
-		}
-		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
-		Requirements::javascript('templateoverview/javascript/TemplateOverviewPage.js');
-		Requirements::css("templateoverview/css/TemplateOverviewPage.css");
-		if(class_exists("PrettyPhoto")) {
-			PrettyPhoto::include_code();
-		}
-		else {
-			user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
-		}
-	}
+    public function init()
+    {
+        parent::init();
+        if (!Director::is_cli() && !Director::isDev() && !Permission::check('ADMIN')) {
+            return Security::permissionFailure();
+        }
+        Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
+        Requirements::javascript('templateoverview/javascript/TemplateOverviewPage.js');
+        Requirements::css("templateoverview/css/TemplateOverviewPage.css");
+        if (class_exists("PrettyPhoto")) {
+            PrettyPhoto::include_code();
+        } else {
+            user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
+        }
+    }
 
-	function showmore($request) {
-		$id = $request->param("ID");
-		$obj = SiteTree::get()->byID(intval($id));
-		if($obj) {
-			$className = $obj->ClassName;
-			$data = $className::get()
-				->filter(array("ClassName" => $obj->ClassName))
-				->limit(200);
-			$array = array(
-				"Results" => $data,
-				"MoreDetail" => TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $obj->ClassName))->First()
-			);
-		}
-		else {
-			$array = array();
-		}
-		return $this->customise($array)->renderWith("TemplateOverviewPageShowMoreList");
-	}
+    public function showmore($request)
+    {
+        $id = $request->param("ID");
+        $obj = SiteTree::get()->byID(intval($id));
+        if ($obj) {
+            $className = $obj->ClassName;
+            $data = $className::get()
+                ->filter(array("ClassName" => $obj->ClassName))
+                ->limit(200);
+            $array = array(
+                "Results" => $data,
+                "MoreDetail" => TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $obj->ClassName))->First()
+            );
+        } else {
+            $array = array();
+        }
+        return $this->customise($array)->renderWith("TemplateOverviewPageShowMoreList");
+    }
 
 
-	function ConfigurationDetails() {
-		$m = Member::currentUser();
-		if($m) {
-			if($m->inGroup("ADMIN")) {
-				$baseFolder = Director::baseFolder();
-				$myFile = $baseFolder."/".$this->project()."/_config.php";
-				$fh = fopen($myFile, 'r');
-				$string = '';
-				while(!feof($fh)) {
-					$string .= fgets($fh, 1024);
-				}
-				fclose($fh);
-				return $string;
-			}
-		}
-	}
+    public function ConfigurationDetails()
+    {
+        $m = Member::currentUser();
+        if ($m) {
+            if ($m->inGroup("ADMIN")) {
+                $baseFolder = Director::baseFolder();
+                $myFile = $baseFolder."/".$this->project()."/_config.php";
+                $fh = fopen($myFile, 'r');
+                $string = '';
+                while (!feof($fh)) {
+                    $string .= fgets($fh, 1024);
+                }
+                fclose($fh);
+                return $string;
+            }
+        }
+    }
 
-	function clearalltemplatedescriptions() {
-		if($m = Member::currentUser()) {
-			if($m->inGroup("ADMIN")) {
-				DB::query("DELETE FROM TemplateOverviewDescription");
-				die("all descriptions have been deleted");
-			}
-		}
-	}
+    public function clearalltemplatedescriptions()
+    {
+        if ($m = Member::currentUser()) {
+            if ($m->inGroup("ADMIN")) {
+                DB::query("DELETE FROM TemplateOverviewDescription");
+                die("all descriptions have been deleted");
+            }
+        }
+    }
 
-	function TestTaskLink(){
-		return "/dev/tasks/CheckAllTemplates/";
-	}
+    public function TestTaskLink()
+    {
+        return "/dev/tasks/CheckAllTemplates/";
+    }
 
-	function QuickListLink(){
-		return $this->Link("quicklist");
-	}
+    public function QuickListLink()
+    {
+        return $this->Link("quicklist");
+    }
 
-	function ImagesListLink(){
-		return $this->Link("listofobjectsused/Image");
-	}
+    public function ImagesListLink()
+    {
+        return $this->Link("listofobjectsused/Image");
+    }
 
-	function quicklist() {
-		$list = $this->ListOfAllClasses();
-		foreach($list as $item) {
-			DB::alteration_message($item->ClassName);
-		}
-	}
+    public function quicklist()
+    {
+        $list = $this->ListOfAllClasses();
+        foreach ($list as $item) {
+            DB::alteration_message($item->ClassName);
+        }
+    }
 
-	function listofobjectsused($request) {
-		$classWeAreLookingFor = $request->param("ID");
-		$classWeAreLookingFor = singleton($classWeAreLookingFor);
-		if($classWeAreLookingFor instanceof DataObject) {
-			$list = $this->ListOfAllClasses();
-			foreach($list as $item) {
-				$config = Config::inst();
-				$listOfImages = $config->get($item->ClassName, "has_one")
-				 + $config->get($item->ClassName, "has_many")
-				 + $config->get($item->ClassName, "many_many");
-				foreach ($listOfImages as $fieldName => $potentialImage) {
-					$innerSingleton = singleton($potentialImage);
-					if($innerSingleton instanceof $classWeAreLookingFor) {
-						DB::alteration_message($item->ClassName.".". $fieldName);
-					}
-				}
-			}
-		}
-		else {
-			user_error("Please specify the ID for the model you are looking for - e.g. /listofobjectsused/Image/", E_USER_ERROR);
-		}
-	}
-
+    public function listofobjectsused($request)
+    {
+        $classWeAreLookingFor = $request->param("ID");
+        $classWeAreLookingFor = singleton($classWeAreLookingFor);
+        if ($classWeAreLookingFor instanceof DataObject) {
+            $list = $this->ListOfAllClasses();
+            foreach ($list as $item) {
+                $config = Config::inst();
+                $listOfImages = $config->get($item->ClassName, "has_one")
+                 + $config->get($item->ClassName, "has_many")
+                 + $config->get($item->ClassName, "many_many");
+                foreach ($listOfImages as $fieldName => $potentialImage) {
+                    $innerSingleton = singleton($potentialImage);
+                    if ($innerSingleton instanceof $classWeAreLookingFor) {
+                        DB::alteration_message($item->ClassName.".". $fieldName);
+                    }
+                }
+            }
+        } else {
+            user_error("Please specify the ID for the model you are looking for - e.g. /listofobjectsused/Image/", E_USER_ERROR);
+        }
+    }
 }
-
