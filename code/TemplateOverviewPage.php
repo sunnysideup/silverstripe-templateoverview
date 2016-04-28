@@ -255,9 +255,9 @@ class TemplateOverviewPage extends Page {
 class TemplateOverviewPage_Controller extends Page_Controller {
 
 	private static $allowed_actions = array(
-		"showmore" => "ADMIN",
-		"quicklist" => "ADMIN",
-		"listofobjectsused" => "ADMIN",
+		"showmore" => true,
+		"quicklist" => true,
+		"listofobjectsused" => true,
 		"clearalltemplatedescriptions" => "ADMIN"
 	);
 
