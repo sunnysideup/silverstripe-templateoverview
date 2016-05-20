@@ -496,6 +496,7 @@ class CheckAllTemplates extends BuildTask {
 					//$extraVariablesLink = $modelAdminLinkArray[1];
 					$models[] = $modelAdminLink;
 					$modelsToAdd = $obj->getManagedModels();
+
 					if($modelsToAdd && count($modelsToAdd)) {
 						foreach($modelsToAdd as $key => $model) {
 							if(is_array($model) || !is_subclass_of($model, "DataObject")) {
