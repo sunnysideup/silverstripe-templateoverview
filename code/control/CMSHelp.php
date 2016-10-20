@@ -1,6 +1,6 @@
 <?php
 
-class CMSHelp extends ContentController {
+class CMSHelp extends Page_Controller implements PermissionProvider {
 
 	/**
 	 *@var String name of the directory in which the help files are kept
@@ -21,14 +21,24 @@ class CMSHelp extends ContentController {
 	 */
 	private static $url_segment = "admin/help";
 
+    private static $permission_code = "CMS_HELP_FILES_PERMISSION_CODE";
+
+	/**
+	 *@var String urlsegment for the controller
+	 *
+	 */
+	private static $allowed_actions = array(
+		'download' => 'CMS_HELP_FILES_PERMISSION_CODE'
+	);
+
 	/**
 	 * standard SS Method
 	 *
 	 */
 	function init() {
 		// Only administrators can run this method
-		if(!Permission::check("ADMIN") && !Permission::check("SHOPADMIN")) {
-			Security::permissionFailure($this, _t('Security.PERMFAILURE',' This page is secured and you need administrator rights to access it. Enter your credentials below and we will send you right along.'));
+		if(!Permission::check("CMS_HELP_FILES_PERMISSION_CODE")) {
+			Security::permissionFailure($this, _t('Security.PERMFAILURE',' This page is secured and you need rights to access it. Please contact the site administrator is you believe you should be able to access this page.'));
 		}
 		parent::init();
 		Requirements::themedCSS("typography", "typography");
@@ -41,7 +51,11 @@ class CMSHelp extends ContentController {
 	 *
 	 */
 	function index() {
-		return array();
+		return $this->renderWith('Page');
+	}
+
+	function getContent() {
+		return $this->renderWith('CMSHelp');
 	}
 
 
@@ -50,8 +64,28 @@ class CMSHelp extends ContentController {
 	 *
 	 * @return String -
 	 */
-	function Link($action = "") {
-		return "/".$this->config()->get("url_segment")."/";
+	function Link($action = "")
+	{
+		$str = "/".$this->config()->get("url_segment")."/";
+		if($action) {
+			$str .= $action . '/';
+		}
+		return $str;
+	}
+
+	function download($request) {
+		$fileName = urldecode($request->getVar('file'));
+		$files = self::get_list_of_files($this->Config()->get("help_file_directory_name"));
+		foreach($files as $file) {
+			if($fileName === $file['FileName']) {
+				$fileName = $file['FullLocation'];
+				if(file_exists($fileName)) {
+					return SS_HTTPRequest::send_file(file_get_contents($fileName), $file['FileName']);
+				}
+
+			}
+		}
+		die('ERROR');
 	}
 
 	/**
@@ -96,7 +130,8 @@ class CMSHelp extends ContentController {
 		$directory = "/".$location."/";
 		$baseDirectory = Director::baseFolder().$directory;
 		//get all image files with a .jpg extension.
-		$images = self::get_list_of_files_in_directory($baseDirectory , array("png", "jpg", "gif"));
+		$images = self::get_list_of_files_in_directory($baseDirectory , array("png", "jpg", "gif", 'pdf'));
+		$me = Injector::inst()->get('CMSHelp');
 		//print each file name
 		if(is_array($images) && count($images)) {
 			foreach($images as $key => $image){
@@ -104,7 +139,7 @@ class CMSHelp extends ContentController {
 					if(file_exists($baseDirectory.$image)) {
 						$fileArray[$key]["FileName"] = $image;
 						$fileArray[$key]["FullLocation"] = $baseDirectory.$image;
-						$fileArray[$key]["Link"] = $directory.$image;
+						$fileArray[$key]["Link"] = $me->Link('download').'?file='.urldecode($image);
 						$fileArray[$key]["Title"] = self::add_space_before_capital($image);
 					}
 				}
@@ -162,6 +197,16 @@ class CMSHelp extends ContentController {
 		$string = str_replace(array('-', $extension, '.'),"", $string);
 		return $string;
 	}
+
+	function providePermissions()
+    {
+        $perms[Config::inst()->get("CMSHelp", "permission_code")] = array(
+            'name' => "Download Help Files",
+            'category' => "Help",
+            'sort' => 0
+        );
+        return $perms;
+    }
 
 
 }
