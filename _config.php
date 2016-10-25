@@ -7,5 +7,3 @@
  **/
 
 Config::inst()->update("ErrorPage", 'icon', "templateoverview/images/treeicons/ErrorPage");
-
-
