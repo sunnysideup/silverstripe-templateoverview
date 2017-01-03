@@ -1,78 +1,72 @@
-Template Overview Page
-================================================
+# Silverstripe templateoverview module
+[![Build Status](https://travis-ci.org/sunnysideup/silverstripe-templateoverview.svg?branch=master)](https://travis-ci.org/sunnysideup/silverstripe-templateoverview)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-templateoverview/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-templateoverview/?branch=master)
+[![codecov.io](https://codecov.io/github/sunnysideup/silverstripe-templateoverview/coverage.svg?branch=master)](https://codecov.io/github/sunnysideup/silverstripe-templateoverview?branch=master)
+![helpfulrobot](https://helpfulrobot.io/sunnysideup/templateoverview/badge)
 
-Provides the developer with a bunch of tools to
-review the page types used on a website.
-
-Make sure to check out the
-/dev/tasks/CheckAllTemplates
-task as this will provide you with a very useful
-implementation of the poorman's template checker.
-
-
-Developer
------------------------------------------------
-
-Nicolaas Francken [at] sunnysideup.co.nz
+[![Latest Stable Version](https://poser.pugx.org/sunnysideup/templateoverview/version)](https://packagist.org/packages/sunnysideup/templateoverview)
+[![License](https://poser.pugx.org/sunnysideup/templateoverview/license)](https://packagist.org/packages/sunnysideup/templateoverview)
+[![Monthly Downloads](https://poser.pugx.org/sunnysideup/templateoverview/d/monthly)](https://packagist.org/packages/sunnysideup/templateoverview)
 
 
-Requirements
------------------------------------------------
-
-see composer.json
-HIGHLY RECOMMENDED:
-prettyphoto:
-* http://sunny.svnrepository.com/svn/sunny-side-up-general/prettyPhoto OR
-* https://github.com/sunnysideup/silverstripe-prettyphoto
+## Documentation
 
 
-Documentation
------------------------------------------------
 
-Please contact author for more details.
+ * [Developer Docs](docs/en/INDEX.md)
+ * [User Guide](docs/en/userguide.md)
+ * [API](http://ssmods.com/apis/templateoverview/docs/en/api/)
 
-Any bug reports and/or feature requests will be
-looked at in detail
-
-We are also very happy to provide personalised support
-for this module in exchange for a small donation.
-
-This module allows you to review all your classes
-(templates) used on a website.
-
-It has a page type that lists all templates used on the website.
-
-You can also include a footer on every page with information about the template being used.
-
-When logged-in as admin, the TemplateDevelopment template include allows you to
-visit the front-end of the website and:
-
-1. upload and view designs
-2. link through to edit page in the CMS
-3. review stats (last changed, etc... for the template).
+## Requirements
 
 
-Installation Instructions
------------------------------------------------
 
-1. Find out how to add modules to SS and add module as per usual.
+see [composer.json](composer.json) for details
 
-2. Review configs and add entries to mysite/_config/config.yml (or similar) as necessary.
-	In the /_config/ folder of this module you can usually find
-	some examples of config options (if any).
-
-3. to any page template, add the following function
-	To provide help instructions.
-
-			function getHowToMakeThisTemplateWorkArray() {
-				$a = array();
-				//OR $a = parent::getHowToMakeThisTemplateWorkArray();
-				$a[] = "Select header and three items for section one";
-				$a[] = "Select header and three items for section two";
-				return $a;
-			}
+### Suggested Modules
 
 
-4. [OPTIONAL] add to the bottom of your Page.ss file:
 
-		<% include TemplateOverviewPageDevelopmentFooter %>
+see [composer.json](composer.json) for details
+
+
+## Installation
+
+
+```
+composer require sunnysideup/templateoverview
+```
+
+### Configuration
+
+
+
+In the `_config` folder you will find the `templateoverview.yml.example`
+file that shows options for the configuration of this module.
+
+We recommend that you:
+
+  1. copy these `templateoverview.yml.example` files into your
+`mysite/_config` folder
+  2. remove the .example extension
+  3. delete the lines you not care about, and
+  4. adjust the configurations that you would like to use.
+
+
+## Contributing
+
+
+
+We welcome any contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+
+## Paid assistance
+
+
+
+You can pay us to create an improved / adapted version of this module for your own projects.  Please contact us if you like to find out more: [www.sunnysideup.co.nz](http://www.sunnysideup.co.nz)
+
+## Author
+
+
+
+Sunny Side Up Ltd.
