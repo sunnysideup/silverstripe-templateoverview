@@ -132,143 +132,143 @@ class CheckAllTemplates extends BuildTask
             $sections = array("allNonAdmins", "allAdmins");
             $count = 0;
             echo "<h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
-			<p><strong>Tests Done:</strong> <span id=\"NumberOfTests\">0</span></p>
-			<p><strong>Average Response Time:</strong> <span id=\"AverageResponseTime\">0</span></p>
-			<table border='1'>
-			<tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th><th class'error'>W3 Check</th></tr>";
+            <p><strong>Tests Done:</strong> <span id=\"NumberOfTests\">0</span></p>
+            <p><strong>Average Response Time:</strong> <span id=\"AverageResponseTime\">0</span></p>
+            <table border='1'>
+            <tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th><th class'error'>W3 Check</th></tr>";
             foreach ($sections as $isAdmin => $sectionVariable) {
                 foreach ($this->$sectionVariable as $link) {
                     $count++;
                     $id = "ID".$count;
                     $linkArray[] = array("IsAdmin" => $isAdmin, "Link" => $link, "ID" => $id);
                     echo "
-						<tr id=\"$id\" class=".($isAdmin ? "isAdmin" : "notAdmin").">
-							<td><a href=\"".Director::baseURL()."dev/tasks/CheckAllTemplates/?test=".urlencode($link)."&admin=".$isAdmin."\" style='color: purple' target='_blank'>$link</a></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-					";
+                        <tr id=\"$id\" class=".($isAdmin ? "isAdmin" : "notAdmin").">
+                            <td><a href=\"".Director::baseURL()."dev/tasks/CheckAllTemplates/?test=".urlencode($link)."&admin=".$isAdmin."\" style='color: purple' target='_blank'>$link</a></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    ";
                 }
             }
             echo "
-			</table>
-			<script src='/".THIRDPARTY_DIR . "/jquery/jquery.js' ></script>
-			<script type='text/javascript'>
+            </table>
+            <script src='/".THIRDPARTY_DIR . "/jquery/jquery.js' ></script>
+            <script type='text/javascript'>
 
-				jQuery(document).ready(
-					function(){
-						checker.init();
-					}
-				);
+                jQuery(document).ready(
+                    function(){
+                        checker.init();
+                    }
+                );
 
-				var checker = {
+                var checker = {
 
-					totalResponseTime: 0,
+                    totalResponseTime: 0,
 
-					numberOfTests: 0,
+                    numberOfTests: 0,
 
-					list: ".Convert::raw2json($linkArray).",
+                    list: ".Convert::raw2json($linkArray).",
 
-					baseURL: '/dev/tasks/CheckAllTemplates/',
+                    baseURL: '/dev/tasks/CheckAllTemplates/',
 
-					item: null,
+                    item: null,
 
-					stop: true,
+                    stop: true,
 
-					init: function() {
-						jQuery('a.start').click(
-							function() {
-								checker.stop = false;
-								if(!checker.item) {
-									checker.item = checker.list.shift();
-								}
-								checker.checkURL();
-							}
-						);
-						jQuery('a.stop').click(
-							function() {
-								checker.stop = true;
-							}
-						);
-						this.initShowMoreClick();
-					},
+                    init: function() {
+                        jQuery('a.start').click(
+                            function() {
+                                checker.stop = false;
+                                if(!checker.item) {
+                                    checker.item = checker.list.shift();
+                                }
+                                checker.checkURL();
+                            }
+                        );
+                        jQuery('a.stop').click(
+                            function() {
+                                checker.stop = true;
+                            }
+                        );
+                        this.initShowMoreClick();
+                    },
 
-					initShowMoreClick: function(){
-						jQuery(\"table\").on(
-							\"click\",
-							\"a.showMoreClick\",
-							function(event){
-								event.preventDefault();
-								jQuery(this).parent().find(\"ul\").slideToggle();
-							}
-						)
-					},
+                    initShowMoreClick: function(){
+                        jQuery(\"table\").on(
+                            \"click\",
+                            \"a.showMoreClick\",
+                            function(event){
+                                event.preventDefault();
+                                jQuery(this).parent().find(\"ul\").slideToggle();
+                            }
+                        )
+                    },
 
-					checkURL: function(){
-						if(checker.stop) {
+                    checkURL: function(){
+                        if(checker.stop) {
 
-						}
-						else {
-							var testLink = (checker.item.Link);
-							var isAdmin = checker.item.IsAdmin;
-							var ID = checker.item.ID;
-							jQuery('#'+ID).find('td')
-								.css('border', '1px solid blue');
-							jQuery('#'+ID).css('background-image', 'url(/cms/images/loading.gif)')
-								.css('background-repeat', 'no-repeat')
-								.css('background-position', 'top right');
-							jQuery.ajax({
-								url: checker.baseURL,
-								type: 'get',
-								data: {'test': testLink, 'admin': isAdmin},
-								success: function(data, textStatus){
-									checker.item = null;
-									jQuery('#'+ID)
-										.html(data)
-										.css('background-image', 'none')
-										.find('h1').remove();
-									checker.item = checker.list.shift();
-									jQuery('#'+ID).find('td').css('border', '1px solid green');
-									var responseTime = parseFloat(jQuery('#'+ID).find(\"td.tt\").text());
-									if(responseTime && typeof responseTime !== 'undefined') {
-										checker.numberOfTests++;
-										checker.totalResponseTime = checker.totalResponseTime + responseTime;
-										jQuery(\"#NumberOfTests\").text(checker.numberOfTests);
-										jQuery(\"#AverageResponseTime\").text(Math.round(100 * (checker.totalResponseTime / checker.numberOfTests)) / 100);
-									}
-									window.setTimeout(
-										function() {checker.checkURL();},
-										1000
-									);
-								},
-								error: function(){
-									checker.item = null;
-									jQuery('#'+ID).find('td.error').html('ERROR');
-									jQuery('#'+ID).css('background-image', 'none');
-									checker.item = checker.list.shift();
-									jQuery('#'+ID).find('td').css('border', '1px solid red');
-									window.setTimeout(
-										function() {checker.checkURL();},
-										1000
-									);
-								},
-								dataType: 'html'
-							});
-						}
-					}
-				}
-			</script>";
+                        }
+                        else {
+                            var testLink = (checker.item.Link);
+                            var isAdmin = checker.item.IsAdmin;
+                            var ID = checker.item.ID;
+                            jQuery('#'+ID).find('td')
+                                .css('border', '1px solid blue');
+                            jQuery('#'+ID).css('background-image', 'url(/cms/images/loading.gif)')
+                                .css('background-repeat', 'no-repeat')
+                                .css('background-position', 'top right');
+                            jQuery.ajax({
+                                url: checker.baseURL,
+                                type: 'get',
+                                data: {'test': testLink, 'admin': isAdmin},
+                                success: function(data, textStatus){
+                                    checker.item = null;
+                                    jQuery('#'+ID)
+                                        .html(data)
+                                        .css('background-image', 'none')
+                                        .find('h1').remove();
+                                    checker.item = checker.list.shift();
+                                    jQuery('#'+ID).find('td').css('border', '1px solid green');
+                                    var responseTime = parseFloat(jQuery('#'+ID).find(\"td.tt\").text());
+                                    if(responseTime && typeof responseTime !== 'undefined') {
+                                        checker.numberOfTests++;
+                                        checker.totalResponseTime = checker.totalResponseTime + responseTime;
+                                        jQuery(\"#NumberOfTests\").text(checker.numberOfTests);
+                                        jQuery(\"#AverageResponseTime\").text(Math.round(100 * (checker.totalResponseTime / checker.numberOfTests)) / 100);
+                                    }
+                                    window.setTimeout(
+                                        function() {checker.checkURL();},
+                                        1000
+                                    );
+                                },
+                                error: function(){
+                                    checker.item = null;
+                                    jQuery('#'+ID).find('td.error').html('ERROR');
+                                    jQuery('#'+ID).css('background-image', 'none');
+                                    checker.item = checker.list.shift();
+                                    jQuery('#'+ID).find('td').css('border', '1px solid red');
+                                    window.setTimeout(
+                                        function() {checker.checkURL();},
+                                        1000
+                                    );
+                                },
+                                dataType: 'html'
+                            });
+                        }
+                    }
+                }
+            </script>";
             echo "<h2>Want to add more tests?</h2>
-			<p>
-				By adding a public method <i>templateoverviewtests</i> to any controller,
-				returning an array of links, they will be included in the list above.
-			</p>
-			";
+            <p>
+                By adding a public method <i>templateoverviewtests</i> to any controller,
+                returning an array of links, they will be included in the list above.
+            </p>
+            ";
             echo "<h3>Suggestions</h3>
-			<p>Below is a list of suggested controller links.</p>
-			<ul>";
+            <p>Below is a list of suggested controller links.</p>
+            <ul>";
             $className = "";
             foreach ($otherLinks as $linkArray) {
                 if ($linkArray["ClassName"] != $className) {
@@ -468,12 +468,9 @@ class CheckAllTemplates extends BuildTask
     {
         $pages = array();
         $list = null;
-        if (class_exists("TemplateOverviewPage")) {
-            $templateOverviewPage = TemplateOverviewPage::get()->First();
-            if (!$templateOverviewPage) {
-                $templateOverviewPage = singleton("TemplateOverviewPage");
-            }
-            $list = $templateOverviewPage->ListOfAllClasses();
+        if (class_exists("TemplateOverviewPageAPI")) {
+            $templateOverviewPageAPI = Injector::inst()->get('TemplateOverviewPageAPI');
+            $list = $templateOverviewPageAPI->ListOfAllClasses();
             foreach ($list as $page) {
                 $pages[] = $page->ClassName;
             }
