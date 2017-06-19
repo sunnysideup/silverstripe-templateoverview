@@ -7,34 +7,4 @@ After: 'framework/*','cms/*'
 ErrorPage:
   icon: "templateoverview/images/treeicons/ErrorPage"
 
-TemplateOverviewPage:
-  auto_include: 1
-
-LeftAndMain:
-  css:
-    - "templateoverview/css/TemplateOverviewCMSHelp.css"
-
-LeftAndMain:
-  help_link: "admin/help/"
-
-TemplateOverviewDescription:
-  image_source_folder: "_dev/designs"
-
-CMSHelp:
-  help_file_directory_name: "_help"
-
----
-only:
-  environment: 'dev'
----
-
-SiteTree:
-  extensions:
-    - TemplateOverviewPageDecorator
-
-ContentController:
-  extensions:
-    - TemplateOverviewPageExtension
-
-
 
