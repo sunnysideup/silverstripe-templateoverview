@@ -1,0 +1,7 @@
+---
+Name: 'TemplateoverviewRoutes'
+After: framework
+---
+Director:
+  rules:
+    'templates//$Action/$ID/$OtherID/$Version': TemplateOverviewPage_Controller
