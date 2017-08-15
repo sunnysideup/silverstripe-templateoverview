@@ -11,8 +11,7 @@ class TemplateOverviewPage_Controller extends Page_Controller
     private static $allowed_actions = array(
         "showmore" => true,
         "quicklist" => true,
-        "listofobjectsused" => true,
-        "clearalltemplatedescriptions" => "ADMIN"
+        "listofobjectsused" => true
     );
 
     public function init()
@@ -25,10 +24,17 @@ class TemplateOverviewPage_Controller extends Page_Controller
         Requirements::javascript('templateoverview/javascript/TemplateOverviewPage.js');
         Requirements::css("templateoverview/css/TemplateOverviewPage.css");
         if (class_exists("PrettyPhoto")) {
-            PrettyPhoto::include_code();
+            if(method_exists('PrettyPhoto','include_code')) {
+                PrettyPhoto::include_code();
+            }
         } else {
             user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
         }
+    }
+
+    function index()
+    {
+        return $this->renderWith(['TemplateOverviewPage', 'Page']);
     }
 
     public function showmore($request)
@@ -41,8 +47,7 @@ class TemplateOverviewPage_Controller extends Page_Controller
                 ->filter(array("ClassName" => $obj->ClassName))
                 ->limit(200);
             $array = array(
-                "Results" => $data,
-                "MoreDetail" => TemplateOverviewDescription::get()->filter(array("ClassNameLink" => $obj->ClassName))->First()
+                "Results" => $data
             );
         } else {
             $array = array();
@@ -69,15 +74,6 @@ class TemplateOverviewPage_Controller extends Page_Controller
         }
     }
 
-    public function clearalltemplatedescriptions()
-    {
-        if ($m = Member::currentUser()) {
-            if ($m->inGroup("ADMIN")) {
-                DB::query("DELETE FROM TemplateOverviewDescription");
-                die("all descriptions have been deleted");
-            }
-        }
-    }
 
     public function TestTaskLink()
     {
@@ -124,4 +120,23 @@ class TemplateOverviewPage_Controller extends Page_Controller
             user_error("Please specify the ID for the model you are looking for - e.g. /listofobjectsused/Image/", E_USER_ERROR);
         }
     }
+
+    /**
+     * returns a list of all SiteTree Classes
+     * @return Array(String)
+     */
+    public function ListOfAllClasses()
+    {
+        $templateOverviewPageAPI = Injector::inst()->get('TemplateOverviewPageAPI');
+
+        return $templateOverviewPageAPI->ListOfAllClasses();
+    }
+
+
+    public function TotalCount()
+    {
+        return count(ClassInfo::subclassesFor("SiteTree"))-1;
+    }
+
+
 }

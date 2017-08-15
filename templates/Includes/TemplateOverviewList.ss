@@ -2,20 +2,7 @@
 <ul id="ClassList">
 <% loop ListOfAllClasses %>
     <% if Count %>
-    <li style="background-image: url({$Icon});" id="sectionFor-$ClassName">
-        <% if TemplateOverviewDescription %>
-        <div class="images">
-        <% with TemplateOverviewDescription %>
-            <% if Image1ID %><span class="thumb"><a href="$Image1.URL" rel="prettyPhoto[$ClassNameLink]">$Image1.SetWidth(150)</a></span><% end_if %>
-            <div class="littleImages">
-                <% if Image2ID %><span class="littleThumb"><a href="$Image2.URL" rel="prettyPhoto[$ClassNameLink]">$Image2.SetWidth(25)</a></span><% end_if %>
-                <% if Image3ID %><span class="littleThumb"><a href="$Image3.URL" rel="prettyPhoto[$ClassNameLink]">$Image3.SetWidth(25)</a></span><% end_if %>
-                <% if Image4ID %><span class="littleThumb"><a href="$Image4.URL" rel="prettyPhoto[$ClassNameLink]">$Image4.SetWidth(25)</a></span><% end_if %>
-                <% if Image5ID %><span class="littleThumb"><a href="$Image5.URL" rel="prettyPhoto[$ClassNameLink]">$Image5.SetWidth(25)</a></span><% end_if %>
-            </div>
-        <% end_with %>
-        </div>
-        <% end_if %>
+    <li style="background-image: url({$Icon}); background-repeat: no-repeat!important; background-position: top left; text-indent: 20px;" id="sectionFor-$ClassName">
         <span class="typo-heading">$Count x $ClassName - template</span>
         <% if ShowAll %>
         <span class="typo-fullLink"><a href="$PreviewLink">$Title</a></span> | <a href="$CMSEditLink">CMS view</a>
@@ -32,7 +19,7 @@
         <% end_if %>
     </li>
     <% else %>
-    <li style="background-image: url({$Icon});">There are no instances of $ClassName templates.</li>
+    <li style="background-image: url({$Icon}); background-repeat: no-repeat!important; background-position: top left; text-indent: 20px;">There are no instances of $ClassName templates.</li>
     <% end_if %>
 <% end_loop %>
 </ul>

@@ -4,10 +4,23 @@
 
 class TemplateoverviewPageAPI extends Object
 {
-    
+
     private static $list_of_all_classes = array();
-    
+
     private static $classes_to_exclude = array("SiteTree", "RedirectorPage", "VirtualPage");
+
+    /**
+     *
+     * @var Bool
+     */
+    protected $showAll = false;
+
+    /**
+     *
+     * @var int
+     */
+    protected $counter = 0;
+
 
     public function ListOfAllClasses($checkCurrentClass = true)
     {
@@ -53,7 +66,6 @@ class TemplateoverviewPageAPI extends Object
                             $classesToRemove[] = $ancestorToHide;
                         }
                         $object = $this->createPageObject($obj, $count);
-                        $object->TemplateOverviewDescription = $this->TemplateDetails($className);
                         $ArrayOfAllClasses[$object->indexNumber] = clone $object;
                     }
                 }
@@ -99,26 +111,6 @@ class TemplateoverviewPageAPI extends Object
         return array();
     }
 
-
-    protected function TemplateDetails($className)
-    {
-        $obj = TemplateOverviewDescription::get()
-            ->filter(array("ClassNameLink" => $className))
-            ->First();
-        if (!$obj) {
-            $obj = new TemplateOverviewDescription();
-            $obj->ClassNameLink = $className;
-            $obj->ParentID = $this->ID;
-            $obj->write();
-        }
-        DB::query("UPDATE TemplateOverviewDescription SET ParentID = ".$this->ID.";");
-        return $obj;
-    }
-
-    public function TotalCount()
-    {
-        return count(ClassInfo::subclassesFor("SiteTree"))-1;
-    }
 
     /**
      * @param SiteTree $obj
@@ -168,4 +160,15 @@ class TemplateoverviewPageAPI extends Object
         }
         return true;
     }
+
+    function Link($action = null)
+    {
+        $v = '/templates';
+        if($action) {
+            $v .= $action . '/';
+        }
+
+        return $v;
+    }
+
 }

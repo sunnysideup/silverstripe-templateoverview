@@ -461,7 +461,7 @@ class CheckAllTemplates extends BuildTask
     }
 
     /**
-     * returns a lis of all SiteTree Classes
+     * returns a list of all SiteTree Classes
      * @return Array(String)
      */
     private function listOfAllClasses()
@@ -481,6 +481,7 @@ class CheckAllTemplates extends BuildTask
                 $pages[] = $page;
             }
         }
+
         return $pages;
     }
 
