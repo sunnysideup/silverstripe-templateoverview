@@ -11,10 +11,12 @@
             <em>example:</em>
             <a href="$PreviewLink">$Title</a> |
             <a href="$CMSEditLink">IN CMS</a> |
-            <a href="https://developers.facebook.com/tools/debug/sharing/?q=$PreviewLink">Preview Facebook Sharing</a>
+            <a href="https://developers.facebook.com/tools/debug/sharing/?q=$PreviewLink">in FB ...</a>
         </span>
-        <span class="typo-more"><em>more:</em> <a href="$TypoURLSegment/showmore/$ID" class="typo-seemore" rel="entry-for-$URLSegment">more examples and details (if any)</a></span>
+        <% if Count > 1 %>
+        <span class="typo-more"><em>more:</em> <a href="$TypoURLSegment/showmore/$ID" class="typo-seemore" rel="entry-for-$URLSegment">more examples</a></span>
         <span class="typo-less"><em>less:</em> <a href="#" class="typo-seeless" rel="entry-for-$URLSegment">hide it again!</a></span>
+        <% end_if %>
         <ol id="entry-for-$URLSegment" class="MoreDetailOL"><li style="display: none;">&nbsp;</li></ol>
         <% end_if %>
     </li>

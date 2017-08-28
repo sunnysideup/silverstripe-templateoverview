@@ -28,13 +28,18 @@ class TemplateOverviewPage_Controller extends Page_Controller
                 PrettyPhoto::include_code();
             }
         } else {
-            user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
+            //user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
         }
     }
 
     function index()
     {
-        return $this->renderWith(['TemplateOverviewPage', 'Page']);
+        return $this->renderWith(['Page', 'Page']);
+    }
+
+    function Content()
+    {
+        return $this->renderWith('TemplateOverviewPage');
     }
 
     public function showmore($request)
