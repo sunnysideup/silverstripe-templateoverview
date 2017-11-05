@@ -143,7 +143,10 @@ class CheckAllTemplates extends BuildTask
                     $linkArray[] = array("IsAdmin" => $isAdmin, "Link" => $link, "ID" => $id);
                     echo "
                         <tr id=\"$id\" class=".($isAdmin ? "isAdmin" : "notAdmin").">
-                            <td><a href=\"".Director::baseURL()."dev/tasks/CheckAllTemplates/?test=".urlencode($link)."&admin=".$isAdmin."\" style='color: purple' target='_blank'>$link</a></td>
+                            <td>
+                                <a href=\"$link\" target=\"_blank\">$link</a>
+                                <a href=\"".Director::baseURL()."dev/tasks/CheckAllTemplates/?test=".urlencode($link)."&admin=".$isAdmin."\" style='color: purple' target='_blank'>🔗</a>
+                            </td>
                             <td></td>
                             <td></td>
                             <td></td>
