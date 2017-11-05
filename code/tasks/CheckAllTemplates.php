@@ -571,7 +571,7 @@ class CheckAllTemplates extends BuildTask
             $doubleLinks = array();
             foreach ($array as $index  => $classNameMethodArray) {
                 $classObject = singleton($classNameMethodArray["ClassName"]);
-                if ($classNameMethodArray["Method"] == "templateoverviewtests" && 1 == 2) {
+                if ($classNameMethodArray["Method"] == "templateoverviewtests") {
                     $this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);
                 } else {
                     $link = $classObject->Link($classNameMethodArray["Method"]);
