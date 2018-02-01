@@ -24,7 +24,7 @@ class TemplateOverviewPage_Controller extends Page_Controller
         Requirements::javascript('templateoverview/javascript/TemplateOverviewPage.js');
         Requirements::css("templateoverview/css/TemplateOverviewPage.css");
         if (class_exists("PrettyPhoto")) {
-            if(method_exists('PrettyPhoto','include_code')) {
+            if (method_exists('PrettyPhoto', 'include_code')) {
                 PrettyPhoto::include_code();
             }
         } else {
@@ -32,12 +32,12 @@ class TemplateOverviewPage_Controller extends Page_Controller
         }
     }
 
-    function index()
+    public function index()
     {
         return $this->renderWith(['Page', 'Page']);
     }
 
-    function Content()
+    public function Content()
     {
         return $this->renderWith('TemplateOverviewPage');
     }
@@ -142,6 +142,4 @@ class TemplateOverviewPage_Controller extends Page_Controller
     {
         return count(ClassInfo::subclassesFor("SiteTree"))-1;
     }
-
-
 }

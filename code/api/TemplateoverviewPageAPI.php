@@ -4,7 +4,6 @@
 
 class TemplateoverviewPageAPI extends Object
 {
-
     private static $list_of_all_classes = array();
 
     private static $classes_to_exclude = array("SiteTree", "RedirectorPage", "VirtualPage");
@@ -161,14 +160,13 @@ class TemplateoverviewPageAPI extends Object
         return true;
     }
 
-    function Link($action = null)
+    public function Link($action = null)
     {
         $v = '/templates';
-        if($action) {
+        if ($action) {
             $v .= $action . '/';
         }
 
         return $v;
     }
-
 }
