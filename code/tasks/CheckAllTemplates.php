@@ -537,7 +537,7 @@ class CheckAllTemplates extends BuildTask
         $finalArray = array();
         $classes = ClassInfo::subclassesFor("Controller");
         //foreach($manifest as $class => $compareFilePath) {
-            //if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;
+        //if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;
         //}
         $manifest = SS_ClassLoader::instance()->getManifest()->getClasses();
         $baseFolder = Director::baseFolder();
