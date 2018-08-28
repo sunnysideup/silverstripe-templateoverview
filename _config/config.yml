@@ -1,7 +1,9 @@
 ---
 Name: templateoverview
 Before: 'app/*'
-After: 'framework/*','cms/*'
+After: 
+ - 'framework/*'
+ - 'cms/*'
 ---
 
 ErrorPage:
