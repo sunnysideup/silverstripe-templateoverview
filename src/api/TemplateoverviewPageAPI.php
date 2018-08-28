@@ -2,7 +2,12 @@
 
 
 
-class TemplateoverviewPageAPI extends Object
+class TemplateoverviewPageAPI extends ViewableData/*
+### @@@@ START UPGRADE REQUIRED @@@@ ###
+FIND:  extends Object
+NOTE: This used to extend Object, but object does not exist anymore.  
+### @@@@ END UPGRADE REQUIRED @@@@ ###
+*/
 {
     private static $list_of_all_classes = array();
 

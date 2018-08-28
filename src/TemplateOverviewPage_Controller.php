@@ -6,7 +6,12 @@
 
 
 
-class TemplateOverviewPage_Controller extends Page_Controller
+class TemplateOverviewPageController extends Page_Controller/*
+### @@@@ START UPGRADE REQUIRED @@@@ ###
+FIND: _Controller extends Page_Controller
+NOTE: Remove the underscore in your classname - check all references! 
+### @@@@ END UPGRADE REQUIRED @@@@ ###
+*/
 {
     private static $allowed_actions = array(
         "showmore" => true,

@@ -1,6 +1,6 @@
 ---
 Name: templateoverview
-Before: 'mysite/*'
+Before: 'app/*'
 After: 'framework/*','cms/*'
 ---
 
