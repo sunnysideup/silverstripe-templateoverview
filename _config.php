@@ -1,8 +1,5 @@
 <?php
 
-namespace Sunnysideup\TemplateOverview;
-
-use Config;
 
 
 /**
@@ -11,4 +8,4 @@ use Config;
  *
  **/
 
-Config::inst()->update("ErrorPage", 'icon', "templateoverview/images/treeicons/ErrorPage");
+// Config::inst()->update("ErrorPage", 'icon', "templateoverview/images/treeicons/ErrorPage");

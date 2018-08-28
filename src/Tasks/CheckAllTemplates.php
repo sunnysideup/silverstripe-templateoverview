@@ -1,6 +1,7 @@
 <?php
 
 namespace Sunnysideup\TemplateOverview\Tasks;
+use Sunnysideup\TemplateOverview\Api\TemplateOverviewPageAPI;
 
 
 
@@ -192,7 +193,7 @@ class CheckAllTemplates extends BuildTask
             }
             echo "
             </table>
-            <script src='/".THIRDPARTY_DIR . "/jquery/jquery.js' ></script>
+            <% require javascript('//code.jquery.com/jquery-3.3.1.min.js') %>
             <script type='text/javascript'>
 
                 jQuery(document).ready(
@@ -506,8 +507,8 @@ class CheckAllTemplates extends BuildTask
     {
         $pages = array();
         $list = null;
-        if (class_exists("TemplateOverviewPageAPI")) {
-            $templateOverviewPageAPI = Injector::inst()->get('TemplateOverviewPageAPI');
+        if (class_exists(TemplateOverviewPageAPI::class)) {
+            $templateOverviewPageAPI = Injector::inst()->get(TemplateOverviewPageAPI::class);
             $list = $templateOverviewPageAPI->ListOfAllClasses();
             foreach ($list as $page) {
                 $pages[] = $page->ClassName;
