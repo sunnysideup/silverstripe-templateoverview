@@ -1,5 +1,16 @@
 <?php
 
+namespace Sunnysideup\TemplateOverview\Api;
+
+use ViewableData;
+use SiteTree;
+use ArrayList;
+use Controller;
+use Director;
+use ArrayData;
+use ClassInfo;
+
+
 
 
 class TemplateoverviewPageAPI extends ViewableData/*

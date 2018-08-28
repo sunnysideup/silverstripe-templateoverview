@@ -1,5 +1,10 @@
 <?php
 
+namespace Sunnysideup\TemplateOverview;
+
+use Config;
+
+
 /**
  * developed by www.sunnysideup.co.nz
  * author: Nicolaas - modules [at] sunnysideup.co.nz

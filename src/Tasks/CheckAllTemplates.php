@@ -1,5 +1,23 @@
 <?php
 
+namespace Sunnysideup\TemplateOverview\Tasks;
+
+use BuildTask;
+use Director;
+use Convert;
+use Member;
+use Group;
+use Injector;
+use ClassInfo;
+use CMSMenu;
+use SS_ClassLoader;
+use ReflectionClass;
+use SapphireTest;
+use TaskRunner;
+use Config;
+use ReflectionMethod;
+
+
 /**
  * @description (see $this->description)
  *

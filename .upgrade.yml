@@ -1,0 +1,5 @@
+mappings:
+  TemplateoverviewPageAPI: Sunnysideup\TemplateOverview\Api\TemplateoverviewPageAPI
+  TemplateOverviewPageController: Sunnysideup\TemplateOverview\TemplateOverviewPageController
+  CheckAllTemplates: Sunnysideup\TemplateOverview\Tasks\CheckAllTemplates
+  CheckAllTemplates_W3cValidateApi: Sunnysideup\TemplateOverview\Tasks\CheckAllTemplates_W3cValidateApi

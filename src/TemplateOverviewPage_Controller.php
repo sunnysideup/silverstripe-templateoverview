@@ -1,4 +1,21 @@
 <?php
+
+namespace Sunnysideup\TemplateOverview;
+
+use Page_Controller;
+use Director;
+use Permission;
+use Security;
+use Requirements;
+use PrettyPhoto;
+use SiteTree;
+use Member;
+use DB;
+use DataObject;
+use Config;
+use Injector;
+use ClassInfo;
+
 /**
  *@author: nicolaas [at] sunnysideup.co.nz
  *@description Add a page to your site that allows you to view all the html that can be used in the typography section - if applied correctly.
