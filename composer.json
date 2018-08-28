@@ -1,6 +1,6 @@
 {
     "name": "sunnysideup/templateoverview",
-    "type": "silverstripe-module",
+    "type": "silverstripe-vendormodule",
     "description": "adds development tools for building silverstripe websites, in particular around managing page types.",
     "keywords": [
         "Silverstripe-CMS",
@@ -20,11 +20,9 @@
         }
     ],
     "require": {
-        "silverstripe/framework": "~3.6",
-        "silverstripe/cms": "~3.6",
-        "sunnysideup/prettyphoto": "*"
+        "sunnysideup/prettyphoto": "*",
+        "silverstripe/framework": "~4.0",
+        "silverstripe/recipe-cms": "~1"
     },
-    "extra": {
-        "installer-name": "templateoverview"
-    }
+    "extra": []
 }

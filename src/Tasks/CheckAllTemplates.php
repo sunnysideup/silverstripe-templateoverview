@@ -1,5 +1,41 @@
 <?php
 
+namespace Sunnysideup\TemplateOverview\Tasks;
+use Sunnysideup\TemplateOverview\Api\TemplateOverviewPageAPI;
+
+
+
+
+
+
+
+
+
+
+use ReflectionClass;
+
+
+
+use ReflectionMethod;
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Convert;
+use SilverStripe\Security\Member;
+use SilverStripe\Security\Group;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Admin\CMSMenu;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Control\Controller;
+use SilverStripe\Core\Manifest\ClassLoader;
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Dev\BuildTask;
+use SilverStripe\Dev\TaskRunner;
+use SilverStripe\Core\Config\Config;
+
+
+
 /**
  * @description (see $this->description)
  *
@@ -157,7 +193,7 @@ class CheckAllTemplates extends BuildTask
             }
             echo "
             </table>
-            <script src='/".THIRDPARTY_DIR . "/jquery/jquery.js' ></script>
+            <% require javascript('//code.jquery.com/jquery-3.3.1.min.js') %>
             <script type='text/javascript'>
 
                 jQuery(document).ready(
@@ -471,15 +507,15 @@ class CheckAllTemplates extends BuildTask
     {
         $pages = array();
         $list = null;
-        if (class_exists("TemplateOverviewPageAPI")) {
-            $templateOverviewPageAPI = Injector::inst()->get('TemplateOverviewPageAPI');
+        if (class_exists(TemplateOverviewPageAPI::class)) {
+            $templateOverviewPageAPI = Injector::inst()->get(TemplateOverviewPageAPI::class);
             $list = $templateOverviewPageAPI->ListOfAllClasses();
             foreach ($list as $page) {
                 $pages[] = $page->ClassName;
             }
         }
         if (!count($pages)) {
-            $list = ClassInfo::subclassesFor("SiteTree");
+            $list = ClassInfo::subclassesFor(SiteTree::class);
             foreach ($list as $page) {
                 $pages[] = $page;
             }
@@ -495,7 +531,7 @@ class CheckAllTemplates extends BuildTask
     private function ListOfAllModelAdmins()
     {
         $models = array();
-        $modelAdmins = CMSMenu::get_cms_classes("ModelAdmin");
+        $modelAdmins = CMSMenu::get_cms_classes(ModelAdmin::class);
         if ($modelAdmins && count($modelAdmins)) {
             foreach ($modelAdmins as $modelAdmin) {
                 if ($modelAdmin != "ModelAdminEcommerceBaseClass") {
@@ -509,10 +545,10 @@ class CheckAllTemplates extends BuildTask
 
                     if ($modelsToAdd && count($modelsToAdd)) {
                         foreach ($modelsToAdd as $key => $model) {
-                            if (is_array($model) || !is_subclass_of($model, "DataObject")) {
+                            if (is_array($model) || !is_subclass_of($model, DataObject::class)) {
                                 $model = $key;
                             }
-                            if (!is_subclass_of($model, "DataObject")) {
+                            if (!is_subclass_of($model, DataObject::class)) {
                                 continue;
                             }
                             $modelAdminLink;
@@ -535,11 +571,11 @@ class CheckAllTemplates extends BuildTask
     {
         $array = array();
         $finalArray = array();
-        $classes = ClassInfo::subclassesFor("Controller");
+        $classes = ClassInfo::subclassesFor(Controller::class);
         //foreach($manifest as $class => $compareFilePath) {
         //if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;
         //}
-        $manifest = SS_ClassLoader::instance()->getManifest()->getClasses();
+        $manifest = ClassLoader::instance()->getManifest()->getClasses();
         $baseFolder = Director::baseFolder();
         $cmsBaseFolder = Director::baseFolder()."/cms/";
         $frameworkBaseFolder = Director::baseFolder()."/framework/";
@@ -550,7 +586,7 @@ class CheckAllTemplates extends BuildTask
                 if (strpos($location, $cmsBaseFolder) === 0 || strpos($location, $frameworkBaseFolder) === 0) {
                     continue;
                 }
-                if ($className != "Controller") {
+                if ($className != Controller::class) {
                     $controllerReflectionClass = new ReflectionClass($className);
                     if (!$controllerReflectionClass->isAbstract()) {
                         if (

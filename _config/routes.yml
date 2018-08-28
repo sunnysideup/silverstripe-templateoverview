@@ -2,6 +2,6 @@
 Name: 'TemplateoverviewRoutes'
 After: framework
 ---
-Director:
+SilverStripe\Control\Director:
   rules:
-    'templates//$Action/$ID/$OtherID/$Version': TemplateOverviewPage_Controller
+    'templates//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\TemplateOverviewPageController'

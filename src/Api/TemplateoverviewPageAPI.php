@@ -1,12 +1,38 @@
 <?php
 
+namespace Sunnysideup\TemplateOverview\Api;
 
 
-class TemplateoverviewPageAPI extends Object
+
+
+
+
+
+
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\CMS\Model\RedirectorPage;
+use SilverStripe\CMS\Model\VirtualPage;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
+use SilverStripe\View\ArrayData;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\View\ViewableData;
+
+
+
+
+
+class TemplateoverviewPageAPI extends ViewableData/*
+### @@@@ START UPGRADE REQUIRED @@@@ ###
+FIND:  extends Object
+NOTE: This used to extend Object, but object does not exist anymore.  
+### @@@@ END UPGRADE REQUIRED @@@@ ###
+*/
 {
     private static $list_of_all_classes = array();
 
-    private static $classes_to_exclude = array("SiteTree", "RedirectorPage", "VirtualPage");
+    private static $classes_to_exclude = array(SiteTree::class, RedirectorPage::class, VirtualPage::class);
 
     /**
      *
