@@ -20,9 +20,9 @@
         }
     ],
     "require": {
-        "silverstripe/cms": "~3.6",
         "sunnysideup/prettyphoto": "*",
-        "silverstripe/framework": "~4.0"
+        "silverstripe/framework": "~4.0",
+        "silverstripe/recipe-cms": "~1"
     },
     "extra": {
         "installer-name": "templateoverview"
