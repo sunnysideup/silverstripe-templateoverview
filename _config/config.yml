@@ -1,12 +1,8 @@
 ---
 Name: templateoverview
 Before: 'app/*'
-After: 
- - 'framework/*'
- - 'cms/*'
 ---
-
-ErrorPage:
+SilverStripe\\ErrorPage\\ErrorPage:
   icon: "templateoverview/images/treeicons/ErrorPage"
 
 
