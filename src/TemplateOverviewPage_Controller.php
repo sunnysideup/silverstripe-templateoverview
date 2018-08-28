@@ -2,19 +2,32 @@
 
 namespace Sunnysideup\TemplateOverview;
 
-use Page_Controller;
-use Director;
-use Permission;
-use Security;
-use Requirements;
+
+
+
+
+
 use PrettyPhoto;
-use SiteTree;
-use Member;
-use DB;
-use DataObject;
-use Config;
-use Injector;
-use ClassInfo;
+
+
+
+
+
+
+
+use SilverStripe\Control\Director;
+use SilverStripe\Security\Permission;
+use SilverStripe\Security\Security;
+use SilverStripe\View\Requirements;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Security\Member;
+use SilverStripe\ORM\DB;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Core\ClassInfo;
+use PageController;
+
 
 /**
  *@author: nicolaas [at] sunnysideup.co.nz
@@ -23,7 +36,7 @@ use ClassInfo;
 
 
 
-class TemplateOverviewPageController extends Page_Controller/*
+class TemplateOverviewPageController extends PageController/*
 ### @@@@ START UPGRADE REQUIRED @@@@ ###
 FIND: _Controller extends Page_Controller
 NOTE: Remove the underscore in your classname - check all references! 
@@ -162,6 +175,6 @@ NOTE: Remove the underscore in your classname - check all references!
 
     public function TotalCount()
     {
-        return count(ClassInfo::subclassesFor("SiteTree"))-1;
+        return count(ClassInfo::subclassesFor(SiteTree::class))-1;
     }
 }
