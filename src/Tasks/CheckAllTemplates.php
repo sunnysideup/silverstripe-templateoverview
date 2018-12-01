@@ -1,20 +1,10 @@
 <?php
 
 namespace Sunnysideup\TemplateOverview\Tasks;
+
 use Sunnysideup\TemplateOverview\Api\TemplateOverviewPageAPI;
 
-
-
-
-
-
-
-
-
-
 use ReflectionClass;
-
-
 
 use ReflectionMethod;
 use SilverStripe\Control\Director;
@@ -33,8 +23,6 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Dev\TaskRunner;
 use SilverStripe\Core\Config\Config;
-
-
 
 /**
  * @description (see $this->description)

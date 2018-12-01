@@ -2,13 +2,6 @@
 
 namespace Sunnysideup\TemplateOverview\Api;
 
-
-
-
-
-
-
-
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\CMS\Model\RedirectorPage;
 use SilverStripe\CMS\Model\VirtualPage;
@@ -19,16 +12,7 @@ use SilverStripe\View\ArrayData;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\View\ViewableData;
 
-
-
-
-
-class TemplateoverviewPageAPI extends ViewableData/*
-### @@@@ START UPGRADE REQUIRED @@@@ ###
-FIND:  extends Object
-NOTE: This used to extend Object, but object does not exist anymore.  
-### @@@@ END UPGRADE REQUIRED @@@@ ###
-*/
+class TemplateoverviewPageAPI extends ViewableData 
 {
     private static $list_of_all_classes = array();
 
