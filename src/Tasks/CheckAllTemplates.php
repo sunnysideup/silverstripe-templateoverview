@@ -579,7 +579,7 @@ class CheckAllTemplates extends BuildTask
                     if (!$controllerReflectionClass->isAbstract()) {
                         if (
                             $className == "HideMailto" ||
-                            $className == "HideMailto_Controller" ||
+                            $className == "HideMailtoController" ||
                             $className == "Mailto" ||
                             $className instanceof SapphireTest ||
                             $className instanceof BuildTask ||
