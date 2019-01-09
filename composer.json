@@ -23,5 +23,9 @@
         "sunnysideup/prettyphoto": "*",
         "silverstripe/framework": "~4"
     },
-    "extra": []
+    "extra": {
+        "expose": [
+            "client"
+        ]
+    }
 }
