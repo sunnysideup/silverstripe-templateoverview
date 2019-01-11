@@ -8,4 +8,4 @@
  *
  **/
 
-// Config::inst()->update("ErrorPage", 'icon', "templateoverview/images/treeicons/ErrorPage");
+// Config::modify()->update("ErrorPage", 'icon', "templateoverview/images/treeicons/ErrorPage");
