@@ -1,6 +1,5 @@
 ---
 Name: 'TemplateoverviewRoutes'
-After: framework
 ---
 SilverStripe\Control\Director:
   rules:
