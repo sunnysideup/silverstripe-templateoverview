@@ -17,6 +17,7 @@ use SilverStripe\Core\ClassInfo;
 use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Admin\CMSMenu;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DB;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Manifest\ClassLoader;
 use SilverStripe\Dev\SapphireTest;
@@ -707,7 +708,7 @@ class CheckAllTemplates extends BuildTask
             $page = $class::get()
                 ->limit(1)
                 ->exclude(array("ClassName" => $excludedClasses))
-                ->sort("RAND()");
+                ->sort(DB::get_conn()->random().' ASC');
             $page = $page->setDataQueryParam(array(
                 'Versioned.mode' => 'stage',
                 'Versioned.stage' => $stage

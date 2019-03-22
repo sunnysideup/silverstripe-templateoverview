@@ -5,6 +5,7 @@ namespace Sunnysideup\TemplateOverview\Api;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\CMS\Model\RedirectorPage;
 use SilverStripe\CMS\Model\VirtualPage;
+use SilverStripe\ORM\DB;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
@@ -44,7 +45,7 @@ class TemplateoverviewPageAPI extends ViewableData
                     if ($this->showAll) {
                         $objects = $className::get()
                             ->filter(array("ClassName" => $className))
-                            ->sort("RAND() ASC")
+                            ->sort(DB::get_conn()->random()." ASC")
                             ->limit(25);
                         $count = 0;
                         if ($objects->count()) {
