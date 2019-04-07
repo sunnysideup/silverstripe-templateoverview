@@ -24,6 +24,7 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Dev\TaskRunner;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Versioned\Versioned;
 
 /**
  * @description (see $this->description)
@@ -710,7 +711,7 @@ class CheckAllTemplates extends BuildTask
                 ->exclude(array("ClassName" => $excludedClasses))
                 ->sort(DB::get_conn()->random().' ASC');
             $page = $page->setDataQueryParam(array(
-                'Versioned.mode' => 'stage',
+                'Versioned.mode' => Versioned::DRAFT,
                 'Versioned.stage' => $stage
             ));
             $page = $page->first();
