@@ -41,7 +41,7 @@ class TemplateOverviewPageController extends PageController
         }
     }
 
-    public function index()
+    public function index(HTTPRequest $request = null)
     {
         return $this->renderWith(['Page', 'Page']);
     }
