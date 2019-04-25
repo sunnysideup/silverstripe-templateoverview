@@ -4,10 +4,13 @@
  *@description Add a page to your site that allows you to view all the html that can be used in the typography section - if applied correctly.
  */
 
+namespace Sunnysideup\TemplateOverview;
+
 use SilverStripe\CMS\Model\SiteTree;
 
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Control\Director;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\View\Requirements;
@@ -18,8 +21,28 @@ use SilverStripe\ORM\DB;
 
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
 
+use \PageController;
+use \Page;
+
 class TemplateOverviewPageController extends PageController
 {
+
+
+    /**
+     * The ContentController will take the URLSegment parameter from the URL and use that to look
+     * up a SiteTree record.
+     *
+     * @param SiteTree $dataRecord
+     */
+    public function __construct($dataRecord = null)
+    {
+
+        $this->dataRecord = Page::get()->first();
+
+        parent::__construct($this->dataRecord);
+
+    }
+
     private static $allowed_actions = array(
         "showmore" => true,
         "quicklist" => true,

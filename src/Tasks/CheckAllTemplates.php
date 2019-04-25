@@ -151,6 +151,7 @@ class CheckAllTemplates extends BuildTask
         else {
             $this->classNames = $this->listOfAllClasses();
             $this->modelAdmins = $this->ListOfAllModelAdmins();
+            echo 'asdfasdfasdf';
             $this->allNonAdmins = $this->prepareClasses();
             $otherLinks = $this->listOfAllControllerMethods();
             $this->allAdmins = $this->array_push_array($this->modelAdmins, $this->prepareClasses(1));

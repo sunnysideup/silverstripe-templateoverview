@@ -1,6 +1,0 @@
----
-Name: templateoverview
-Before: 'app/*'
----
-SilverStripe\ErrorPage\ErrorPage:
-  icon: "templateoverview/images/treeicons/ErrorPage"
