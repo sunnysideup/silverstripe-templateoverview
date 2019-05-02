@@ -9,6 +9,7 @@ namespace Sunnysideup\TemplateOverview;
 use SilverStripe\CMS\Model\SiteTree;
 
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Security\Member;
@@ -20,6 +21,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DB;
 
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
+use Sunnysideup\TemplateOverview\Api\TemplateOverviewPageAPI;
 
 use \PageController;
 use \Page;
@@ -71,7 +73,7 @@ class TemplateOverviewPageController extends PageController
 
     public function Content()
     {
-        return $this->renderWith('TemplateOverviewPage');
+        return $this->renderWith('Sunnysideup\\TemplateOverview\\Includes\\TemplateOverviewList');
     }
 
     public function showmore($request)
@@ -89,7 +91,7 @@ class TemplateOverviewPageController extends PageController
         } else {
             $array = array();
         }
-        return $this->customise($array)->renderWith("TemplateOverviewPageShowMoreList");
+        return $this->customise($array)->renderWith("Sunnysideup\\TemplateOverview\\TemplateOverviewPageShowMoreList");
     }
 
 
@@ -164,7 +166,7 @@ class TemplateOverviewPageController extends PageController
      */
     public function ListOfAllClasses()
     {
-        $templateOverviewPageAPI = Injector::inst()->get('TemplateOverviewPageAPI');
+        $templateOverviewPageAPI = Injector::inst()->get(TemplateOverviewPageAPI::class);
 
         return $templateOverviewPageAPI->ListOfAllClasses();
     }

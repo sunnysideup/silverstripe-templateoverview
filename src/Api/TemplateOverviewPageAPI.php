@@ -13,7 +13,7 @@ use SilverStripe\View\ArrayData;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\View\ViewableData;
 
-class TemplateoverviewPageAPI extends ViewableData
+class TemplateOverviewPageAPI extends ViewableData
 {
     private static $list_of_all_classes = array();
 
