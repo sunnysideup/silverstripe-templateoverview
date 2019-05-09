@@ -323,7 +323,7 @@ class CheckAllTemplates extends BuildTask implements Flushable
             <p>Below is a list of suggested controller links.</p>
             <ul>";
             $className = "";
-            foreach ($otherLinks as $linkArray) {
+            foreach ($array['otherLinks'] as $linkArray) {
                 if ($linkArray["ClassName"] != $className) {
                     $className = $linkArray["ClassName"];
                     echo "</ul><h2>".$className."</h2><ul>";

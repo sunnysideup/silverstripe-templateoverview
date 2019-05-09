@@ -115,7 +115,7 @@ class AllLinks
     private $classNames = [];
 
     /**
-     * returns an array of allNonAdmins => [] , allAdmins => []
+     * returns an array of allNonAdmins => [] , allAdmins => [], otherControllerMethods => []
      * @return array
      */
     public function getAllLinks()
@@ -132,22 +132,23 @@ class AllLinks
             }
         }
         $this->pagesOnFrontEnd = $this->ListOfPagesLinks();
-        $this->otherControllerMethods = $this->ListOfAllControllerMethods();
 
-        $this->allNonAdmins = $this->pagesOnFrontEnd;
-        $this->allNonAdmins = $this->addToArrayOfLinks($this->allNonAdmins, $this->otherControllerMethods);
+        $this->allNonAdmins = $this->addToArrayOfLinks($this->allNonAdmins, $this->pagesOnFrontEnd);
         $this->allNonAdmins = $this->addToArrayOfLinks($this->allNonAdmins, $this->customLinksNonAdmin);
 
         $this->pagesInCMS = $this->ListOfPagesLinks(1);
         $this->modelAdmins = $this->ListOfAllModelAdmins();
 
-        $this->allAdmins = $this->pagesInCMS;
+        $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->pagesInCMS);
         $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->modelAdmins);
         $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->customLinksAdmin);
+
+        $this->otherControllerMethods = $this->ListOfAllControllerMethods();
 
         return [
             'allNonAdmins' => $this->allNonAdmins,
             'allAdmins' => $this->allAdmins,
+            'otherLinks' => $this->otherControllerMethods,
         ];
     }
 
@@ -382,6 +383,7 @@ class AllLinks
     private function addToArrayOfLinks($array, $pushArray)
     {
         foreach ($pushArray as $pushItem) {
+            $pushItem = '/'.Director::makeRelative($pushItem);
             if(! in_array($pushItem, $array)) {
                 array_push($array, $pushItem);
             }
