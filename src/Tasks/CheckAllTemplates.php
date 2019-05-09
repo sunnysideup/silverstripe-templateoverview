@@ -73,7 +73,7 @@ class CheckAllTemplates extends BuildTask
         if(! $password) {
             $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
             if(! $cache->has('password')) {
-                $password = bin2hex(uniqid());
+                $password = bin2hex(uniqid()).'UPPER'.',..';
                 $cache->set('password', $password);
             }
             $password = $cache->get('password');
@@ -404,6 +404,8 @@ class CheckAllTemplates extends BuildTask
         }
         $this->member->Password = self::get_password();
         $this->member->LockedOutUntil = null;
+        $this->member->FirstName = 'Test';
+        $this->member->Surname = 'User';
         $this->member->write();
         $auth = new MemberAuthenticator();
         $result = $auth->checkPassword($this->member, self::get_password());
