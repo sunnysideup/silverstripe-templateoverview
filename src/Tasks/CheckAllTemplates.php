@@ -60,13 +60,19 @@ class CheckAllTemplates extends BuildTask implements Flushable
         $cache->clear();
     }
 
+    private static $use_default_admin = true;
+
     private static $username = '';
 
     public static function get_user_email()
     {
         $userName = Config::inst()->get(CheckAllTemplates::class, 'username');
         if(! $userName) {
-            $userName = 'smoketest@test.com.ssu';
+            if(Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
+                $userName = DefaultAdminService::getDefaultAdminUsername();
+            } else {
+                $userName = 'smoketest@test.com.ssu';
+            }
         }
 
         return $userName;
@@ -79,12 +85,16 @@ class CheckAllTemplates extends BuildTask implements Flushable
     {
         $password = Config::inst()->get(CheckAllTemplates::class, 'password');
         if(! $password) {
-            $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
-            if(! $cache->has('password')) {
-                $password = strtolower('aa'.substr(uniqid(), 0, 8)).'_.,'.strtoupper('BB'.substr(uniqid(), 0, 8));
-                $cache->set('password', $password);
+            if(Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
+                $password = DefaultAdminService::getDefaultAdminPassword();
+            } else {
+                $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
+                if(! $cache->has('password')) {
+                    $password = strtolower('aa'.substr(uniqid(), 0, 8)).'_.,'.strtoupper('BB'.substr(uniqid(), 0, 8));
+                    $cache->set('password', $password);
+                }
+                $password = $cache->get('password');
             }
-            $password = $cache->get('password');
         }
 
         return $password;
@@ -397,48 +407,55 @@ class CheckAllTemplates extends BuildTask implements Flushable
      */
     public function getTestUser()
     {
-        $this->member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
-        return $this->member;
-        //Make temporary admin member
-        $filter = ["Email" => self::get_user_email()];
-        $this->member = Member::get()
-            ->filter($filter)
-            ->first();
-        if ($this->member) {
+        if(Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
+            $this->member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
+            return $this->member;
         } else {
-            $this->member = Member::create($filter);
-        }
-        $this->member->Password = self::get_password();
-        $this->member->LockedOutUntil = null;
-        $this->member->FirstName = 'Test';
-        $this->member->Surname = 'User';
-        $this->member->write();
-        $auth = new MemberAuthenticator();
-        $result = $auth->checkPassword($this->member, self::get_password());
-        if(! $result->isValid()) {
-            user_error('Error in creating test user.', E_USER_ERROR);
-            die('---');
-        }
+            //Make temporary admin member
+            $filter = ["Email" => self::get_user_email()];
+            $this->member = Member::get()
+                ->filter($filter)
+                ->first();
+            if ($this->member) {
+            } else {
+                $this->member = Member::create($filter);
+            }
+            $this->member->Password = self::get_password();
+            $this->member->LockedOutUntil = null;
+            $this->member->FirstName = 'Test';
+            $this->member->Surname = 'User';
+            $this->member->write();
+            $auth = new MemberAuthenticator();
+            $result = $auth->checkPassword($this->member, self::get_password());
+            if(! $result->isValid()) {
+                user_error('Error in creating test user.', E_USER_ERROR);
+                die('---');
+            }
 
-        $adminGroup = DefaultAdminService::findOrCreateAdminGroup();
-        if (!$adminGroup) {
-            user_error("No admin group exists", E_USER_ERROR);
-            die('---');
-        }
-        $this->member->Groups()->add($adminGroup);
-        if (Permission::checkMember($this->member, 'ADMIN')) {
-            user_error("No admin group exists", E_USER_ERROR);
-            die('---');
-        }
+            $adminGroup = DefaultAdminService::findOrCreateAdminGroup();
+            if (!$adminGroup) {
+                user_error("No admin group exists", E_USER_ERROR);
+                die('---');
+            }
+            $this->member->Groups()->add($adminGroup);
+            if (Permission::checkMember($this->member, 'ADMIN')) {
+                user_error("No admin group exists", E_USER_ERROR);
+                die('---');
+            }
 
-        return $this->member;
+            return $this->member;
+        }
     }
 
 
     private function deleteUser()
     {
-        if ($this->member) {
-            $this->member->delete();
+        if(Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
+            //do nothing;
+        } else {
+            if ($this->member) {
+                $this->member->delete();
+            }
         }
     }
 
