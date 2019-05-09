@@ -1,0 +1,11 @@
+---
+Name: TemplateOverviewAuth
+Only:
+  EnvVarSet: SMOKE_TEST
+  environment: dev
+---
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Security\Security:
+    properties:
+      Authenticators:
+        TemplateOverview: %$SunnySideup\TemplateOverview\Security\Authenticator
