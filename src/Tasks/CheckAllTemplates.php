@@ -18,6 +18,7 @@ use SilverStripe\Security\Group;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Flushable;
 use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Admin\CMSMenu;
 use SilverStripe\ORM\DataObject;
@@ -35,6 +36,7 @@ use SilverStripe\Core\Startup\ErrorControlChainMiddleware;
 use SilverStripe\Versioned\Versioned;
 
 use SilverStripe\Security\MemberAuthenticator\MemberAuthenticator;
+use SilverStripe\Security\DefaultAdminService;
 use SilverStripe\Security\Permission;
 
 use GuzzleHttp\Cookie\CookieJar;
@@ -49,8 +51,14 @@ use GuzzleHttp\Client;
  * @sub-package: tasks
  **/
 
-class CheckAllTemplates extends BuildTask
+class CheckAllTemplates extends BuildTask implements Flushable
 {
+
+    public static function flush()
+    {
+        $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
+        $cache->clear();
+    }
 
     private static $username = '';
 
@@ -73,7 +81,7 @@ class CheckAllTemplates extends BuildTask
         if(! $password) {
             $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
             if(! $cache->has('password')) {
-                $password = bin2hex(uniqid()).'UPPER'.',..';
+                $password = strtolower('aa'.substr(uniqid(), 0, 8)).'_.,'.strtoupper('BB'.substr(uniqid(), 0, 8));
                 $cache->set('password', $password);
             }
             $password = $cache->get('password');
@@ -141,10 +149,8 @@ class CheckAllTemplates extends BuildTask
 
         //1. actually test a URL and return the data
         if ($testOne) {
-            if ($asAdmin) {
-                $this->guzzleSetup();
-                $this->getTestUser();
-            }
+            $this->guzzleSetup();
+            $this->getTestUser();
             echo $this->testURL($testOne);
             $this->deleteUser();
             $this->cleanup();
@@ -193,7 +199,7 @@ class CheckAllTemplates extends BuildTask
 
                 var checker = {
 
-                    useJSTest: true,
+                    useJSTest: false,
 
                     totalResponseTime: 0,
 
@@ -247,12 +253,13 @@ class CheckAllTemplates extends BuildTask
                             } else {
                                 var baseLink = checker.baseURL;
                                 var isAdmin = checker.item.IsAdmin;
+                                var testLink =  checker.item.Link;
                                 var data = {'test': testLink, 'admin': isAdmin}
                             }
                             var ID = checker.item.ID;
                             jQuery('#'+ID).find('td')
                                 .css('border', '1px solid blue');
-                            jQuery('#'+ID).css('background-image', 'url(/cms/images/loading.gif)')
+                            jQuery('#'+ID).css('background-image', 'url(/resources/cms/images/loading.gif)')
                                 .css('background-repeat', 'no-repeat')
                                 .css('background-position', 'top right');
                             jQuery.ajax({
@@ -260,7 +267,6 @@ class CheckAllTemplates extends BuildTask
                                 type: 'get',
                                 data: data,
                                 success: function(data, textStatus){
-                                    console.log(data);
                                     checker.item = null;
                                     jQuery('#'+ID)
                                         .html(data)
@@ -281,7 +287,6 @@ class CheckAllTemplates extends BuildTask
                                     );
                                 },
                                 error: function(error){
-                                    console.log(error);
                                     checker.item = null;
                                     jQuery('#'+ID).find('td.error').html('ERROR');
                                     jQuery('#'+ID).css('background-image', 'none');
@@ -392,6 +397,8 @@ class CheckAllTemplates extends BuildTask
      */
     public function getTestUser()
     {
+        $this->member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
+        return $this->member;
         //Make temporary admin member
         $filter = ["Email" => self::get_user_email()];
         $this->member = Member::get()
@@ -399,7 +406,6 @@ class CheckAllTemplates extends BuildTask
             ->first();
         if ($this->member) {
         } else {
-            // self::get_password() = rand(1000000000, 9999999999).'#KSADRFEddweed';
             $this->member = Member::create($filter);
         }
         $this->member->Password = self::get_password();
@@ -414,7 +420,7 @@ class CheckAllTemplates extends BuildTask
             die('---');
         }
 
-        $adminGroup = Group::get()->filter(array("code" => "administrators"))->first();
+        $adminGroup = DefaultAdminService::findOrCreateAdminGroup();
         if (!$adminGroup) {
             user_error("No admin group exists", E_USER_ERROR);
             die('---');
@@ -465,9 +471,10 @@ class CheckAllTemplates extends BuildTask
         $testURL = Director::absoluteURL('/templatesloginandredirect/login/?BackURL=');
         $testURL .= urlencode($url);
         $this->guzzleSetup();
-        $timeTaken = 0;
+        $start = microtime(true);
 
         $response = $this->guzzleSendRequest($testURL);
+        $end = microtime(true);
         $httpCode = $response->getStatusCode();
         if ($httpCode == "401") {
             echo $url;
@@ -524,8 +531,7 @@ class CheckAllTemplates extends BuildTask
         $possibleError = false;
 
         $body = $response->getBody();
-        echo $body;
-        die('xxx');
+
         //uncaught errors ...
         if (substr($body, 0, 12) == "Fatal error") {
             $error = "<span style='color: red;'>$message</span> ";
@@ -548,7 +554,7 @@ class CheckAllTemplates extends BuildTask
             $error = "unexpected response: ".$errorMessage;
             $html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
         }
-
+        $timeTaken = round($end - $start, 4);
         $html .= "<td style='text-align: right'>$httpCode</td><td style='text-align: right' class=\"tt\">$timeTaken</td><td>$error</td>";
 
         if ($validate && $httpCode == 200) {
