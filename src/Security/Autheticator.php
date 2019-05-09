@@ -13,6 +13,12 @@ use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Authenticator as AuthenticatorInterface;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\MemberAuthenticator\LogoutHandler;
+use SilverStripe\Control\Director;
+
+use SilverStripe\Core\Extensible;
+
+use Sunnysideup\TemplateOverview\Tasks\CheckAllTemplates;
+use Sunnysideup\TemplateOverview\Security\LoginHandler;
 
 class Authenticator implements AuthenticatorInterface
 {
@@ -40,6 +46,24 @@ class Authenticator implements AuthenticatorInterface
     {
         return Authenticator::CMS_LOGIN | Authenticator::LOGIN;
     }
+    public function authenticate(array $data, HttpRequest $request, ValidationResult &$result = null)
+    {
+        return Member::get()->first();
+    }
+
+    /**
+     * Determine if this authenticator is applicable to the current request
+     *
+     * @param HTTPRequest $request
+     * @return bool
+     */
+    public function isApplicable(HTTPRequest $request)
+    {
+        $user = Member::get()->first();
+        return !empty($user);
+    }
+
+
 
     /**
      * Return RequestHandler to manage the log-in process.
@@ -55,7 +79,7 @@ class Authenticator implements AuthenticatorInterface
      */
     public function getLoginHandler($link)
     {
-        return null;
+        return LoginHandler::create($link);
     }
 
     /**
@@ -93,23 +117,7 @@ class Authenticator implements AuthenticatorInterface
      */
     public function getLostPasswordHandler($link)
     {
-        return null; ]
-    }
-
-    /**
-     * Method to authenticate an user.
-     *
-     * @param array $data Raw data to authenticate the user.
-     * @param HTTPRequest $request
-     * @param ValidationResult $result A validationresult which is either valid or contains the error message(s)
-     * @return Member The matched member, or null if the authentication fails
-     */
-    public function authenticate(array $data, HTTPRequest $request, ValidationResult &$result = null)
-    {
-        if(Director::isDev()) {
-          return Member::get()->filter(['Email' => CheckAllTemplates::get_user_email()])->first();
-        }
-        return null;
+        return null; // Cannot provide lost password facilities for RealMe
     }
 
     /**

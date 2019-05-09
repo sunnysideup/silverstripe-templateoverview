@@ -2,11 +2,13 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
-use Sunnysideup\TemplateOverview\Api\TemplateOverviewPageAPI;
-use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
-
 use ReflectionClass;
 use ReflectionMethod;
+
+use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
+use Sunnysideup\TemplateOverview\Api\AllLinks;
+use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
+
 
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Convert;
@@ -31,6 +33,10 @@ use SilverStripe\Core\CoreKernel;
 use SilverStripe\Core\Startup\ErrorControlChainMiddleware;
 use SilverStripe\Versioned\Versioned;
 
+use SilverStripe\Security\MemberAuthenticator\MemberAuthenticator;
+
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Client;
 
 
 /**
@@ -45,11 +51,11 @@ class CheckAllTemplates extends BuildTask
 {
 
 
-    /**
-     * @var Array
-     * all of the admin acessible links
-     */
-    private static $custom_links = [];
+    public static function get_user_email()
+    {
+        return 'smoketest@test.com.ssu';
+    }
+
 
     private static $segment = 'smoketest';
 
@@ -65,34 +71,9 @@ class CheckAllTemplates extends BuildTask
      */
     protected $description = "Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited in ModelAdmin, checking for HTTP response errors (e.g. 404). Click start to run.";
 
-    /**
-      * List of URLs to be checked. Excludes front end pages (Cart pages etc).
-      */
-    private $modelAdmins = [];
+     private $guzzleCookieJar = null;
 
-    /**
-     * @var Array
-     * all of the public acessible links
-     */
-    private $allOpenLinks = [];
-
-    /**
-     * @var Array
-     * all of the admin acessible links
-     */
-    private $allAdmins = [];
-
-    /**
-     * @var Array
-     * Pages to check by class name. For example, for "ClassPage", will check the first instance of the cart page.
-     */
-    private $classNames = [];
-
-    /**
-     *
-     * @var curlHolder
-     */
-    private $ch = null;
+     private $guzzleClient = null;
 
     /**
      * temporary Admin used to log in.
@@ -115,20 +96,12 @@ class CheckAllTemplates extends BuildTask
     /**
      * @var Boolean
      */
-    private $w3validation = true;
+    private $w3validation = false;
 
     /**
      * @var Boolean
      */
     private $debug = false;
-
-    /**
-     * this variable can help with situations where there are
-     * unfixable bugs in Live and you want to run the tests
-     * on Draft instead... (or vice versa)
-     * @var String (Live or '')
-     */
-    private $stage = '';
 
     /**
      * Main function
@@ -141,43 +114,25 @@ class CheckAllTemplates extends BuildTask
     public function run($request)
     {
         ini_set('max_execution_time', 3000);
-        if (isset($_GET["debugme"])) {
+        if ($request->getVar('debugme')) {
             $this->debug = true;
         }
-        $asAdmin = empty($_REQUEST["admin"]) ? false : true;
-        $testOne = isset($_REQUEST["test"]) ? $_GET["test"] : null;
+        $asAdmin = $request->getVar('admin') ? true : false;
+        $testOne = $request->getVar('test') ? : null;
 
         //1. actually test a URL and return the data
         if ($testOne) {
-            $this->setupCurl();
+            $this->guzzleSetup();
             if ($asAdmin) {
-                $this->createAndLoginUser();
+                $this->createUser();
             }
-            echo $this->testURL($testOne, $this->w3validation);
+            echo $this->testURL($testOne);
+            $this->deleteUser();
             $this->cleanup();
         }
 
         //2. create a list of
         else {
-            foreach($this->Config()->get('custom_links') as $link) {
-                $link = '/'.ltrim($link, '/').'/';
-                if(substr($link,  0 , 6) === '/admin') {
-                    $this->customLinksAdmin[] = $link;
-                } else {
-                    $this->customLinksNonAdmin[] = $link;
-                }
-            }
-            $this->classNames = $this->listOfAllClasses();
-            $this->allNonAdmins = $this->prepareClasses();
-            $this->allAdmins = $this->array_push_array($this->allAdmins, $this->customLinksNonAdmin);
-
-
-            $this->modelAdmins = $this->ListOfAllModelAdmins();
-            $this->allAdmins = $this->array_push_array($this->modelAdmins, $this->prepareClasses(1));
-            $this->allAdmins = $this->array_push_array($this->allAdmins, $this->customLinksAdmin);
-
-            $otherLinks = $this->listOfAllControllerMethods();
-            $sections = array("allNonAdmins", "allAdmins");
             $count = 0;
             echo "
             <h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
@@ -185,8 +140,10 @@ class CheckAllTemplates extends BuildTask
             <p><strong>Average Response Time:</strong> <span id=\"AverageResponseTime\">0</span></p>
             <table border='1'>
             <tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th><th class'error'>W3 Check</th></tr>";
+            $array = Injector::inst()->get(AllLinks::class)->getAllLinks();
+            $sections = array("allNonAdmins", "allAdmins");
             foreach ($sections as $isAdmin => $sectionVariable) {
-                foreach ($this->$sectionVariable as $link) {
+                foreach ($array[$sectionVariable] as $link) {
                     $count++;
                     $id = "ID".$count;
                     $linkArray[] = array("IsAdmin" => $isAdmin, "Link" => $link, "ID" => $id);
@@ -337,78 +294,110 @@ class CheckAllTemplates extends BuildTask
      * creates the basic curl
      *
      */
-    private function setupCurl($type = "GET")
+    private function guzzleSetup($type = "GET")
     {
-        $user_agent='Mozilla/5.0 (Windows NT 6.1; rv:8.0) Gecko/20100101 Firefox/8.0';
-        $post = $type == "GET" ? false : true;
+        // $user_agent='Mozilla/5.0 (Windows NT 6.1; rv:8.0) Gecko/20100101 Firefox/8.0';
+        // $post = $type == "GET" ? false : true;
+        //
+        // $strCookie = 'PHPSESSID=' . session_id() . '; path=/';
+        // $options = array(
+        //     CURLOPT_CUSTOMREQUEST  => $type,        //set request type post or get
+        //     CURLOPT_POST           => $post,        //set to GET
+        //     CURLOPT_USERAGENT      => $user_agent, //set user agent
+        //     CURLOPT_COOKIE         => $strCookie, //set cookie file
+        //     CURLOPT_COOKIEFILE     => "cookie.txt", //set cookie file
+        //     CURLOPT_COOKIEJAR      => "cookie.txt", //set cookie jar
+        //     CURLOPT_RETURNTRANSFER => true,     // return web page
+        //     CURLOPT_HEADER         => false,    // don't return headers
+        //     CURLOPT_FOLLOWLOCATION => true,     // follow redirects
+        //     CURLOPT_ENCODING       => "",       // handle all encodings
+        //     CURLOPT_AUTOREFERER    => true,     // set referer on redirect
+        //     CURLOPT_CONNECTTIMEOUT => 120,      // timeout on connect
+        //     CURLOPT_TIMEOUT        => 120,      // timeout on response
+        //     CURLOPT_MAXREDIRS      => 10,       // stop after 10 redirects
+        // );
+        //
+        // $this->ch = curl_init();
+        //
+        // curl_setopt_array($this->ch, $options);
 
-        $strCookie = 'PHPSESSID=' . session_id() . '; path=/';
-        $options = array(
-            CURLOPT_CUSTOMREQUEST  => $type,        //set request type post or get
-            CURLOPT_POST           => $post,        //set to GET
-            CURLOPT_USERAGENT      => $user_agent, //set user agent
-            CURLOPT_COOKIE         => $strCookie, //set cookie file
-            CURLOPT_COOKIEFILE     => "cookie.txt", //set cookie file
-            CURLOPT_COOKIEJAR      => "cookie.txt", //set cookie jar
-            CURLOPT_RETURNTRANSFER => true,     // return web page
-            CURLOPT_HEADER         => false,    // don't return headers
-            CURLOPT_FOLLOWLOCATION => true,     // follow redirects
-            CURLOPT_ENCODING       => "",       // handle all encodings
-            CURLOPT_AUTOREFERER    => true,     // set referer on redirect
-            CURLOPT_CONNECTTIMEOUT => 120,      // timeout on connect
-            CURLOPT_TIMEOUT        => 120,      // timeout on response
-            CURLOPT_MAXREDIRS      => 10,       // stop after 10 redirects
+        $this->guzzleCookieJar = new CookieJar();
+        $this->guzzleClient = new Client(
+            [
+                'base_uri' => Director::baseURL(),
+            ]
         );
+    }
 
-        $this->ch = curl_init();
+    /**
+     *
+     * @return
+     */
+    protected function guzzleSendRequest($url, $type = 'GET')
+    {
+        $credentials = base64_encode($this->username.':'.$this->password);
 
-        curl_setopt_array($this->ch, $options);
+        return $this->guzzleClient->request(
+            'GET',
+            $url,
+            [
+                'cookies' => $this->guzzleCookieJar,
+                'headers' => [
+                    'PHP_AUTH_USER' => $this->username,
+                    'PHP_AUTH_PW' => $this->password,
+                ],
+                'auth' => [
+                    $this->username,
+                    $this->password
+                ],
+                'Authorization' => ['Basic '.$credentials]
+            ]
+        );
     }
 
 
 
     /**
-     * creates and logs in a temporary user.
      *
      */
-    private function createAndLoginUser()
+    private function createUser()
     {
-        $this->username = "TEMPLATEOVERVIEW_URLCHECKER___";
+        $this->username = self::get_user_email();
         $this->password = rand(1000000000, 9999999999).'#KSADRFEddweed';
         //Make temporary admin member
-        $adminMember = Member::get()->filter(array("Email" => $this->username))->limit(1)->first();
-        if ($adminMember != null) {
-            $adminMember->delete();
+        $filter = ["Email" => $this->username];
+        $this->member = Member::get()
+            ->filter($filter)
+            ->first();
+        if ($this->member) {
+        } else {
+            $this->member = Member::create($filter);
         }
-        $this->member = new Member();
-        $this->member->Email = $this->username;
         $this->member->Password = $this->password;
         $this->member->write();
-        $adminGroup = Group::get()->filter(array("code" => "administrators"))->limit(1)->first();
+        $auth = new MemberAuthenticator();
+        $result = $auth->checkPassword($this->member, $this->password);
+        if(! $result->isValid()) {
+            user_error('Error in creating test user.', E_USER_ERROR);
+            die('---');
+        }
+
+        $adminGroup = Group::get()->filter(array("code" => "administrators"))->first();
         if (!$adminGroup) {
-            user_error("No admin group exists");
+            user_error("No admin group exists", E_USER_ERROR);
+            die('---');
         }
         $this->member->Groups()->add($adminGroup);
-
-        curl_setopt($this->ch, CURLOPT_USERPWD, $this->username.":".$this->password);
-
-        $loginUrl = Director::absoluteURL('/Security/LoginForm');
-        curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($this->ch, CURLOPT_URL, $loginUrl);
-        curl_setopt($this->ch, CURLOPT_POST, 1);
-        curl_setopt($this->ch, CURLOPT_POSTFIELDS, 'Email='.$this->username.'&Password='.$this->password);
+    }
 
 
-        //execute the request (the login)
-        $loginContent      = curl_exec($this->ch);
-        $httpCode          = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
-        $err               = curl_errno($this->ch);
-        $errmsg            = curl_error($this->ch);
-        $header            = curl_getinfo($this->ch);
-        if ($httpCode != 200) {
-            echo "<span style='color:red'>There was an error logging in!</span><br />";
+    private function deleteUser()
+    {
+        if ($this->member) {
+            $this->member->delete();
         }
     }
+
 
     /**
      * removes the temporary user
@@ -417,51 +406,35 @@ class CheckAllTemplates extends BuildTask
      */
     private function cleanup()
     {
-        if ($this->member) {
-            $this->member->delete();
-        }
-        curl_close($this->ch);
+
     }
 
-    /**
-      * Takes an array, takes one item out, and returns new array
-      * @param Array $array Array which will have an item taken out of it.
-      * @param - $exclusion Item to be taken out of $array
-      * @return Array New array.
-      */
-    private function arrayExcept($array, $exclusion)
-    {
-        $newArray = $array;
-        for ($i = 0; $i < count($newArray); $i++) {
-            if ($newArray[$i] == $exclusion) {
-                unset($newArray[$i]);
-            }
-        }
-        return $newArray;
-    }
 
     /**
      * ECHOES the result of testing the URL....
      * @param String $url
      */
-    private function testURL($url, $validate = true)
+    private function testURL($url)
     {
         if (strlen(trim($url)) < 1) {
             user_error("empty url"); //Checks for empty strings.
         }
+        echo $url;
         if (strpos($url, "/admin") === 0 || strpos($url, "admin") === 0) {
             $validate = false;
+        } else {
+            $validate = $this->w3validation;
         }
 
         $url = Director::absoluteURL($url);
-        //start basic CURL
-        curl_setopt($this->ch, CURLOPT_URL, $url);
+        $this->guzzleSetup();
+        $timeTaken = 0;
 
-        $response          = curl_exec($this->ch);
-
-        $httpCode          = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+        $response = $this->guzzleSendRequest($url);
+        $httpCode = $response->getStatusCode();
         if ($httpCode == "401") {
             echo $url;
+            die('asdf');
             // $this->createAndLoginUser();
             // return $this->testURL($url, false);
 
@@ -510,303 +483,44 @@ class CheckAllTemplates extends BuildTask
             }, false);
 
         }
-        //get more curl!
 
-        $err               = curl_errno($this->ch);
-        $errmsg            = curl_error($this->ch);
-        $header            = curl_getinfo($this->ch);
-        $length            = curl_getinfo($this->ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-        $timeTaken         = curl_getinfo($this->ch, CURLINFO_TOTAL_TIME);
-
-        $timeTaken = number_format((float)$timeTaken, 2, '.', '');
         $possibleError = false;
-        $error = "none";
-        if (substr($response, 0, 12) == "Fatal error") {
-            $error = "<span style='color: red;'>$response</span> ";
+
+        $body = $response->getBody();
+        echo $body;
+        //uncaught errors ...
+        if (substr($body, 0, 12) == "Fatal error") {
+            $error = "<span style='color: red;'>$message</span> ";
             $possibleError = true;
         }
-        if (strlen($response) < 2000) {
-            $error = "<span style='color: red;'>$response</span> ";
+        if (strlen($body) < 2000) {
+            $error = "<span style='color: red;'>SHORT RESPONSE: $body</span> ";
             $possibleError = true;
         }
 
-        $html = "";
-        if ($httpCode == 200 && !$possibleError) {
+        $html = '';
+        $error = '';
+        if($possibleError) {
+            $html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
+        } elseif ($httpCode == 200) {
             $html .= "<td style='color:green'><a href='$url' style='color: grey!important; text-decoration: none;' target='_blank'>$url</a></td>";
+
         } else {
-            if (!$possibleError) {
-                $error = "unexpected response";
-            }
+            $errorMessage = $response->getReasonPhrase();
+            $error = "unexpected response: ".$errorMessage;
             $html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
         }
+
         $html .= "<td style='text-align: right'>$httpCode</td><td style='text-align: right' class=\"tt\">$timeTaken</td><td>$error</td>";
 
         if ($validate && $httpCode == 200) {
             $w3Obj = new W3cValidateApi();
-            $html .= "<td>".$w3Obj->W3Validate("", $response)."</td>";
+            $html .= "<td>".$w3Obj->W3Validate("", $body)."</td>";
         } else {
             $html .= "<td>n/a</td>";
         }
+
         return $html;
-    }
-
-    /**
-      * Pushes an array of items to an array
-      * @param Array $array Array to push items to (will overwrite)
-      * @param Array $pushArray Array of items to push to $array.
-      */
-    private function array_push_array($array, $pushArray)
-    {
-        foreach ($pushArray as $pushItem) {
-            if(! in_array($pushItem, $array)) {
-                array_push($array, $pushItem);
-            }
-        }
-        return $array;
-    }
-
-    /**
-     * returns a list of all SiteTree Classes
-     * @return Array(String)
-     */
-    private function listOfAllClasses()
-    {
-        $pages = [];
-        $list = null;
-        if (class_exists(TemplateOverviewPageAPI::class)) {
-            $templateOverviewPageAPI = Injector::inst()->get(TemplateOverviewPageAPI::class);
-            $list = $templateOverviewPageAPI->ListOfAllClasses();
-            foreach ($list as $page) {
-                $pages[] = $page->ClassName;
-            }
-        }
-        if (!count($pages)) {
-            $list = ClassInfo::subclassesFor(SiteTree::class);
-            foreach ($list as $page) {
-                $pages[] = $page;
-            }
-        }
-
-        return $pages;
-    }
-
-    /**
-     * returns a list of all model admin links
-     * @return Array(String)
-     */
-    private function ListOfAllModelAdmins()
-    {
-        $models = [];
-        $modelAdmins = CMSMenu::get_cms_classes(ModelAdmin::class);
-        if ($modelAdmins && count($modelAdmins)) {
-            foreach ($modelAdmins as $modelAdmin) {
-                $obj = singleton($modelAdmin);
-                $modelAdminLink = '/'.$obj->Link();
-                $modelAdminLinkArray = explode("?", $modelAdminLink);
-                $modelAdminLink = $modelAdminLinkArray[0];
-                //$extraVariablesLink = $modelAdminLinkArray[1];
-                $models[] = $modelAdminLink;
-                $modelsToAdd = $obj->getManagedModels();
-
-                if ($modelsToAdd && count($modelsToAdd)) {
-                    foreach ($modelsToAdd as $key => $model) {
-                        if (is_array($model) || !is_subclass_of($model, DataObject::class)) {
-                            $model = $key;
-                        }
-                        if (!is_subclass_of($model, DataObject::class)) {
-                            continue;
-                        }
-                        $modelAdminLink;
-                        $modelLink = $modelAdminLink.$this->sanitiseClassName($model)."/";
-                        $models[] = $modelLink;
-                        $models[] = $modelLink."EditForm/field/".$this->sanitiseClassName($model)."/item/new/";
-                        $item = $model::get()
-                            ->sort(DB::get_conn()->random().' ASC')
-                            ->First();
-                        if ($item) {
-                            $models[] = $modelLink."EditForm/field/".$this->sanitiseClassName($model)."/item/".$item->ID."/edit";
-                        }
-                    }
-                }
-            }
-        }
-
-        return $models;
-    }
-
-    protected function listOfAllControllerMethods()
-    {
-        $array = [];
-        $finalArray = [];
-        $classes = ClassInfo::subclassesFor(Controller::class);
-        //foreach($manifest as $class => $compareFilePath) {
-        //if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;
-        //}
-        $manifest = ClassLoader::inst()->getManifest()->getClasses();
-        $baseFolder = Director::baseFolder();
-        $cmsBaseFolder = Director::baseFolder()."/cms/";
-        $frameworkBaseFolder = Director::baseFolder()."/framework/";
-        if (Director::isDev()) {
-            foreach ($classes as $className) {
-                $lowerClassName = strtolower($className);
-                $location = $manifest[$lowerClassName];
-                if (strpos($location, $cmsBaseFolder) === 0 || strpos($location, $frameworkBaseFolder) === 0) {
-                    continue;
-                }
-                if ($className != Controller::class) {
-                    $controllerReflectionClass = new ReflectionClass($className);
-                    if (!$controllerReflectionClass->isAbstract()) {
-                        if (
-                            $className == "HideMailto" ||
-                            $className == "HideMailtoController" ||
-                            $className == "Mailto" ||
-                            $className instanceof SapphireTest ||
-                            $className instanceof BuildTask ||
-                            $className instanceof TaskRunner
-                        ) {
-                            continue;
-                        }
-                        $methods = $this->getPublicMethodsNotInherited($controllerReflectionClass, $className);
-                        foreach ($methods as $methodArray) {
-                            $array[$className."_".$methodArray["Method"]] = $methodArray;
-                        }
-                    }
-                }
-            }
-            $finalArray = [];
-            $doubleLinks = [];
-            foreach ($array as $index  => $classNameMethodArray) {
-                if(1 === 2) {
-                    try {
-                        $classObject = @Injector::inst()->get($classNameMethodArray["ClassName"]);
-                        if($classObject) {
-                            if(Config::inst()->get($classNameMethodArray["ClassName"], 'url_segment')) {
-                                if ($classNameMethodArray["Method"] == "templateoverviewtests") {
-                                    $this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);
-                                } else {
-                                    $link = $classObject->Link($classNameMethodArray["Method"]);
-                                    if ($link == $classNameMethodArray["ClassName"]."/") {
-                                        $link = $classNameMethodArray["ClassName"]."/".$classNameMethodArray["Method"]."/";
-                                    }
-                                    $classNameMethodArray["Link"] = $link;
-                                    if ($classNameMethodArray["Link"][0] != "/") {
-                                        $classNameMethodArray["Link"] = Director::baseURL().$classNameMethodArray["Link"];
-                                    }
-                                    if (!isset($doubleLinks[$link])) {
-                                        $finalArray[] = $classNameMethodArray;
-                                    }
-                                    $doubleLinks[$link] = true;
-                                }
-                            }
-                        }
-                    } catch (Exception $e) {
-                        // echo 'Caught exception: ',  $e->getMessage(), "\n";
-                    }
-                }
-            }
-        }
-        return $finalArray;
-    }
-
-
-
-    private function getPublicMethodsNotInherited($classReflection, $className)
-    {
-        $classMethods = $classReflection->getMethods();
-        $classMethodNames = [];
-        foreach ($classMethods as $index => $method) {
-            if ($method->getDeclaringClass()->getName() !== $className) {
-                unset($classMethods[$index]);
-            } else {
-                $allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);
-                if (!is_array($allowedActionsArray)) {
-                    $allowedActionsArray = [];
-                } else {
-                    //return $allowedActionsArray;
-                }
-                $methodName = $method->getName();
-                /* Get a reflection object for the class method */
-                $reflect = new ReflectionMethod($className, $methodName);
-                /* For private, use isPrivate().  For protected, use isProtected() */
-                /* See the Reflection API documentation for more definitions */
-                if ($reflect->isPublic()) {
-                    if ($methodName == strtolower($methodName)) {
-                        if (strpos($methodName, "_") == null) {
-                            if (!in_array($methodName, array("index", "run", "init"))) {
-                                /* The method is one we're looking for, push it onto the return array */
-                                $error = "";
-                                if (!in_array($methodName, $allowedActionsArray) && !isset($allowedActionsArray[$methodName])) {
-                                    $error = "Can not find ".$className."::".$methodName." in allowed_actions";
-                                } else {
-                                    unset($allowedActionsArray[$className]);
-                                }
-                                $classMethodNames[$methodName] = array(
-                                    "ClassName" => $className,
-                                    "Method" => $methodName,
-                                    "Error" => $error
-                                );
-                            }
-                        }
-                    }
-                }
-                if (count($allowedActionsArray)) {
-                    $classSpecificAllowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);
-                    if (is_array($classSpecificAllowedActionsArray) && count($classSpecificAllowedActionsArray)) {
-                        foreach ($allowedActionsArray as $methodName => $methodNameWithoutKey) {
-                            if (is_numeric($methodName)) {
-                                $methodName = $methodNameWithoutKey;
-                            }
-                            if (isset($classSpecificAllowedActionsArray[$methodName])) {
-                                $classMethodNames[$methodName] = array(
-                                    "ClassName" => $className,
-                                    "Method" => $methodName,
-                                    "Error" => "May not follow the right method name formatting (all lower case)"
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return $classMethodNames;
-    }
-
-    /**
-     * Takes {@link #$classNames}, gets the URL of the first instance of it
-     * (will exclude extensions of the class) and
-     * appends to the {@link #$urls} list to be checked
-     *
-     * @param Boolean $pageInCMS
-     *
-     * @return Array(String)
-     */
-    private function prepareClasses($pageInCMS = false)
-    {
-        //first() will return null or the object
-        $return = [];
-        foreach ($this->classNames as $class) {
-            $this->debugme(__LINE__, $class);
-            $excludedClasses = $this->arrayExcept($this->classNames, $class);
-            if ($pageInCMS) {
-                $stage = "";
-            } else {
-                $stage = $this->stage;
-            }
-            $page = Versioned::get_by_stage($class, Versioned::DRAFT)
-                ->exclude(array("ClassName" => $excludedClasses))
-                ->sort(DB::get_conn()->random().' ASC')
-                ->limit(1);
-            $page = $page->first();
-            if ($page) {
-                if ($pageInCMS) {
-                    $url = $page->CMSEditLink();
-                } else {
-                    $url = $page->Link();
-                }
-                $return[] = $url;
-            }
-        }
-        return $return;
     }
 
 
@@ -820,15 +534,6 @@ class CheckAllTemplates extends BuildTask
     }
 
 
-    /**
-     * Sanitise a model class' name for inclusion in a link
-     *
-     * @param string $class
-     * @return string
-     */
-    protected function sanitiseClassName($class)
-    {
-        return str_replace('\\', '-', $class);
-    }
+
 
 }

@@ -21,7 +21,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DB;
 
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
-use Sunnysideup\TemplateOverview\Api\TemplateOverviewPageAPI;
+use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 
 use \PageController;
 use \Page;
@@ -90,7 +90,7 @@ class TemplateOverviewPageController extends PageController
                 "Results" => $data
             );
         } else {
-            $array = [];;
+            $array = [];
         }
         return $this->customise($array)->renderWith("Sunnysideup\\TemplateOverview\\TemplateOverviewPageShowMoreList");
     }
@@ -178,9 +178,9 @@ class TemplateOverviewPageController extends PageController
      */
     public function ListOfAllClasses()
     {
-        $templateOverviewPageAPI = Injector::inst()->get(TemplateOverviewPageAPI::class);
+        $siteTreeDetails = Injector::inst()->get(SiteTreeDetails::class);
 
-        return $templateOverviewPageAPI->ListOfAllClasses();
+        return $siteTreeDetails->ListOfAllClasses();
     }
 
 

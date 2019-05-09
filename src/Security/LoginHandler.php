@@ -78,4 +78,9 @@ class LoginHandler extends RequestHandler
         return $this->redirect($this->getBackURL() ?: '/');
     }
 
+    public function forTemplate()
+    {
+        return 'xxx';
+    }
+
 }

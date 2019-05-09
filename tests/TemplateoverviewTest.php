@@ -4,7 +4,7 @@ class TemplateoverviewTest extends SapphireTest
 {
     protected $usesDatabase = false;
 
-    protected $requiredExtensions = [];;
+    protected $requiredExtensions = [];
 
     public function TestDevBuild()
     {
