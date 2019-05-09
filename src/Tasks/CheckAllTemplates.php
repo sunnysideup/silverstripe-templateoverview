@@ -56,6 +56,11 @@ class CheckAllTemplates extends BuildTask
         return 'smoketest@test.com.ssu';
     }
 
+    public static function get_test_user()
+    {
+        return Injector::inst()->get(CheckAllTemplates::class)->getTestUser();
+    }
+
 
     private static $segment = 'smoketest';
 
@@ -122,9 +127,9 @@ class CheckAllTemplates extends BuildTask
 
         //1. actually test a URL and return the data
         if ($testOne) {
-            $this->guzzleSetup();
             if ($asAdmin) {
-                $this->createUser();
+                $this->guzzleSetup();
+                $this->getTestUser();
             }
             echo $this->testURL($testOne);
             $this->deleteUser();
@@ -174,6 +179,8 @@ class CheckAllTemplates extends BuildTask
 
                 var checker = {
 
+                    useJSTest: true,
+
                     totalResponseTime: 0,
 
                     numberOfTests: 0,
@@ -220,8 +227,14 @@ class CheckAllTemplates extends BuildTask
 
                         }
                         else {
-                            var testLink = (checker.item.Link);
-                            var isAdmin = checker.item.IsAdmin;
+                            if(checker.useJSTest) {
+                                var data = {};
+                                var baseLink = (checker.item.Link);
+                            } else {
+                                var baseLink = checker.baseURL;
+                                var isAdmin = checker.item.IsAdmin;
+                                var data = {'test': testLink, 'admin': isAdmin}
+                            }
                             var ID = checker.item.ID;
                             jQuery('#'+ID).find('td')
                                 .css('border', '1px solid blue');
@@ -229,10 +242,11 @@ class CheckAllTemplates extends BuildTask
                                 .css('background-repeat', 'no-repeat')
                                 .css('background-position', 'top right');
                             jQuery.ajax({
-                                url: checker.baseURL,
+                                url: baseLink,
                                 type: 'get',
-                                data: {'test': testLink, 'admin': isAdmin},
+                                data: data,
                                 success: function(data, textStatus){
+                                    console.log(data);
                                     checker.item = null;
                                     jQuery('#'+ID)
                                         .html(data)
@@ -252,7 +266,8 @@ class CheckAllTemplates extends BuildTask
                                         1000
                                     );
                                 },
-                                error: function(){
+                                error: function(error){
+                                    console.log(error);
                                     checker.item = null;
                                     jQuery('#'+ID).find('td.error').html('ERROR');
                                     jQuery('#'+ID).css('background-image', 'none');
@@ -360,10 +375,10 @@ class CheckAllTemplates extends BuildTask
     /**
      *
      */
-    private function createUser()
+    public function getTestUser()
     {
+        $this->password = '#KSADRFEddweed';
         $this->username = self::get_user_email();
-        $this->password = rand(1000000000, 9999999999).'#KSADRFEddweed';
         //Make temporary admin member
         $filter = ["Email" => $this->username];
         $this->member = Member::get()
@@ -371,15 +386,16 @@ class CheckAllTemplates extends BuildTask
             ->first();
         if ($this->member) {
         } else {
+            // $this->password = rand(1000000000, 9999999999).'#KSADRFEddweed';
             $this->member = Member::create($filter);
-        }
-        $this->member->Password = $this->password;
-        $this->member->write();
-        $auth = new MemberAuthenticator();
-        $result = $auth->checkPassword($this->member, $this->password);
-        if(! $result->isValid()) {
-            user_error('Error in creating test user.', E_USER_ERROR);
-            die('---');
+            $this->member->Password = $this->password;
+            $this->member->write();
+            $auth = new MemberAuthenticator();
+            $result = $auth->checkPassword($this->member, $this->password);
+            if(! $result->isValid()) {
+                user_error('Error in creating test user.', E_USER_ERROR);
+                die('---');
+            }
         }
 
         $adminGroup = Group::get()->filter(array("code" => "administrators"))->first();
@@ -388,6 +404,8 @@ class CheckAllTemplates extends BuildTask
             die('---');
         }
         $this->member->Groups()->add($adminGroup);
+
+        return $this->member;
     }
 
 
@@ -419,68 +437,67 @@ class CheckAllTemplates extends BuildTask
         if (strlen(trim($url)) < 1) {
             user_error("empty url"); //Checks for empty strings.
         }
-        echo $url;
         if (strpos($url, "/admin") === 0 || strpos($url, "admin") === 0) {
             $validate = false;
         } else {
             $validate = $this->w3validation;
         }
-
-        $url = Director::absoluteURL($url);
+        $testURL = Director::absoluteURL('/templatesloginandredirect/login/?BackURL=');
+        $testURL .= urlencode($url);
         $this->guzzleSetup();
         $timeTaken = 0;
 
-        $response = $this->guzzleSendRequest($url);
+        $response = $this->guzzleSendRequest($testURL);
         $httpCode = $response->getStatusCode();
         if ($httpCode == "401") {
             echo $url;
-            die('asdf');
-            // $this->createAndLoginUser();
-            // return $this->testURL($url, false);
-
-            // Build request and detect flush
-            $variables = [
-                '_SERVER' => [],
-                '_GET' => [],
-                '_POST' => [],
-            ];
-            $variables['_SERVER']['REQUEST_METHOD'] = 'get';
-            $input = '';
-            // $variables['_SESSION'] = Session::get();
-            $request = HTTPRequestBuilder::createFromVariables(
-                $variables,
-                $input,
-                $url
-            );
-
-            // Default application
-            $kernel = new CoreKernel(BASE_PATH);
-            $app = new HTTPApplication($kernel);
-            $app->addMiddleware(new ErrorControlChainMiddleware($app));
-            $response = $app->handle($request);
-            $response->output();
-
-
-            // Test application
-            $kernel = new TestKernel(BASE_PATH);
-            $app = new HTTPApplication($kernel);
-
-            $request = CLIRequestBuilder::createFromEnvironment();
-            // Custom application
-            $app->execute($request, function (HTTPRequest $request) {
-                // Start session and execute
-                $request->getSession()->init($request);
-
-                // Invalidate classname spec since the test manifest will now pull out new subclasses for each internal class
-                // (e.g. Member will now have various subclasses of DataObjects that implement TestOnly)
-                DataObject::reset();
-
-                // Set dummy controller;
-                $controller = Controller::create();
-                $controller->setRequest($request);
-                $controller->pushCurrent();
-                $controller->doInit();
-            }, false);
+            die('COULD NOT ACCESS: '.$url);
+            // // $this->createAndLoginUser();
+            // // return $this->testURL($url, false);
+            //
+            // // Build request and detect flush
+            // $variables = [
+            //     '_SERVER' => [],
+            //     '_GET' => [],
+            //     '_POST' => [],
+            // ];
+            // $variables['_SERVER']['REQUEST_METHOD'] = 'get';
+            // $input = '';
+            // // $variables['_SESSION'] = Session::get();
+            // $request = HTTPRequestBuilder::createFromVariables(
+            //     $variables,
+            //     $input,
+            //     $url
+            // );
+            //
+            // // Default application
+            // $kernel = new CoreKernel(BASE_PATH);
+            // $app = new HTTPApplication($kernel);
+            // $app->addMiddleware(new ErrorControlChainMiddleware($app));
+            // $response = $app->handle($request);
+            // $response->output();
+            //
+            //
+            // // Test application
+            // $kernel = new TestKernel(BASE_PATH);
+            // $app = new HTTPApplication($kernel);
+            //
+            // $request = CLIRequestBuilder::createFromEnvironment();
+            // // Custom application
+            // $app->execute($request, function (HTTPRequest $request) {
+            //     // Start session and execute
+            //     $request->getSession()->init($request);
+            //
+            //     // Invalidate classname spec since the test manifest will now pull out new subclasses for each internal class
+            //     // (e.g. Member will now have various subclasses of DataObjects that implement TestOnly)
+            //     DataObject::reset();
+            //
+            //     // Set dummy controller;
+            //     $controller = Controller::create();
+            //     $controller->setRequest($request);
+            //     $controller->pushCurrent();
+            //     $controller->doInit();
+            // }, false);
 
         }
 
@@ -488,6 +505,7 @@ class CheckAllTemplates extends BuildTask
 
         $body = $response->getBody();
         echo $body;
+        die('xxx');
         //uncaught errors ...
         if (substr($body, 0, 12) == "Fatal error") {
             $error = "<span style='color: red;'>$message</span> ";
