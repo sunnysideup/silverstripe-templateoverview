@@ -29,6 +29,7 @@ use \Page;
 class TemplateOverviewPageController extends PageController
 {
 
+    private static $url_segment = 'templates';
 
     /**
      * The ContentController will take the URLSegment parameter from the URL and use that to look
@@ -89,7 +90,7 @@ class TemplateOverviewPageController extends PageController
                 "Results" => $data
             );
         } else {
-            $array = array();
+            $array = [];;
         }
         return $this->customise($array)->renderWith("Sunnysideup\\TemplateOverview\\TemplateOverviewPageShowMoreList");
     }
@@ -112,6 +113,17 @@ class TemplateOverviewPageController extends PageController
             }
         }
     }
+
+
+      public function Link($action = null)
+      {
+          $v = '/'.$this->Config()->url_segment;
+          if ($action) {
+              $v .= $action . '/';
+          }
+
+          return $v;
+      }
 
 
     public function TestTaskLink()

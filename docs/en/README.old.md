@@ -65,7 +65,7 @@ Installation Instructions
 	To provide help instructions.
 
 			function getHowToMakeThisTemplateWorkArray() {
-				$a = array();
+				$a = [];;
 				//OR $a = parent::getHowToMakeThisTemplateWorkArray();
 				$a[] = "Select header and three items for section one";
 				$a[] = "Select header and three items for section two";

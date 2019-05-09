@@ -12,9 +12,17 @@ use SilverStripe\Control\Director;
 use SilverStripe\View\ArrayData;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\View\ViewableData;
+use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Core\Extensible;
 
-class TemplateOverviewPageAPI extends ViewableData
+class TemplateOverviewPageAPI
 {
+    use Extensible;
+    use Injectable;
+    use Configurable;
+
     private static $list_of_all_classes = array();
 
     private static $classes_to_exclude = array(SiteTree::class, RedirectorPage::class, VirtualPage::class);
@@ -125,10 +133,10 @@ class TemplateOverviewPageAPI extends ViewableData
     /**
      * @param SiteTree $obj
      * @param Int $count
-     * @param String $ClassName
+     *
      * @return ArrayData
      */
-    private function createPageObject($obj, $count)
+    protected function createPageObject($obj, $count)
     {
         $this->counter++;
         $listArray = array();
@@ -157,27 +165,4 @@ class TemplateOverviewPageAPI extends ViewableData
         return new ArrayData($listArray);
     }
 
-    //not used!
-    public function NoSubClasses($obj)
-    {
-        $array = ClassInfo::subclassesFor($obj->ClassName);
-        if (count($array)) {
-            foreach ($array as $class) {
-                if ($class::get()->byID($obj->ID)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    public function Link($action = null)
-    {
-        $v = '/templates';
-        if ($action) {
-            $v .= $action . '/';
-        }
-
-        return $v;
-    }
 }

@@ -52,31 +52,31 @@ class CheckAllTemplates extends BuildTask
     /**
       * List of URLs to be checked. Excludes front end pages (Cart pages etc).
       */
-    private $modelAdmins = array();
+    private $modelAdmins = [];;
 
     /**
      * @var Array
      * all of the public acessible links
      */
-    private $allOpenLinks = array();
+    private $allOpenLinks = [];;
 
     /**
      * @var Array
      * all of the admin acessible links
      */
-    private $allAdmins = array();
+    private $allAdmins = [];;
 
     /**
      * @var Array
      * all of the admin acessible links
      */
-    private $customLinks = array();
+    private $customLinks = [];;
 
     /**
      * @var Array
      * Pages to check by class name. For example, for "ClassPage", will check the first instance of the cart page.
      */
-    private $classNames = array();
+    private $classNames = [];;
 
     /**
      *
@@ -496,7 +496,7 @@ class CheckAllTemplates extends BuildTask
      */
     private function listOfAllClasses()
     {
-        $pages = array();
+        $pages = [];;
         $list = null;
         if (class_exists(TemplateOverviewPageAPI::class)) {
             $templateOverviewPageAPI = Injector::inst()->get(TemplateOverviewPageAPI::class);
@@ -521,7 +521,7 @@ class CheckAllTemplates extends BuildTask
      */
     private function ListOfAllModelAdmins()
     {
-        $models = array();
+        $models = [];;
         $modelAdmins = CMSMenu::get_cms_classes(ModelAdmin::class);
         if ($modelAdmins && count($modelAdmins)) {
             foreach ($modelAdmins as $modelAdmin) {
@@ -560,8 +560,8 @@ class CheckAllTemplates extends BuildTask
 
     protected function listOfAllControllerMethods()
     {
-        $array = array();
-        $finalArray = array();
+        $array = [];;
+        $finalArray = [];;
         $classes = ClassInfo::subclassesFor(Controller::class);
         //foreach($manifest as $class => $compareFilePath) {
         //if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;
@@ -597,8 +597,8 @@ class CheckAllTemplates extends BuildTask
                     }
                 }
             }
-            $finalArray = array();
-            $doubleLinks = array();
+            $finalArray = [];;
+            $doubleLinks = [];;
             foreach ($array as $index  => $classNameMethodArray) {
                 $classObject = singleton($classNameMethodArray["ClassName"]);
                 if ($classNameMethodArray["Method"] == "templateoverviewtests") {
@@ -627,14 +627,14 @@ class CheckAllTemplates extends BuildTask
     private function getPublicMethodsNotInherited($classReflection, $className)
     {
         $classMethods = $classReflection->getMethods();
-        $classMethodNames = array();
+        $classMethodNames = [];;
         foreach ($classMethods as $index => $method) {
             if ($method->getDeclaringClass()->getName() !== $className) {
                 unset($classMethods[$index]);
             } else {
                 $allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::FIRST_SET);
                 if (!is_array($allowedActionsArray)) {
-                    $allowedActionsArray = array();
+                    $allowedActionsArray = [];;
                 } else {
                     //return $allowedActionsArray;
                 }
@@ -697,7 +697,7 @@ class CheckAllTemplates extends BuildTask
     private function prepareClasses($pageInCMS = false)
     {
         //first() will return null or the object
-        $return = array();
+        $return = [];;
         foreach ($this->classNames as $class) {
             $this->debugme(__LINE__, $class);
             $excludedClasses = $this->arrayExcept($this->classNames, $class);
@@ -753,10 +753,10 @@ class CheckAllTemplates_W3cValidateApi
     private $output = 'soap12';
     private $uri = '';
     private $fragment = '';
-    private $postVars = array();
+    private $postVars = [];;
     private $validResult = false;
     private $errorCount = 0;
-    private $errorList = array();
+    private $errorList = [];;
     private $showErrors = true;
 
 
