@@ -4,6 +4,7 @@ namespace Sunnysideup\TemplateOverview\Tasks;
 
 use ReflectionClass;
 use ReflectionMethod;
+use Psr\SimpleCache\CacheInterface;
 
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
@@ -34,6 +35,7 @@ use SilverStripe\Core\Startup\ErrorControlChainMiddleware;
 use SilverStripe\Versioned\Versioned;
 
 use SilverStripe\Security\MemberAuthenticator\MemberAuthenticator;
+use SilverStripe\Security\Permission;
 
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Client;
@@ -50,10 +52,34 @@ use GuzzleHttp\Client;
 class CheckAllTemplates extends BuildTask
 {
 
+    private static $username = 'x';
 
     public static function get_user_email()
     {
-        return 'smoketest@test.com.ssu';
+        $userName = Config::inst()->get(CheckAllTemplates::class, 'username');
+        if(! $userName) {
+            $userName = 'smoketest@test.com.ssu';
+        }
+
+        return $userName;
+    }
+
+
+    private static $password = 'x';
+
+    public static function get_password()
+    {
+        $password = Config::inst()->get(CheckAllTemplates::class, 'password');
+        if(! $password) {
+            $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
+            if(! $cache->has('password')) {
+                $password = bin2hex(uniqid());
+                $cache->set('password', $password);
+            }
+            $password = $cache->get('password');
+        }
+
+        return $password;
     }
 
     public static function get_test_user()
@@ -85,18 +111,6 @@ class CheckAllTemplates extends BuildTask
      * @var Member
      */
     private $member = null;
-
-    /**
-     * temporary username for temporary admin
-     * @var String
-     */
-    private $username = "";
-
-    /**
-     * temporary password for temporary admin
-     * @var String
-     */
-    private $password = "";
 
     /**
      * @var Boolean
@@ -340,6 +354,7 @@ class CheckAllTemplates extends BuildTask
         $this->guzzleClient = new Client(
             [
                 'base_uri' => Director::baseURL(),
+                'cookies' => true,
             ]
         );
     }
@@ -350,7 +365,7 @@ class CheckAllTemplates extends BuildTask
      */
     protected function guzzleSendRequest($url, $type = 'GET')
     {
-        $credentials = base64_encode($this->username.':'.$this->password);
+        $credentials = base64_encode(self::get_user_email().':'.self::get_password());
 
         return $this->guzzleClient->request(
             'GET',
@@ -358,12 +373,12 @@ class CheckAllTemplates extends BuildTask
             [
                 'cookies' => $this->guzzleCookieJar,
                 'headers' => [
-                    'PHP_AUTH_USER' => $this->username,
-                    'PHP_AUTH_PW' => $this->password,
+                    'PHP_AUTH_USER' => self::get_user_email(),
+                    'PHP_AUTH_PW' => self::get_password(),
                 ],
                 'auth' => [
-                    $this->username,
-                    $this->password
+                    self::get_user_email(),
+                    self::get_password(),
                 ],
                 'Authorization' => ['Basic '.$credentials]
             ]
@@ -377,25 +392,24 @@ class CheckAllTemplates extends BuildTask
      */
     public function getTestUser()
     {
-        $this->password = '#KSADRFEddweed';
-        $this->username = self::get_user_email();
         //Make temporary admin member
-        $filter = ["Email" => $this->username];
+        $filter = ["Email" => self::get_user_email()];
         $this->member = Member::get()
             ->filter($filter)
             ->first();
         if ($this->member) {
         } else {
-            // $this->password = rand(1000000000, 9999999999).'#KSADRFEddweed';
+            // self::get_password() = rand(1000000000, 9999999999).'#KSADRFEddweed';
             $this->member = Member::create($filter);
-            $this->member->Password = $this->password;
-            $this->member->write();
-            $auth = new MemberAuthenticator();
-            $result = $auth->checkPassword($this->member, $this->password);
-            if(! $result->isValid()) {
-                user_error('Error in creating test user.', E_USER_ERROR);
-                die('---');
-            }
+        }
+        $this->member->Password = self::get_password();
+        $this->member->LockedOutUntil = null;
+        $this->member->write();
+        $auth = new MemberAuthenticator();
+        $result = $auth->checkPassword($this->member, self::get_password());
+        if(! $result->isValid()) {
+            user_error('Error in creating test user.', E_USER_ERROR);
+            die('---');
         }
 
         $adminGroup = Group::get()->filter(array("code" => "administrators"))->first();
@@ -404,6 +418,10 @@ class CheckAllTemplates extends BuildTask
             die('---');
         }
         $this->member->Groups()->add($adminGroup);
+        if (Permission::checkMember($this->member, 'ADMIN')) {
+            user_error("No admin group exists", E_USER_ERROR);
+            die('---');
+        }
 
         return $this->member;
     }

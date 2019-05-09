@@ -1,0 +1,11 @@
+---
+Name: templateoverview_cache
+---
+SilverStripe\Core\Injector\Injector:
+  Psr\SimpleCache\CacheInterface.templateoverview:
+    factory: SilverStripe\Core\Cache\CacheFactory
+    constructor:
+      #for both stages
+      disable-container: true
+      namespace: "templateoverview"
+      defaultLifetime: 7200
