@@ -52,7 +52,7 @@ use GuzzleHttp\Client;
 class CheckAllTemplates extends BuildTask
 {
 
-    private static $username = 'x';
+    private static $username = '';
 
     public static function get_user_email()
     {
@@ -65,7 +65,7 @@ class CheckAllTemplates extends BuildTask
     }
 
 
-    private static $password = 'x';
+    private static $password = '';
 
     public static function get_password()
     {
