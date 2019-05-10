@@ -21,6 +21,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\Admin\CMSMenu;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
@@ -106,14 +107,19 @@ class AllLinks
     */
     private $pagesInCMS = [];
     /**
-    * @var array
-    */
+     * @var array
+     */
     private $dataObjectsInCMS = [];
 
     /**
-      * List of URLs to be checked. Excludes front end pages (Cart pages etc).
-      */
+     * @var array
+     */
     private $modelAdmins = [];
+
+    /**
+     * @var array
+     */
+    private $leftAndMainLnks = [];
 
 
     /**
@@ -155,10 +161,12 @@ class AllLinks
         $this->pagesInCMS = $this->ListOfPagesLinks(true);
         $this->dataObjectsInCMS = $this->ListOfDataObjectsLinks(true);
         $this->modelAdmins = $this->ListOfAllModelAdmins();
+        $this->leftAndMainLnks = $this->ListOfAllLeftAndMains();
 
         $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->pagesInCMS);
         $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->dataObjectsInCMS);
         $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->modelAdmins);
+        $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->leftAndMainLnks);
         $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->customLinksAdmin);
         sort($this->allAdmins);
 
@@ -206,12 +214,10 @@ class AllLinks
 
         return $return;
     }
+
     /**
-     * Takes {@link #$classNames}, gets the URL of the first instance of it
-     * (will exclude extensions of the class) and
-     * appends to the {@link #$urls} list to be checked
      *
-     * @param bool $pageInCMS
+     * @param bool $inCMS
      *
      * @return array
      */
@@ -222,21 +228,48 @@ class AllLinks
         $list = ClassInfo::subclassesFor(DataObject::class);
         foreach ($list as $class) {
             if(! in_array($class, array_merge($this->siteTreeClassNames, [DataObject::class]))) {
-                $obj = DataObject::get_one($class, ["ClassName" => $class], DB::get_conn()->random().' ASC');
-                if ($obj) {
-                    $url = null;
-                    if ($inCMS) {
-                        if($obj->hasMethod('CMSEditLink')) {
-                            $url = $obj->CMSEditLink();
+                if($this->isValidClass($class)) {
+                    $obj = DataObject::get_one($class, ["ClassName" => $class], DB::get_conn()->random().' ASC');
+                    if ($obj) {
+                        $url = null;
+                        if ($inCMS) {
+                            if($obj->hasMethod('CMSEditLink')) {
+                                $url = $obj->CMSEditLink();
+                            }
+                            if($obj->hasMethod('PreviewLink')) {
+                                $url = $obj->PreviewLink();
+                            }
+                        } else {
+                            if($obj->hasMethod('Link')) {
+                                $url = $obj->Link();
+                            }
                         }
-                        if($obj->hasMethod('PreviewLink')) {
-                            $url = $obj->PreviewLink();
-                        }
-                    } else {
-                        if($obj->hasMethod('Link')) {
-                            $url = $obj->Link();
+                        if($url) {
+                            $return[] = $url;
                         }
                     }
+                }
+            }
+        }
+
+        return $return;
+    }
+
+
+    /**
+     *
+     * @return array
+     */
+    private function ListOfAllLeftAndMains()
+    {
+        //first() will return null or the object
+        $return = [];
+        $list = CMSMenu::get_cms_classes();
+        foreach ($list as $class) {
+            if($this->isValidClass($class)) {
+                $obj = Injector::inst()->get($class);
+                if ($obj) {
+                    $url = $obj->Link();
                     if($url) {
                         $return[] = $url;
                     }
@@ -246,6 +279,7 @@ class AllLinks
 
         return $return;
     }
+
 
     /**
      * returns a list of all model admin links
@@ -455,6 +489,7 @@ class AllLinks
         foreach ($pushArray as $pushItem) {
             $pushItem = '/'.Director::makeRelative($pushItem);
             $pushItem = $this->sanitiseClassName($pushItem);
+            $pushItem = str_replace('?stage=Stage', '', $pushItem);
             if(! in_array($pushItem, $array)) {
                 array_push($array, $pushItem);
             }
@@ -508,5 +543,14 @@ class AllLinks
         return str_replace('\\', '-', $class);
     }
 
+
+    protected function isValidClass($class)
+    {
+        $obj = new ReflectionClass($class);
+        if($obj->isAbstract()) {
+            return false;
+        }
+        return true;
+    }
 
 }
