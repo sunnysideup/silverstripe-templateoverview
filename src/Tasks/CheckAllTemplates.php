@@ -41,6 +41,8 @@ use SilverStripe\Security\Permission;
 
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7;
 
 
 /**
@@ -123,6 +125,8 @@ class CheckAllTemplates extends BuildTask implements Flushable
      private $guzzleCookieJar = null;
 
      private $guzzleClient = null;
+
+     private $guzzleHasError = false;
 
     /**
      * temporary Admin used to log in.
@@ -380,24 +384,33 @@ class CheckAllTemplates extends BuildTask implements Flushable
      */
     protected function guzzleSendRequest($url, $type = 'GET')
     {
+        $this->guzzleHasError = false;
         $credentials = base64_encode(self::get_user_email().':'.self::get_password());
-
-        return $this->guzzleClient->request(
-            'GET',
-            $url,
-            [
-                'cookies' => $this->guzzleCookieJar,
-                'headers' => [
-                    'PHP_AUTH_USER' => self::get_user_email(),
-                    'PHP_AUTH_PW' => self::get_password(),
-                ],
-                'auth' => [
-                    self::get_user_email(),
-                    self::get_password(),
-                ],
-                'Authorization' => ['Basic '.$credentials]
-            ]
-        );
+        try {
+            $response = $this->guzzleClient->request(
+                'GET',
+                $url,
+                [
+                    'cookies' => $this->guzzleCookieJar,
+                    'headers' => [
+                        'PHP_AUTH_USER' => self::get_user_email(),
+                        'PHP_AUTH_PW' => self::get_password(),
+                    ],
+                    'auth' => [
+                        self::get_user_email(),
+                        self::get_password(),
+                    ],
+                    'Authorization' => ['Basic '.$credentials]
+                ]
+            );
+        } catch (RequestException $exception) {
+            $this->guzzleHasError = true;
+            //echo Psr7\str($exception->getRequest());
+            if ($exception->hasResponse()) {
+                $response = $exception->getResponseBodySummary($exception->getResponse());
+            }
+        }
+        return $response;
     }
 
 
@@ -488,87 +501,46 @@ class CheckAllTemplates extends BuildTask implements Flushable
         $testURL = Director::absoluteURL('/templatesloginandredirect/login/?BackURL=');
         $testURL .= urlencode($url);
         $this->guzzleSetup();
-        $start = microtime(true);
 
+        $start = microtime(true);
         $response = $this->guzzleSendRequest($testURL);
         $end = microtime(true);
-        $httpCode = $response->getStatusCode();
+
+        if($this->guzzleHasError) {
+            $httpCode = 500;
+            $body = '';
+            $error = $response;
+        } else {
+            $httpCode = $response->getStatusCode();
+            $body = $response->getBody();
+            $error = $response->getReasonPhrase();
+        }
         if ($httpCode == "401") {
             echo $url;
             die('COULD NOT ACCESS: '.$url);
-            // // $this->createAndLoginUser();
-            // // return $this->testURL($url, false);
-            //
-            // // Build request and detect flush
-            // $variables = [
-            //     '_SERVER' => [],
-            //     '_GET' => [],
-            //     '_POST' => [],
-            // ];
-            // $variables['_SERVER']['REQUEST_METHOD'] = 'get';
-            // $input = '';
-            // // $variables['_SESSION'] = Session::get();
-            // $request = HTTPRequestBuilder::createFromVariables(
-            //     $variables,
-            //     $input,
-            //     $url
-            // );
-            //
-            // // Default application
-            // $kernel = new CoreKernel(BASE_PATH);
-            // $app = new HTTPApplication($kernel);
-            // $app->addMiddleware(new ErrorControlChainMiddleware($app));
-            // $response = $app->handle($request);
-            // $response->output();
-            //
-            //
-            // // Test application
-            // $kernel = new TestKernel(BASE_PATH);
-            // $app = new HTTPApplication($kernel);
-            //
-            // $request = CLIRequestBuilder::createFromEnvironment();
-            // // Custom application
-            // $app->execute($request, function (HTTPRequest $request) {
-            //     // Start session and execute
-            //     $request->getSession()->init($request);
-            //
-            //     // Invalidate classname spec since the test manifest will now pull out new subclasses for each internal class
-            //     // (e.g. Member will now have various subclasses of DataObjects that implement TestOnly)
-            //     DataObject::reset();
-            //
-            //     // Set dummy controller;
-            //     $controller = Controller::create();
-            //     $controller->setRequest($request);
-            //     $controller->pushCurrent();
-            //     $controller->doInit();
-            // }, false);
-
         }
 
         $possibleError = false;
 
-        $body = $response->getBody();
-
         //uncaught errors ...
-        if (substr($body, 0, 12) == "Fatal error") {
+        if ($body && substr($body, 0, 12) == "Fatal error") {
             $error = "<span style='color: red;'>$message</span> ";
             $possibleError = true;
         }
-        if (strlen($body) < 2000) {
+        elseif ($body && strlen($body) < 2000) {
             $error = "<span style='color: red;'>SHORT RESPONSE: $body</span> ";
             $possibleError = true;
         }
 
         $html = '';
-        $error = '';
-        if($possibleError) {
-            $html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
-        } elseif ($httpCode == 200) {
-            $html .= "<td style='color:green'><a href='$url' style='color: grey!important; text-decoration: none;' target='_blank'>$url</a></td>";
-
+        if($httpCode == 200) {
+            if($possibleError) {
+                $html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
+            } else {
+                $html .= "<td style='color:green'><a href='$url' style='color: grey!important; text-decoration: none;' target='_blank'>$url</a></td>";
+            }
         } else {
-            $errorMessage = $response->getReasonPhrase();
-            $error = "unexpected response: ".$errorMessage;
+            $error .= "unexpected response: ".$error;
             $html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
         }
         $timeTaken = round($end - $start, 4);

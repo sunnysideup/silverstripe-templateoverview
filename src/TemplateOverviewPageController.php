@@ -143,7 +143,7 @@ class TemplateOverviewPageController extends PageController
 
     public function quicklist()
     {
-        $list = $this->ListOfAllClasses();
+        $list = $this->ListOfAllSiteTreeClasses();
         foreach ($list as $item) {
             DB::alteration_message($item->ClassName);
         }
@@ -154,7 +154,7 @@ class TemplateOverviewPageController extends PageController
         $classWeAreLookingFor = $request->param("ID");
         $classWeAreLookingFor = singleton($classWeAreLookingFor);
         if ($classWeAreLookingFor instanceof DataObject) {
-            $list = $this->ListOfAllClasses();
+            $list = $this->ListOfAllSiteTreeClasses();
             foreach ($list as $item) {
                 $config = Config::inst();
                 $listOfImages = $config->get($item->ClassName, "has_one")
@@ -176,11 +176,11 @@ class TemplateOverviewPageController extends PageController
      * returns a list of all SiteTree Classes
      * @return Array(String)
      */
-    public function ListOfAllClasses()
+    public function ListOfAllSiteTreeClasses()
     {
         $siteTreeDetails = Injector::inst()->get(SiteTreeDetails::class);
 
-        return $siteTreeDetails->ListOfAllClasses();
+        return $siteTreeDetails->ListOfAllSiteTreeClasses();
     }
 
 

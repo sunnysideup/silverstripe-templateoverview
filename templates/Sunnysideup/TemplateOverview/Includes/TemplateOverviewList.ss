@@ -1,6 +1,6 @@
 <h1 id="allclasses">Templates used on this website ($TotalCount): </h1>
 <ul id="ClassList">
-<% loop ListOfAllClasses %>
+<% loop ListOfAllSiteTreeClasses %>
     <% if Count %>
     <li style="background-image: url({$Icon}); background-repeat: no-repeat!important; background-position: top left; text-indent: 20px;" id="sectionFor-$ClassName">
         <span class="typo-heading">$Count x $ClassName - template</span>

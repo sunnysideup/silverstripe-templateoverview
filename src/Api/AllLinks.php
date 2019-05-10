@@ -49,6 +49,10 @@ class AllLinks
     use Configurable;
 
 
+    private static $model_admin_alternatives = [
+        'admin/archive' => 'CMSEditLinkForTestPurposesNOTINUSE'
+    ];
+
 
     /**
      * @var array
@@ -79,6 +83,11 @@ class AllLinks
     /**
     * @var array
     */
+    private $dataObjectsOnFrontEnd = [];
+
+    /**
+    * @var array
+    */
     private $otherControllerMethods = [];
 
     /**
@@ -96,6 +105,10 @@ class AllLinks
     * @var array
     */
     private $pagesInCMS = [];
+    /**
+    * @var array
+    */
+    private $dataObjectsInCMS = [];
 
     /**
       * List of URLs to be checked. Excludes front end pages (Cart pages etc).
@@ -112,7 +125,7 @@ class AllLinks
      * @var array
      * Pages to check by class name. For example, for "ClassPage", will check the first instance of the cart page.
      */
-    private $classNames = [];
+    private $siteTreeClassNames = [];
 
     /**
      * returns an array of allNonAdmins => [] , allAdmins => [], otherControllerMethods => []
@@ -121,7 +134,7 @@ class AllLinks
     public function getAllLinks()
     {
 
-        $this->classNames = $this->listOfAllClasses();
+        $this->siteTreeClassNames = $this->listOfAllSiteTreeClasses();
 
         foreach($this->Config()->get('custom_links') as $link) {
             $link = '/'.ltrim($link, '/').'/';
@@ -131,17 +144,23 @@ class AllLinks
                 $this->customLinksNonAdmin[] = $link;
             }
         }
-        $this->pagesOnFrontEnd = $this->ListOfPagesLinks();
+        $this->pagesOnFrontEnd = $this->ListOfPagesLinks(false);
+        $this->dataObjectsOnFrontEnd = $this->ListOfDataObjectsLinks(false);
 
         $this->allNonAdmins = $this->addToArrayOfLinks($this->allNonAdmins, $this->pagesOnFrontEnd);
+        $this->allNonAdmins = $this->addToArrayOfLinks($this->allNonAdmins, $this->dataObjectsOnFrontEnd);
         $this->allNonAdmins = $this->addToArrayOfLinks($this->allNonAdmins, $this->customLinksNonAdmin);
+        sort($this->allNonAdmins);
 
-        $this->pagesInCMS = $this->ListOfPagesLinks(1);
+        $this->pagesInCMS = $this->ListOfPagesLinks(true);
+        $this->dataObjectsInCMS = $this->ListOfDataObjectsLinks(true);
         $this->modelAdmins = $this->ListOfAllModelAdmins();
 
         $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->pagesInCMS);
+        $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->dataObjectsInCMS);
         $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->modelAdmins);
         $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->customLinksAdmin);
+        sort($this->allAdmins);
 
         $this->otherControllerMethods = $this->ListOfAllControllerMethods();
 
@@ -166,27 +185,65 @@ class AllLinks
     {
         //first() will return null or the object
         $return = [];
-        foreach ($this->classNames as $class) {
-            $excludedClasses = $this->arrayExcept($this->classNames, $class);
-            if ($pageInCMS) {
-                $stage = "";
-            } else {
-                $stage = $this->stage;
-            }
+        foreach ($this->siteTreeClassNames as $class) {
+            $excludedClasses = $this->arrayExcept($this->siteTreeClassNames, $class);
             $page = Versioned::get_by_stage($class, Versioned::DRAFT)
-                ->exclude(array("ClassName" => $excludedClasses))
+                ->exclude(["ClassName" => $excludedClasses])
                 ->sort(DB::get_conn()->random().' ASC')
-                ->limit(1);
-            $page = $page->first();
+                ->first(1);
             if ($page) {
                 if ($pageInCMS) {
                     $url = $page->CMSEditLink();
+                    $return[] = $url;
+                    $return[] = str_replace('/edit/', '/settings/', $url);
+                    $return[] = str_replace('/edit/', '/history/', $url);
                 } else {
                     $url = $page->Link();
+                    $return[] = $url;
                 }
-                $return[] = $url;
             }
         }
+
+        return $return;
+    }
+    /**
+     * Takes {@link #$classNames}, gets the URL of the first instance of it
+     * (will exclude extensions of the class) and
+     * appends to the {@link #$urls} list to be checked
+     *
+     * @param bool $pageInCMS
+     *
+     * @return array
+     */
+    private function ListOfDataObjectsLinks($inCMS = false)
+    {
+        //first() will return null or the object
+        $return = [];
+        $list = ClassInfo::subclassesFor(DataObject::class);
+        foreach ($list as $class) {
+            if(! in_array($class, array_merge($this->siteTreeClassNames, [DataObject::class]))) {
+                $obj = DataObject::get_one($class, ["ClassName" => $class], DB::get_conn()->random().' ASC');
+                if ($obj) {
+                    $url = null;
+                    if ($inCMS) {
+                        if($obj->hasMethod('CMSEditLink')) {
+                            $url = $obj->CMSEditLink();
+                        }
+                        if($obj->hasMethod('PreviewLink')) {
+                            $url = $obj->PreviewLink();
+                        }
+                    } else {
+                        if($obj->hasMethod('Link')) {
+                            $url = $obj->Link();
+                        }
+                    }
+                    if($url) {
+                        $return[] = $url;
+                    }
+                }
+            }
+        }
+
         return $return;
     }
 
@@ -196,7 +253,7 @@ class AllLinks
      */
     public function ListOfAllModelAdmins()
     {
-        $models = [];
+        $links = [];
         $modelAdmins = CMSMenu::get_cms_classes(ModelAdmin::class);
         if ($modelAdmins && count($modelAdmins)) {
             foreach ($modelAdmins as $modelAdmin) {
@@ -205,9 +262,8 @@ class AllLinks
                 $modelAdminLinkArray = explode("?", $modelAdminLink);
                 $modelAdminLink = $modelAdminLinkArray[0];
                 //$extraVariablesLink = $modelAdminLinkArray[1];
-                $models[] = $modelAdminLink;
+                $links[] = $modelAdminLink;
                 $modelsToAdd = $obj->getManagedModels();
-
                 if ($modelsToAdd && count($modelsToAdd)) {
                     foreach ($modelsToAdd as $key => $model) {
                         if (is_array($model) || !is_subclass_of($model, DataObject::class)) {
@@ -216,22 +272,36 @@ class AllLinks
                         if (!is_subclass_of($model, DataObject::class)) {
                             continue;
                         }
-                        $modelAdminLink;
-                        $modelLink = $modelAdminLink.$this->sanitiseClassName($model)."/";
-                        $models[] = $modelLink;
-                        $models[] = $modelLink."EditForm/field/".$this->sanitiseClassName($model)."/item/new/";
                         $item = $model::get()
                             ->sort(DB::get_conn()->random().' ASC')
                             ->First();
-                        if ($item) {
-                            $models[] = $modelLink."EditForm/field/".$this->sanitiseClassName($model)."/item/".$item->ID."/edit";
+                        $exceptionMethod = '';
+                        foreach($this->Config()->get('model_admin_alternatives') as $test => $method) {
+                            if(! $method) {
+                                $method = 'do-not-use';
+                            }
+                            if(strpos($modelAdminLink, $test) !== false) {
+                                $exceptionMethod = $method;
+                            }
+                        }
+                        $modelLink = $modelAdminLink.$this->sanitiseClassName($model)."/";
+                        if($exceptionMethod) {
+                            if($item && $item->hasMethod($exceptionMethod)) {
+                                $links = array_merge($links, $item->$exceptionMethod($modelAdminLink));
+                            }
+                        } else {
+                            $links[] = $modelLink;
+                            $links[] = $modelLink."EditForm/field/".$this->sanitiseClassName($model)."/item/new/";
+                            if ($item) {
+                                $links[] = $modelLink."EditForm/field/".$this->sanitiseClassName($model)."/item/".$item->ID."/edit/";
+                            }
                         }
                     }
                 }
             }
         }
 
-        return $models;
+        return $links;
     }
 
     /**
@@ -384,6 +454,7 @@ class AllLinks
     {
         foreach ($pushArray as $pushItem) {
             $pushItem = '/'.Director::makeRelative($pushItem);
+            $pushItem = $this->sanitiseClassName($pushItem);
             if(! in_array($pushItem, $array)) {
                 array_push($array, $pushItem);
             }
@@ -395,11 +466,11 @@ class AllLinks
      * returns a list of all SiteTree Classes
      * @return array
      */
-    private function listOfAllClasses()
+    private function listOfAllSiteTreeClasses()
     {
         $pages = [];
         $siteTreeDetails = Injector::inst()->get(SiteTreeDetails::class);
-        $list = $siteTreeDetails->ListOfAllClasses();
+        $list = $siteTreeDetails->ListOfAllSiteTreeClasses();
         foreach ($list as $page) {
             $pages[] = $page->ClassName;
         }

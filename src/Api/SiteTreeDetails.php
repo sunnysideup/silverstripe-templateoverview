@@ -45,7 +45,7 @@ class SiteTreeDetails
     protected $counter = 0;
 
 
-    public function ListOfAllClasses($checkCurrentClass = true)
+    public function ListOfAllSiteTreeClasses($checkCurrentClass = true)
     {
         if (!self::$list_of_all_classes) {
             $ArrayOfAllClasses =  [];
