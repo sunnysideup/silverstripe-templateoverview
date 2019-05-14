@@ -27,7 +27,7 @@
     "extra": {
         "expose": [
             "client/javascript",
-            "client/images"
+            "client/css"
         ]
     }
 }

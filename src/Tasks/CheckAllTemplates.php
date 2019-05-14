@@ -21,6 +21,7 @@ use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Flushable;
 use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Admin\CMSMenu;
+use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\Control\Controller;
@@ -34,6 +35,9 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\CoreKernel;
 use SilverStripe\Core\Startup\ErrorControlChainMiddleware;
 use SilverStripe\Versioned\Versioned;
+use SilverStripe\View\ArrayData;
+use SilverStripe\View\Requirements;
+use SilverStripe\View\SSViewer;
 
 use SilverStripe\Security\MemberAuthenticator\MemberAuthenticator;
 use SilverStripe\Security\DefaultAdminService;
@@ -43,7 +47,6 @@ use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7;
-
 
 /**
  * @description (see $this->description)
@@ -55,7 +58,6 @@ use GuzzleHttp\Psr7;
 
 class CheckAllTemplates extends BuildTask implements Flushable
 {
-
     public static function flush()
     {
         $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
@@ -69,8 +71,8 @@ class CheckAllTemplates extends BuildTask implements Flushable
     public static function get_user_email()
     {
         $userName = Config::inst()->get(CheckAllTemplates::class, 'username');
-        if(! $userName) {
-            if(Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
+        if (! $userName) {
+            if (Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
                 $userName = DefaultAdminService::getDefaultAdminUsername();
             } else {
                 $userName = 'smoketest@test.com.ssu';
@@ -86,12 +88,12 @@ class CheckAllTemplates extends BuildTask implements Flushable
     public static function get_password()
     {
         $password = Config::inst()->get(CheckAllTemplates::class, 'password');
-        if(! $password) {
-            if(Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
+        if (! $password) {
+            if (Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
                 $password = DefaultAdminService::getDefaultAdminPassword();
             } else {
                 $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
-                if(! $cache->has('password')) {
+                if (! $cache->has('password')) {
                     $password = strtolower('aa'.substr(uniqid(), 0, 8)).'_.,'.strtoupper('BB'.substr(uniqid(), 0, 8));
                     $cache->set('password', $password);
                 }
@@ -122,11 +124,11 @@ class CheckAllTemplates extends BuildTask implements Flushable
      */
     protected $description = "Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited in ModelAdmin, checking for HTTP response errors (e.g. 404). Click start to run.";
 
-     private $guzzleCookieJar = null;
+    private $guzzleCookieJar = null;
 
-     private $guzzleClient = null;
+    private $guzzleClient = null;
 
-     private $guzzleHasError = false;
+    private $guzzleHasError = false;
 
     /**
      * temporary Admin used to log in.
@@ -158,183 +160,65 @@ class CheckAllTemplates extends BuildTask implements Flushable
         if ($request->getVar('debugme')) {
             $this->debug = true;
         }
+
         $asAdmin = $request->getVar('admin') ? true : false;
         $testOne = $request->getVar('test') ? : null;
 
-        //1. actually test a URL and return the data
+        // 1. actually test a URL and return the data
         if ($testOne) {
             $this->guzzleSetup();
             $this->getTestUser();
-            echo $this->testURL($testOne);
+            $content = $this->testURL($testOne);
             $this->deleteUser();
             $this->cleanup();
+
+            print $content;
+
+            return;
         }
 
-        //2. create a list of
+        // 2. create a list of
         else {
             $count = 0;
-            echo "
-            <h1><a href=\"#\" class=\"start\">start</a> | <a href=\"#\" class=\"stop\">stop</a></h1>
-            <p><strong>Tests Done:</strong> <span id=\"NumberOfTests\">0</span></p>
-            <p><strong>Average Response Time:</strong> <span id=\"AverageResponseTime\">0</span></p>
-            <table border='1'>
-            <tr><th>Link</th><th>HTTP response</th><th>response TIME</th><th class'error'>error</th><th class'error'>W3 Check</th></tr>";
-            $array = Injector::inst()->get(AllLinks::class)->getAllLinks();
+
+            $allLinks = Injector::inst()->get(AllLinks::class)->getAllLinks();
+
             $sections = array("allNonAdmins", "allAdmins");
+            $links = ArrayList::create();
+
             foreach ($sections as $isAdmin => $sectionVariable) {
-                foreach ($array[$sectionVariable] as $link) {
+                foreach ($allLinks[$sectionVariable] as $link) {
                     $count++;
-                    $id = "ID".$count;
-                    $linkArray[] = array("IsAdmin" => $isAdmin, "Link" => $link, "ID" => $id);
-                    echo "
-                        <tr id=\"$id\" class=".($isAdmin ? "isAdmin" : "notAdmin").">
-                            <td>
-                                <a href=\"$link\" target=\"_blank\">$link</a>
-                                <a href=\"".Director::baseURL()."dev/tasks/smoketest/?test=".urlencode($link)."&admin=".$isAdmin."\" style='color: purple' target='_blank'>🔗</a>
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    ";
+
+                    $links->push(ArrayData::create([
+                        'IsAdmin' => $isAdmin,
+                        'Link' => $link,
+                        'ItemCount' => $count,
+                    ]));
                 }
             }
-            echo "
-            </table>
-            <script src='https://code.jquery.com/jquery-3.3.1.min.js'></script>
-            <script type='text/javascript'>
 
-                jQuery(document).ready(
-                    function(){
-                        checker.init();
-                    }
-                );
-
-                var checker = {
-
-                    useJSTest: false,
-
-                    totalResponseTime: 0,
-
-                    numberOfTests: 0,
-
-                    list: ".Convert::raw2json($linkArray).",
-
-                    baseURL: '/dev/tasks/smoketest/',
-
-                    item: null,
-
-                    stop: true,
-
-                    init: function() {
-                        jQuery('a.start').click(
-                            function() {
-                                checker.stop = false;
-                                if(!checker.item) {
-                                    checker.item = checker.list.shift();
-                                }
-                                checker.checkURL();
-                            }
-                        );
-                        jQuery('a.stop').click(
-                            function() {
-                                checker.stop = true;
-                            }
-                        );
-                        this.initShowMoreClick();
-                    },
-
-                    initShowMoreClick: function(){
-                        jQuery(\"table\").on(
-                            \"click\",
-                            \"a.showMoreClick\",
-                            function(event){
-                                event.preventDefault();
-                                jQuery(this).parent().find(\"ul\").slideToggle();
-                            }
-                        )
-                    },
-
-                    checkURL: function(){
-                        if(checker.stop) {
-
-                        }
-                        else {
-                            if(checker.useJSTest) {
-                                var data = {};
-                                var baseLink = (checker.item.Link);
-                            } else {
-                                var baseLink = checker.baseURL;
-                                var isAdmin = checker.item.IsAdmin;
-                                var testLink =  checker.item.Link;
-                                var data = {'test': testLink, 'admin': isAdmin}
-                            }
-                            var ID = checker.item.ID;
-                            jQuery('#'+ID).find('td')
-                                .css('border', '1px solid blue');
-                            jQuery('#'+ID).css('background-image', 'url(/resources/cms/images/loading.gif)')
-                                .css('background-repeat', 'no-repeat')
-                                .css('background-position', 'top right');
-                            jQuery.ajax({
-                                url: baseLink,
-                                type: 'get',
-                                data: data,
-                                success: function(data, textStatus){
-                                    checker.item = null;
-                                    jQuery('#'+ID)
-                                        .html(data)
-                                        .css('background-image', 'none')
-                                        .find('h1').remove();
-                                    checker.item = checker.list.shift();
-                                    jQuery('#'+ID).find('td').css('border', '1px solid green');
-                                    var responseTime = parseFloat(jQuery('#'+ID).find(\"td.tt\").text());
-                                    if(responseTime && typeof responseTime !== 'undefined') {
-                                        checker.numberOfTests++;
-                                        checker.totalResponseTime = checker.totalResponseTime + responseTime;
-                                        jQuery(\"#NumberOfTests\").text(checker.numberOfTests);
-                                        jQuery(\"#AverageResponseTime\").text(Math.round(100 * (checker.totalResponseTime / checker.numberOfTests)) / 100);
-                                    }
-                                    window.setTimeout(
-                                        function() {checker.checkURL();},
-                                        1000
-                                    );
-                                },
-                                error: function(error){
-                                    checker.item = null;
-                                    jQuery('#'+ID).find('td.error').html('ERROR');
-                                    jQuery('#'+ID).css('background-image', 'none');
-                                    checker.item = checker.list.shift();
-                                    jQuery('#'+ID).find('td').css('border', '1px solid red');
-                                    window.setTimeout(
-                                        function() {checker.checkURL();},
-                                        1000
-                                    );
-                                },
-                                dataType: 'html'
-                            });
-                        }
-                    }
-                }
-            </script>";
-            echo "<h2>Want to add more tests?</h2>
-            <p>
-                By adding a public method <i>templateoverviewtests</i> to any controller,
-                returning an array of links, they will be included in the list above.
-            </p>
-            ";
-            echo "<h3>Suggestions</h3>
-            <p>Below is a list of suggested controller links.</p>
-            <ul>";
+            $otherLinks = "";
             $className = "";
-            foreach ($array['otherLinks'] as $linkArray) {
+            foreach ($allLinks['otherLinks'] as $linkArray) {
                 if ($linkArray["ClassName"] != $className) {
                     $className = $linkArray["ClassName"];
-                    echo "</ul><h2>".$className."</h2><ul>";
+                    $otherLinks .= "</ul><h2>".$className."</h2><ul>";
                 }
-                echo "<li><a href=\"".$linkArray["Link"]."\">".$linkArray["Link"]."</a> ".$linkArray["Error"]."</li>";
+                $otherLinks .= "<li><a href=\"" . $linkArray["Link"] . "\">" . $linkArray["Link"] . "</a> " . $linkArray["Error"] . "</li>";
             }
-            echo "</ul>";
+
+            Requirements::javascript('https://code.jquery.com/jquery-3.3.1.min.js');
+            Requirements::javascript('sunnysideup/templateoverview:client/javascript/checkalltemplates.js');
+            Requirements::css('sunnysideup/templateoverview:client/css/checkalltemplates.css');
+
+            $template = new SSViewer('CheckAllTemplates');
+
+            print $template->process([], [
+                'Title' => $this->title,
+                'Links' => $links,
+                'OtherLinks' => $otherLinks,
+            ]);
         }
     }
 
@@ -420,7 +304,7 @@ class CheckAllTemplates extends BuildTask implements Flushable
      */
     public function getTestUser()
     {
-        if(Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
+        if (Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
             $this->member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
             return $this->member;
         } else {
@@ -440,7 +324,7 @@ class CheckAllTemplates extends BuildTask implements Flushable
             $this->member->write();
             $auth = new MemberAuthenticator();
             $result = $auth->checkPassword($this->member, self::get_password());
-            if(! $result->isValid()) {
+            if (! $result->isValid()) {
                 user_error('Error in creating test user.', E_USER_ERROR);
                 die('---');
             }
@@ -463,7 +347,7 @@ class CheckAllTemplates extends BuildTask implements Flushable
 
     private function deleteUser()
     {
-        if(Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
+        if (Config::inst()->get(CheckAllTemplates::class, 'use_default_admin')) {
             //do nothing;
         } else {
             if ($this->member) {
@@ -480,7 +364,6 @@ class CheckAllTemplates extends BuildTask implements Flushable
      */
     private function cleanup()
     {
-
     }
 
 
@@ -506,67 +389,74 @@ class CheckAllTemplates extends BuildTask implements Flushable
         $response = $this->guzzleSendRequest($testURL);
         $end = microtime(true);
 
-        if($this->guzzleHasError) {
-            $httpCode = 500;
+        $data = [
+            'status' => 'success',
+            'httpResponse' => '200',
+            'content' => '',
+            'responseTime' => round($end - $start, 4),
+            'w3Content' => '',
+        ];
+
+        if ($this->guzzleHasError) {
+            $httpResponse = 500;
             $body = '';
             $error = $response;
         } else {
-            $httpCode = $response->getStatusCode();
+            $httpResponse = $response->getStatusCode();
             $body = $response->getBody();
             $error = $response->getReasonPhrase();
         }
-        if ($httpCode == "401") {
-            echo $url;
-            die('COULD NOT ACCESS: '.$url);
-        }
 
-        $possibleError = false;
+        $data['httpResponse'] = $httpResponse;
+
+        if ($httpResponse == "401") {
+            $data['status'] = 'error';
+            $data['content'] = 'Could not access: ' . $url;
+
+            return json_encode($data);
+        }
 
         //uncaught errors ...
         if ($body && substr($body, 0, 12) == "Fatal error") {
-            $error = "<span style='color: red;'>$message</span> ";
-            $possibleError = true;
-        }
-        elseif ($body && strlen($body) < 2000) {
-            $error = "<span style='color: red;'>SHORT RESPONSE: $body</span> ";
-            $possibleError = true;
+            $data['status'] = 'error';
+            $data['content'] = $message;
+        } elseif ($body && strlen($body) < 2000) {
+            $data['status'] = 'error';
+            $data['content'] = 'SHORT RESPONSE: ' . $body;
         }
 
-        $html = '';
-        if($httpCode == 200) {
-            if($possibleError) {
-                $html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
-            } else {
-                $html .= "<td style='color:green'><a href='$url' style='color: grey!important; text-decoration: none;' target='_blank'>$url</a></td>";
-            }
-        } else {
-            $error .= "unexpected response: ".$error;
-            $html .= "<td style='color:red'><a href='$url' style='color: red!important; text-decoration: none;'>$url</a></td>";
+        if ($httpResponse != 200) {
+            $data['status'] = 'error';
+            $data['content'] .= 'unexpected response: ' . $error;
         }
-        $timeTaken = round($end - $start, 4);
-        $html .= "<td style='text-align: right'>$httpCode</td><td style='text-align: right' class=\"tt\">$timeTaken</td><td>$error</td>";
 
-        if ($validate && $httpCode == 200) {
+        if ($validate && $httpResponse == 200) {
             $w3Obj = new W3cValidateApi();
-            $html .= "<td>".$w3Obj->W3Validate("", $body)."</td>";
+            $data['w3Content'] = $w3Obj->W3Validate("", $body);
         } else {
-            $html .= "<td>n/a</td>";
+            $data['w3Content'] = 'n/a';
         }
 
-        return $html;
+        if (Director::is_ajax()) {
+            return json_encode($data);
+        }
+
+        $content = '<p><strong>Status:</strong> ' . $data['status'] . '</p>';
+        $content .= '<p><strong>HTTP response:</strong> ' . $data['httpResponse'] . '</p>';
+        $content .= '<p><strong>Content:</strong> ' . htmlspecialchars($data['content']) . '</p>';
+        $content .= '<p><strong>Response time:</strong> ' . $data['responseTime'] . '</p>';
+        $content .= '<p><strong>W3 Content:</strong> ' . $data['w3Content'] . '</p>';
+
+        return $content;
     }
 
 
-    private function debugme($lineNumber, $variable ="")
+    private function debugme($lineNumber, $variable = "")
     {
         if ($this->debug) {
-            echo "<br />".$lineNumber .": ".round(memory_get_usage() / 1048576)."MB"."=====".print_r($variable, 1);
+            echo "<br />" . $lineNumber . ": " . round(memory_get_usage() / 1048576) . "MB" . "=====" . print_r($variable, 1);
             ob_flush();
             flush();
         }
     }
-
-
-
-
 }

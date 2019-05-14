@@ -1,0 +1,75 @@
+html {
+    color: #000000;
+    background: #ffffff;
+    font-family: sans-serif;
+}
+
+a {
+    color: inherit;
+}
+
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    color: #fff;
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    text-align: center;
+    vertical-align: middle;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .25rem;
+    text-decoration: none;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+}
+
+.btn:not(.disabled):hover {
+    color: #fff;
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+.btn.disabled {
+    opacity: 0.65;
+    cursor: default;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 1em;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: .75rem;
+    border: 1px solid #dee2e6;
+    vertical-align: top;
+    text-align: left;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+}
+
+.table thead th {
+    color: #fff;
+    background-color: #343a40;
+    border-color: #454d55;
+}
+
+.table tr.loading td {
+    color: #004085;
+    background-color: #cce5ff;
+    border-color: #b8daff;
+}
+
+.table tr.success td {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.table tr.error td {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
