@@ -171,8 +171,17 @@ class CheckAllTemplates extends BuildTask implements Flushable
             $content = $this->testURL($testOne);
             $this->deleteUser();
             $this->cleanup();
-
             print $content;
+            if(! Director::is_ajax()) {
+                $rawResponse = str_replace('\'', '\\\'', $this->rawResponse);
+                echo '
+                    <h1>Response</h1>
+                    <iframe width="100%" height="900">
+                    <script type="application/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+                    $(\'#iframe\').contents().find(\'html\').html(\''.$rawResponse.'\');
+                ';
+            }
 
             return;
         }
@@ -218,6 +227,7 @@ class CheckAllTemplates extends BuildTask implements Flushable
                 'Title' => $this->title,
                 'Links' => $links,
                 'OtherLinks' => $otherLinks,
+                'AbsoluteBaseURLMinusSlash' => trim(Director::absoluteBaseURL(), '/'),
             ]);
         }
     }

@@ -31,8 +31,8 @@
 			<% loop $Links %>
 			<tr id="link-{$ItemCount}" class="link-item <% if $IsAdmin %>isAdmin<% else %>notAdmin<% end_if %>" data-is-admin="$IsAdmin" data-link="$Link.XML">
 					<td class="link">
-						<a href="{$AbsoluteBaseURL}$Link" target="_blank">$Link</a>
-						<a href="{$AbsoluteBaseURL}dev/tasks/smoketest/?test={$Link.XML}&amp;admin={$IsAdmin}" target='_blank'>🔗</a>
+                        <a href="{$AbsoluteBaseURL}dev/tasks/smoketest/?test={$Link.XML}&amp;admin={$IsAdmin}" target='_blank'>☢</a> &nbsp;&nbsp;
+						<a href="{$AbsoluteBaseURLMinusSlash}$Link" target="_blank">$Link</a>
 					</td>
 					<td class="http-response"></td>
 					<td class="response-time"></td>
