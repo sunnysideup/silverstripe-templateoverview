@@ -141,6 +141,8 @@ class CheckAllTemplates extends BuildTask implements Flushable
      */
     private $w3validation = false;
 
+    private $rawResponse = '';
+
     /**
      * @var Boolean
      */
@@ -176,10 +178,9 @@ class CheckAllTemplates extends BuildTask implements Flushable
                 $rawResponse = str_replace('\'', '\\\'', $this->rawResponse);
                 echo '
                     <h1>Response</h1>
-                    <iframe width="100%" height="900">
-                    <script type="application/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-
-                    $(\'#iframe\').contents().find(\'html\').html(\''.$rawResponse.'\');
+                    <iframe id="iframe" width="100%" height="900">
+                        '.$rawResponse.'
+                    </iframe>
                 ';
             }
 
@@ -407,13 +408,12 @@ class CheckAllTemplates extends BuildTask implements Flushable
             'w3Content' => '',
         ];
 
+        $this->rawResponse = $response->getBody();
         if ($this->guzzleHasError) {
             $httpResponse = 500;
-            $body = '';
             $error = $response;
         } else {
             $httpResponse = $response->getStatusCode();
-            $body = $response->getBody();
             $error = $response->getReasonPhrase();
         }
 
@@ -427,12 +427,12 @@ class CheckAllTemplates extends BuildTask implements Flushable
         }
 
         //uncaught errors ...
-        if ($body && substr($body, 0, 12) == "Fatal error") {
+        if ($this->rawResponse && substr($this->rawResponse, 0, 12) == "Fatal error") {
             $data['status'] = 'error';
             $data['content'] = $message;
-        } elseif ($body && strlen($body) < 2000) {
+        } elseif ($this->rawResponse && strlen($this->rawResponse) < 2000) {
             $data['status'] = 'error';
-            $data['content'] = 'SHORT RESPONSE: ' . $body;
+            $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
         }
 
         if ($httpResponse != 200) {
@@ -442,7 +442,7 @@ class CheckAllTemplates extends BuildTask implements Flushable
 
         if ($validate && $httpResponse == 200) {
             $w3Obj = new W3cValidateApi();
-            $data['w3Content'] = $w3Obj->W3Validate("", $body);
+            $data['w3Content'] = $w3Obj->W3Validate("", $this->rawResponse);
         } else {
             $data['w3Content'] = 'n/a';
         }
