@@ -14,8 +14,12 @@
 	<div>
 		<a href="#" class="start btn">Start</a>
 	</div>
-	<p><strong>Tests Done:</strong> <span id="NumberOfTests">0</span></p>
-	<p><strong>Average Response Time:</strong> <span id="AverageResponseTime">0</span></p>
+	<p class="stats">
+        <strong>Tests Done:</strong> <span id="NumberOfTests">0</span>,
+        <strong>Average Response Time:</strong> <span id="AverageResponseTime">0</span>,
+        <strong>Number of errors:</strong> <span id="NumberOfErrors">0</span>,
+        <strong>Error Percentage:</strong> <span id="ErrorRate">0%</span>
+    </p>
 
 	<table class='checker-list table'>
 		<thead>
@@ -29,9 +33,9 @@
 		</thead>
 		<tbody>
 			<% loop $Links %>
-			<tr id="link-{$ItemCount}" class="link-item <% if $IsAdmin %>isAdmin<% else %>notAdmin<% end_if %>" data-is-admin="$IsAdmin" data-link="$Link.XML">
+			<tr id="link-{$ItemCount}" class="link-item <% if $IsCMSLink %>isCMSLink<% else %>isNonCMSLink<% end_if %>" data-is-cms-link="$IsCMSLink" data-link="$Link.XML">
 					<td class="link">
-                        <a href="{$AbsoluteBaseURL}dev/tasks/smoketest/?test={$Link.XML}&amp;admin={$IsAdmin}" target='_blank'>☢</a> &nbsp;&nbsp;
+                        <a href="{$AbsoluteBaseURL}dev/tasks/smoketest/?test={$Link.XML}&amp;iscmslink={$IsCMSLink}" target='_blank'>☢</a> &nbsp;&nbsp;
 						<a href="{$AbsoluteBaseURLMinusSlash}$Link" target="_blank">$Link</a>
 					</td>
 					<td class="http-response"></td>

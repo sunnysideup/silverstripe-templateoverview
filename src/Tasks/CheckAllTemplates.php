@@ -163,14 +163,14 @@ class CheckAllTemplates extends BuildTask implements Flushable
             $this->debug = true;
         }
 
-        $asAdmin = $request->getVar('admin') ? true : false;
-        $testOne = $request->getVar('test') ? : null;
+        $isCMSLink = $request->getVar('iscmslink') ? true : false;
+        $testURL = $request->getVar('test') ? : null;
 
         // 1. actually test a URL and return the data
-        if ($testOne) {
+        if ($testURL) {
             $this->guzzleSetup();
             $this->getTestUser();
-            $content = $this->testURL($testOne);
+            $content = $this->testURL($testURL);
             $this->deleteUser();
             $this->cleanup();
             print $content;
@@ -181,6 +181,13 @@ class CheckAllTemplates extends BuildTask implements Flushable
                     <iframe id="iframe" width="100%" height="900" srcdoc="'.Convert::raw2htmlatt($rawResponse).'">
                     </iframe>
                 ';
+                if($this->isSuccess && $this->Config()->comparision_base_url) {
+                    $newURL = $this->Config()->comparision_base_url . $testURL;
+                    DiffMachine::compare(
+                        $this->rawResponse,
+                        $newURL
+                    );
+                }
             }
             return;
         }
@@ -191,15 +198,15 @@ class CheckAllTemplates extends BuildTask implements Flushable
 
             $allLinks = Injector::inst()->get(AllLinks::class)->getAllLinks();
 
-            $sections = array("allNonAdmins", "allAdmins");
+            $sections = array("allNonCMSLinks", "allCMSLinks");
             $links = ArrayList::create();
 
-            foreach ($sections as $isAdmin => $sectionVariable) {
+            foreach ($sections as $isCMSLink => $sectionVariable) {
                 foreach ($allLinks[$sectionVariable] as $link) {
                     $count++;
 
                     $links->push(ArrayData::create([
-                        'IsAdmin' => $isAdmin,
+                        'IsCMSLink' => $isCMSLink,
                         'Link' => $link,
                         'ItemCount' => $count,
                     ]));
@@ -371,8 +378,7 @@ class CheckAllTemplates extends BuildTask implements Flushable
 
 
     /**
-     * removes the temporary user
-     * and cleans up the curl connection.
+     * cleans up the curl connection.
      *
      */
     private function cleanup()
@@ -451,7 +457,7 @@ class CheckAllTemplates extends BuildTask implements Flushable
         if (Director::is_ajax()) {
             return json_encode($data);
         }
-        $content = '<p><strong>Status:</strong> ' . $data['status'] . '</p>';
+        $content =  '<p><strong>Status:</strong> ' . $data['status'] . '</p>';
         $content .= '<p><strong>HTTP response:</strong> ' . $data['httpResponse'] . '</p>';
         $content .= '<p><strong>Content:</strong> ' . htmlspecialchars($data['content']) . '</p>';
         $content .= '<p><strong>Response time:</strong> ' . $data['responseTime'] . '</p>';

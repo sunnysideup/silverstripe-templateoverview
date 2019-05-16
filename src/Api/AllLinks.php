@@ -57,7 +57,6 @@ class AllLinks
 
     /**
      * @var array
-     * all of the admin acessible links
      */
     private static $custom_links = [];
 
@@ -74,7 +73,7 @@ class AllLinks
     /**
     * @var array
     */
-    private $allNonAdmins = [];
+    private $allNonCMSLinks = [];
 
     /**
     * @var array
@@ -94,13 +93,13 @@ class AllLinks
     /**
     * @var array
     */
-    private $customLinksNonAdmin = [];
+    private $customNonCMSLinks = [];
 
 
     /**
     * @var array
     */
-    private $allAdmins = [];
+    private $allCMSLinks = [];
 
     /**
     * @var array
@@ -125,7 +124,7 @@ class AllLinks
     /**
      * @var array
      */
-    private $customLinksAdmin = [];
+    private $customCMSLinks = [];
 
     /**
      * @var array
@@ -134,7 +133,7 @@ class AllLinks
     private $siteTreeClassNames = [];
 
     /**
-     * returns an array of allNonAdmins => [] , allAdmins => [], otherControllerMethods => []
+     * returns an array of allNonCMSLinks => [] , allCMSLinks => [], otherControllerMethods => []
      * @return array
      */
     public function getAllLinks()
@@ -145,36 +144,36 @@ class AllLinks
         foreach($this->Config()->get('custom_links') as $link) {
             $link = '/'.ltrim($link, '/').'/';
             if(substr($link,  0 , 6) === '/admin') {
-                $this->customLinksAdmin[] = $link;
+                $this->customCMSLinks[] = $link;
             } else {
-                $this->customLinksNonAdmin[] = $link;
+                $this->customNonCMSLinks[] = $link;
             }
         }
         $this->pagesOnFrontEnd = $this->ListOfPagesLinks(false);
         $this->dataObjectsOnFrontEnd = $this->ListOfDataObjectsLinks(false);
 
-        $this->allNonAdmins = $this->addToArrayOfLinks($this->allNonAdmins, $this->pagesOnFrontEnd);
-        $this->allNonAdmins = $this->addToArrayOfLinks($this->allNonAdmins, $this->dataObjectsOnFrontEnd);
-        $this->allNonAdmins = $this->addToArrayOfLinks($this->allNonAdmins, $this->customLinksNonAdmin);
-        sort($this->allNonAdmins);
+        $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->pagesOnFrontEnd);
+        $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->dataObjectsOnFrontEnd);
+        $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->customNonCMSLinks);
+        sort($this->allNonCMSLinks);
 
         $this->pagesInCMS = $this->ListOfPagesLinks(true);
         $this->dataObjectsInCMS = $this->ListOfDataObjectsLinks(true);
-        $this->modelAdmins = $this->ListOfAllModelAdmins();
+        $this->models = $this->ListOfAllModelAdmins();
         $this->leftAndMainLnks = $this->ListOfAllLeftAndMains();
 
-        $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->pagesInCMS);
-        $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->dataObjectsInCMS);
-        $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->modelAdmins);
-        $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->leftAndMainLnks);
-        $this->allAdmins = $this->addToArrayOfLinks($this->allAdmins, $this->customLinksAdmin);
-        sort($this->allAdmins);
+        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->pagesInCMS);
+        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->dataObjectsInCMS);
+        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->modelAdmins);
+        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->leftAndMainLnks);
+        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->customCMSLinks);
+        sort($this->allCMSLinks);
 
         $this->otherControllerMethods = $this->ListOfAllControllerMethods();
 
         return [
-            'allNonAdmins' => $this->allNonAdmins,
-            'allAdmins' => $this->allAdmins,
+            'allNonCMSLinks' => $this->allNonCMSLinks,
+            'allCMSLinks' => $this->allCMSLinks,
             'otherLinks' => $this->otherControllerMethods,
         ];
     }
