@@ -20,9 +20,10 @@
         }
     ],
     "require": {
-        "sunnysideup/prettyphoto": "*",
         "silverstripe/framework": "~4",
-        "guzzlehttp/guzzle": "~6"
+        "sunnysideup/prettyphoto": "dev-master",
+        "guzzlehttp/guzzle": "~6",
+        "sebastian/diff": "*"
     },
     "extra": {
         "expose": [

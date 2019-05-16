@@ -9,6 +9,8 @@ jQuery(document).ready(
 
 			numberOfTests: 0,
 
+            numberOfErrors: 0,
+
 			list: jQuery('.checker-list .link-item').toArray(),
 
 			baseURL: '/dev/tasks/smoketest/',
@@ -49,9 +51,9 @@ jQuery(document).ready(
 						var baseLink = checker.item.dataset.link;
 					} else {
 						var baseLink = checker.baseURL;
-						var isAdmin = linkItem.data('is-admin');
+						var isCMSLink = linkItem.data('is-cms-link');
 						var testLink = linkItem.data('link');
-						var data = {'test': testLink, 'admin': isAdmin}
+						var data = {'test': testLink, 'iscmslink': isCMSLink}
 					}
 					var rowID = linkItem.attr('ID');
 					var tableRow = jQuery('#' + rowID);
@@ -71,7 +73,9 @@ jQuery(document).ready(
 
 							if (splitData.length > 1 && splitData[1]) {
 								jsonData = JSON.parse(splitData[1]);
-
+                                if(jsonData.status !== 'success') {
+                                    checker.numberOfErrors++;
+                                }
 								tableRow.removeClass('loading').addClass(jsonData.status);
 
 								tableRow.find('td.response-time').text(jsonData.responseTime);
@@ -81,11 +85,16 @@ jQuery(document).ready(
 
 								if (jsonData.responseTime && typeof jsonData.responseTime !== 'undefined') {
 									checker.numberOfTests++;
+                                    let errorRate = (Math.round(1000 * (checker.numberOfErrors / checker.numberOfTests)) / 10) + '%';
+                                    let responseTime = Math.round(100 * (checker.totalResponseTime / checker.numberOfTests)) / 100;
 									checker.totalResponseTime = checker.totalResponseTime + jsonData.responseTime;
 									jQuery('#NumberOfTests').text(checker.numberOfTests);
-									jQuery('#AverageResponseTime').text(Math.round(100 * (checker.totalResponseTime / checker.numberOfTests)) / 100);
+									jQuery('#AverageResponseTime').text();
+									jQuery('#NumberOfErrors').text(checker.numberOfErrors);
+									jQuery('#ErrorRate').text(errorRate);
 								}
 							} else {
+                                checker.numberOfErrors++;
 								tableRow
 									.removeClass('loading')
 									.addClass('error')
