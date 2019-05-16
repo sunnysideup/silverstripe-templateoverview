@@ -9,6 +9,7 @@ use Psr\SimpleCache\CacheInterface;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
+use Sunnysideup\TemplateOverview\Api\DiffMachine;
 
 
 use SilverStripe\Control\Director;
@@ -63,6 +64,8 @@ class CheckAllTemplates extends BuildTask implements Flushable
         $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
         $cache->clear();
     }
+
+    private static $comparision_base_url = '';
 
     private static $use_default_admin = true;
 
@@ -130,6 +133,9 @@ class CheckAllTemplates extends BuildTask implements Flushable
 
     private $guzzleHasError = false;
 
+    private $isSuccess = false;
+
+
     /**
      * temporary Admin used to log in.
      * @var Member
@@ -163,27 +169,49 @@ class CheckAllTemplates extends BuildTask implements Flushable
             $this->debug = true;
         }
 
-        $asAdmin = $request->getVar('admin') ? true : false;
-        $testOne = $request->getVar('test') ? : null;
+        $isCMSLink = $request->getVar('iscmslink') ? true : false;
+        $testURL = $request->getVar('test') ? : null;
 
         // 1. actually test a URL and return the data
-        if ($testOne) {
+        if ($testURL) {
             $this->guzzleSetup();
             $this->getTestUser();
-            $content = $this->testURL($testOne);
+            $content = $this->testURL($testURL);
             $this->deleteUser();
             $this->cleanup();
             print $content;
             if(! Director::is_ajax()) {
-                $rawResponse = str_replace('\'', '\\\'', $this->rawResponse);
+                $diff =  '';
+                $comparisonBaseURL = Config::inst()->get(CheckAllTemplates::class, 'comparision_base_url');
+                $width = '98%';
+                $style = 'border: none;';
+                if($comparisonBaseURL) {
+                    $width = '48%';
+                    $style = 'float: left;';
+                    if($this->isSuccess && !$isCMSLink) {
+                        $otherURL = $comparisonBaseURL . $testURL;
+                        $testContent = str_replace(Director::absoluteBaseURL(), $comparisonBaseURL, $this->rawResponse);
+                        $rawResponseOtherSite = file_get_contents($otherURL);
+                        $diff = DiffMachine::compare(
+                            $testContent,
+                            $rawResponseOtherSite
+                        );
+                        $rawResponseOtherSite = Convert::raw2htmlatt(str_replace('\'', '\\\'', $rawResponseOtherSite));
+                        $diff = '
+                        <iframe id="iframe2" width="'.$width.'%" height="900" srcdoc=\''.$rawResponseOtherSite.'\' style="float: right;"></iframe>
+
+                        <hr style="clear: both; margin-top: 20px; padding-top: 20px;" />
+                        <h1>Diff</h1>
+                        '.$diff;
+                    }
+                }
+                $rawResponse = Convert::raw2htmlatt(str_replace('\'', '\\\'', $this->rawResponse));
                 echo '
                     <h1>Response</h1>
-                    <iframe id="iframe" width="100%" height="900">
-                        '.$rawResponse.'
-                    </iframe>
+                    <iframe id="iframe" width="'.$width.'%" height="900" srcdoc=\''.$rawResponse.'\' style="'.$style.'"></iframe>
                 ';
+                echo $diff;
             }
-
             return;
         }
 
@@ -193,15 +221,15 @@ class CheckAllTemplates extends BuildTask implements Flushable
 
             $allLinks = Injector::inst()->get(AllLinks::class)->getAllLinks();
 
-            $sections = array("allNonAdmins", "allAdmins");
+            $sections = array("allNonCMSLinks", "allCMSLinks");
             $links = ArrayList::create();
 
-            foreach ($sections as $isAdmin => $sectionVariable) {
+            foreach ($sections as $isCMSLink => $sectionVariable) {
                 foreach ($allLinks[$sectionVariable] as $link) {
                     $count++;
 
                     $links->push(ArrayData::create([
-                        'IsAdmin' => $isAdmin,
+                        'IsCMSLink' => $isCMSLink,
                         'Link' => $link,
                         'ItemCount' => $count,
                     ]));
@@ -299,10 +327,14 @@ class CheckAllTemplates extends BuildTask implements Flushable
                 ]
             );
         } catch (RequestException $exception) {
+            $this->rawResponse = $exception->getResponse();
             $this->guzzleHasError = true;
             //echo Psr7\str($exception->getRequest());
             if ($exception->hasResponse()) {
-                $response = $exception->getResponseBodySummary($exception->getResponse());
+                $response = $exception->getResponse();
+                $this->rawResponse = $exception->getResponseBodySummary($response);
+            } else {
+                $response = null;
             }
         }
         return $response;
@@ -369,8 +401,7 @@ class CheckAllTemplates extends BuildTask implements Flushable
 
 
     /**
-     * removes the temporary user
-     * and cleans up the curl connection.
+     * cleans up the curl connection.
      *
      */
     private function cleanup()
@@ -408,13 +439,12 @@ class CheckAllTemplates extends BuildTask implements Flushable
             'w3Content' => '',
         ];
 
-        $this->rawResponse = $response->getBody();
+        $httpResponse = $response->getStatusCode();
+        $error = $response->getReasonPhrase();
         if ($this->guzzleHasError) {
-            $httpResponse = 500;
-            $error = $response;
+            //we already have the body ...
         } else {
-            $httpResponse = $response->getStatusCode();
-            $error = $response->getReasonPhrase();
+            $this->rawResponse = $response->getBody();
         }
 
         $data['httpResponse'] = $httpResponse;
@@ -429,29 +459,31 @@ class CheckAllTemplates extends BuildTask implements Flushable
         //uncaught errors ...
         if ($this->rawResponse && substr($this->rawResponse, 0, 12) == "Fatal error") {
             $data['status'] = 'error';
-            $data['content'] = $message;
-        } elseif ($this->rawResponse && strlen($this->rawResponse) < 2000) {
+            $data['content'] = $this->rawResponse;
+        } elseif ($httpResponse == 200 && $this->rawResponse && strlen($this->rawResponse) < 500) {
             $data['status'] = 'error';
             $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
         }
 
+        $data['w3Content'] = 'n/a';
+
         if ($httpResponse != 200) {
             $data['status'] = 'error';
-            $data['content'] .= 'unexpected response: ' . $error;
-        }
-
-        if ($validate && $httpResponse == 200) {
-            $w3Obj = new W3cValidateApi();
-            $data['w3Content'] = $w3Obj->W3Validate("", $this->rawResponse);
+            $data['content'] .= 'unexpected response: ' . $error . $this->rawResponse;
         } else {
-            $data['w3Content'] = 'n/a';
+            $this->isSuccess = true;
+            if ($validate) {
+                $w3Obj = new W3cValidateApi();
+                $data['w3Content'] = $w3Obj->W3Validate("", $this->rawResponse);
+            }
         }
 
         if (Director::is_ajax()) {
             return json_encode($data);
         }
-
-        $content = '<p><strong>Status:</strong> ' . $data['status'] . '</p>';
+        $content = '';
+        $content .= '<p><strong>URL:</strong> ' . $url . '</p>';
+        $content .= '<p><strong>Status:</strong> ' . $data['status'] . '</p>';
         $content .= '<p><strong>HTTP response:</strong> ' . $data['httpResponse'] . '</p>';
         $content .= '<p><strong>Content:</strong> ' . htmlspecialchars($data['content']) . '</p>';
         $content .= '<p><strong>Response time:</strong> ' . $data['responseTime'] . '</p>';
