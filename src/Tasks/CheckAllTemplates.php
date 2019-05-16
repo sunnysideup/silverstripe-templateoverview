@@ -445,16 +445,17 @@ class CheckAllTemplates extends BuildTask implements Flushable
             $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
         }
 
+        $data['w3Content'] = 'n/a';
+
         if ($httpResponse != 200) {
             $data['status'] = 'error';
             $data['content'] .= 'unexpected response: ' . $error . $this->rawResponse;
-        }
-
-        if ($validate && $httpResponse == 200) {
-            $w3Obj = new W3cValidateApi();
-            $data['w3Content'] = $w3Obj->W3Validate("", $this->rawResponse);
         } else {
-            $data['w3Content'] = 'n/a';
+            $this->isSuccess = true;
+            if ($validate) {
+                $w3Obj = new W3cValidateApi();
+                $data['w3Content'] = $w3Obj->W3Validate("", $this->rawResponse);
+            }
         }
 
         if (Director::is_ajax()) {
