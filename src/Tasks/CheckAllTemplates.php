@@ -178,12 +178,10 @@ class CheckAllTemplates extends BuildTask implements Flushable
                 $rawResponse = str_replace('\'', '\\\'', $this->rawResponse);
                 echo '
                     <h1>Response</h1>
-                    <iframe id="iframe" width="100%" height="900">
-                        '.$rawResponse.'
+                    <iframe id="iframe" width="100%" height="900" srcdoc="'.Convert::raw2htmlatt($rawResponse).'">
                     </iframe>
                 ';
             }
-
             return;
         }
 
@@ -299,10 +297,14 @@ class CheckAllTemplates extends BuildTask implements Flushable
                 ]
             );
         } catch (RequestException $exception) {
+            $this->rawResponse = $exception->getResponse();
             $this->guzzleHasError = true;
             //echo Psr7\str($exception->getRequest());
             if ($exception->hasResponse()) {
-                $response = $exception->getResponseBodySummary($exception->getResponse());
+                $response = $exception->getResponse();
+                $this->rawResponse = $exception->getResponseBodySummary($response);
+            } else {
+                $response = null;
             }
         }
         return $response;
@@ -408,13 +410,12 @@ class CheckAllTemplates extends BuildTask implements Flushable
             'w3Content' => '',
         ];
 
-        $this->rawResponse = $response->getBody();
+        $httpResponse = $response->getStatusCode();
+        $error = $response->getReasonPhrase();
         if ($this->guzzleHasError) {
-            $httpResponse = 500;
-            $error = $response;
+            //we already have the body ...
         } else {
-            $httpResponse = $response->getStatusCode();
-            $error = $response->getReasonPhrase();
+            $this->rawResponse = $response->getBody();
         }
 
         $data['httpResponse'] = $httpResponse;
@@ -429,15 +430,15 @@ class CheckAllTemplates extends BuildTask implements Flushable
         //uncaught errors ...
         if ($this->rawResponse && substr($this->rawResponse, 0, 12) == "Fatal error") {
             $data['status'] = 'error';
-            $data['content'] = $message;
-        } elseif ($this->rawResponse && strlen($this->rawResponse) < 2000) {
+            $data['content'] = $this->rawResponse;
+        } elseif ($httpResponse == 200 && $this->rawResponse && strlen($this->rawResponse) < 500) {
             $data['status'] = 'error';
             $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
         }
 
         if ($httpResponse != 200) {
             $data['status'] = 'error';
-            $data['content'] .= 'unexpected response: ' . $error;
+            $data['content'] .= 'unexpected response: ' . $error . $this->rawResponse;
         }
 
         if ($validate && $httpResponse == 200) {
@@ -450,7 +451,6 @@ class CheckAllTemplates extends BuildTask implements Flushable
         if (Director::is_ajax()) {
             return json_encode($data);
         }
-
         $content = '<p><strong>Status:</strong> ' . $data['status'] . '</p>';
         $content .= '<p><strong>HTTP response:</strong> ' . $data['httpResponse'] . '</p>';
         $content .= '<p><strong>Content:</strong> ' . htmlspecialchars($data['content']) . '</p>';
