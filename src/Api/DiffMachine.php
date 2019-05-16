@@ -9,6 +9,7 @@ class ComparisonMachine
     {
         $otherContent = file_get_contents($otherURL);
         $differ = new Differ;
+        
         return $differ->diff($content, $otherContent);
     }
 }

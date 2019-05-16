@@ -130,6 +130,9 @@ class CheckAllTemplates extends BuildTask implements Flushable
 
     private $guzzleHasError = false;
 
+    private $isSuccess = false;
+
+
     /**
      * temporary Admin used to log in.
      * @var Member
@@ -183,7 +186,7 @@ class CheckAllTemplates extends BuildTask implements Flushable
                 ';
                 if($this->isSuccess && $this->Config()->comparision_base_url) {
                     $newURL = $this->Config()->comparision_base_url . $testURL;
-                    DiffMachine::compare(
+                    $diff = DiffMachine::compare(
                         $this->rawResponse,
                         $newURL
                     );
