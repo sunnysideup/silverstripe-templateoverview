@@ -19,6 +19,7 @@ use SilverStripe\Security\Member;
 use SilverStripe\Security\Group;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Admin\LeftAndMain;
@@ -56,9 +57,19 @@ class AllLinks
 
 
     /**
+     * @var int
+     */
+    private static $number_of_examples = 3;
+
+    /**
      * @var array
      */
     private static $custom_links = [];
+
+    /**
+     * @var array
+     */
+    private static $controller_name_space_filter = [];
 
 
     /**
@@ -67,70 +78,72 @@ class AllLinks
      * on Draft instead... (or vice versa)
      * @var String (Live or '')
      */
-    private $stage = '';
+    protected $stage = '';
 
 
     /**
     * @var array
     */
-    private $allNonCMSLinks = [];
+    protected $allNonCMSLinks = [];
 
     /**
     * @var array
     */
-    private $pagesOnFrontEnd = [];
+    protected $pagesOnFrontEnd = [];
 
     /**
     * @var array
     */
-    private $dataObjectsOnFrontEnd = [];
+    protected $dataObjectsOnFrontEnd = [];
 
     /**
     * @var array
     */
-    private $otherControllerMethods = [];
+    protected $otherControllerMethods = [];
 
     /**
     * @var array
     */
-    private $customNonCMSLinks = [];
+    protected $customNonCMSLinks = [];
 
 
     /**
     * @var array
     */
-    private $allCMSLinks = [];
+    protected $allCMSLinks = [];
 
     /**
     * @var array
     */
-    private $pagesInCMS = [];
+    protected $pagesInCMS = [];
     /**
      * @var array
      */
-    private $dataObjectsInCMS = [];
-
-    /**
-     * @var array
-     */
-    private $modelAdmins = [];
+    protected $dataObjectsInCMS = [];
 
     /**
      * @var array
      */
-    private $leftAndMainLnks = [];
+    protected $modelAdmins = [];
+
+    /**
+     * @var array
+     */
+    protected $leftAndMainLnks = [];
 
 
     /**
      * @var array
      */
-    private $customCMSLinks = [];
+    protected $customCMSLinks = [];
 
     /**
      * @var array
      * Pages to check by class name. For example, for "ClassPage", will check the first instance of the cart page.
      */
-    private $siteTreeClassNames = [];
+    protected $siteTreeClassNames = [];
+
+    protected $controllerLinks = [];
 
     /**
      * returns an array of allNonCMSLinks => [] , allCMSLinks => [], otherControllerMethods => []
@@ -193,20 +206,29 @@ class AllLinks
         //first() will return null or the object
         $return = [];
         foreach ($this->siteTreeClassNames as $class) {
-            $excludedClasses = $this->arrayExcept($this->siteTreeClassNames, $class);
-            $page = Versioned::get_by_stage($class, Versioned::DRAFT)
-                ->exclude(["ClassName" => $excludedClasses])
-                ->sort(DB::get_conn()->random().' ASC')
-                ->first(1);
-            if ($page) {
-                if ($pageInCMS) {
-                    $url = $page->CMSEditLink();
-                    $return[] = $url;
-                    $return[] = str_replace('/edit/', '/settings/', $url);
-                    $return[] = str_replace('/edit/', '/history/', $url);
-                } else {
+            for($i = 0; $i < $this->Config()->number_of_examples; $i++) {
+                $excludedClasses = $this->arrayExcept($this->siteTreeClassNames, $class);
+                $page = Versioned::get_by_stage($class, Versioned::DRAFT)
+                    ->exclude(["ClassName" => $excludedClasses])
+                    ->sort(DB::get_conn()->random().' ASC')
+                    ->first();
+                if ($page) {
+                    if ($pageInCMS) {
+                        $url = $page->CMSEditLink();
+                        $return[] = $url;
+                        $return[] = str_replace('/edit/', '/settings/', $url);
+                        $return[] = str_replace('/edit/', '/history/', $url);
+                    } else {
+                        $url = $page->Link();
+                        $return[] = $url;
+                    }
+                }
+                $page = Versioned::get_by_stage($class, Versioned::LIVE)
+                    ->exclude(["ClassName" => $excludedClasses])
+                    ->sort(DB::get_conn()->random().' ASC')
+                    ->first();
+                if ($page) {
                     $url = $page->Link();
-                    $return[] = $url;
                 }
             }
         }
@@ -228,23 +250,25 @@ class AllLinks
         foreach ($list as $class) {
             if(! in_array($class, array_merge($this->siteTreeClassNames, [DataObject::class]))) {
                 if($this->isValidClass($class)) {
-                    $obj = DataObject::get_one($class, ["ClassName" => $class], DB::get_conn()->random().' ASC');
-                    if ($obj) {
-                        $url = null;
-                        if ($inCMS) {
-                            if($obj->hasMethod('CMSEditLink')) {
-                                $url = $obj->CMSEditLink();
+                    for($i = 0; $i < $this->Config()->number_of_examples; $i++) {
+                        $obj = DataObject::get_one($class, ["ClassName" => $class], DB::get_conn()->random().' ASC');
+                        if ($obj) {
+                            $url = null;
+                            if ($inCMS) {
+                                if($obj->hasMethod('CMSEditLink')) {
+                                    $url = $obj->CMSEditLink();
+                                }
+                                if($obj->hasMethod('PreviewLink')) {
+                                    $url = $obj->PreviewLink();
+                                }
+                            } else {
+                                if($obj->hasMethod('Link')) {
+                                    $url = $obj->Link();
+                                }
                             }
-                            if($obj->hasMethod('PreviewLink')) {
-                                $url = $obj->PreviewLink();
+                            if($url) {
+                                $return[] = $url;
                             }
-                        } else {
-                            if($obj->hasMethod('Link')) {
-                                $url = $obj->Link();
-                            }
-                        }
-                        if($url) {
-                            $return[] = $url;
                         }
                     }
                 }
@@ -305,28 +329,31 @@ class AllLinks
                         if (!is_subclass_of($model, DataObject::class)) {
                             continue;
                         }
-                        $item = $model::get()
-                            ->sort(DB::get_conn()->random().' ASC')
-                            ->First();
-                        $exceptionMethod = '';
-                        foreach($this->Config()->get('model_admin_alternatives') as $test => $method) {
-                            if(! $method) {
-                                $method = 'do-not-use';
-                            }
-                            if(strpos($modelAdminLink, $test) !== false) {
-                                $exceptionMethod = $method;
-                            }
-                        }
                         $modelLink = $modelAdminLink.$this->sanitiseClassName($model)."/";
-                        if($exceptionMethod) {
-                            if($item && $item->hasMethod($exceptionMethod)) {
-                                $links = array_merge($links, $item->$exceptionMethod($modelAdminLink));
+                        for($i = 0; $i < $this->Config()->number_of_examples; $i++) {
+                            $item = $model::get()
+                                ->sort(DB::get_conn()->random().' ASC')
+                                ->First();
+                            $exceptionMethod = '';
+                            foreach($this->Config()->get('model_admin_alternatives') as $test => $method) {
+                                if(! $method) {
+                                    $method = 'do-not-use';
+                                }
+                                if(strpos($modelAdminLink, $test) !== false) {
+                                    $exceptionMethod = $method;
+                                }
                             }
-                        } else {
-                            $links[] = $modelLink;
-                            $links[] = $modelLink."EditForm/field/".$this->sanitiseClassName($model)."/item/new/";
-                            if ($item) {
-                                $links[] = $modelLink."EditForm/field/".$this->sanitiseClassName($model)."/item/".$item->ID."/edit/";
+                            if($exceptionMethod) {
+                                if($item && $item->hasMethod($exceptionMethod)) {
+                                    $links = array_merge($links, $item->$exceptionMethod($modelAdminLink));
+                                }
+                            } else {
+                                //needs to stay here for exception!
+                                $links[] = $modelLink;
+                                $links[] = $modelLink."EditForm/field/".$this->sanitiseClassName($model)."/item/new/";
+                                if ($item) {
+                                    $links[] = $modelLink."EditForm/field/".$this->sanitiseClassName($model)."/item/".$item->ID."/edit/";
+                                }
                             }
                         }
                     }
@@ -346,135 +373,137 @@ class AllLinks
         $array = [];
         $finalArray = [];
         $classes = ClassInfo::subclassesFor(Controller::class);
+        $routes = Config::inst()->get(Director::class, 'rules');
         //foreach($manifest as $class => $compareFilePath) {
         //if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;
         //}
-        $manifest = ClassLoader::inst()->getManifest()->getClasses();
-        $baseFolder = Director::baseFolder();
-        $cmsBaseFolder = Director::baseFolder()."/cms/";
-        $frameworkBaseFolder = Director::baseFolder()."/framework/";
+        // $manifest = ClassLoader::inst()->getManifest()->getClasses();
         foreach ($classes as $className) {
-            $lowerClassName = strtolower($className);
-            $location = $manifest[$lowerClassName];
-            if (strpos($location, $cmsBaseFolder) === 0 || strpos($location, $frameworkBaseFolder) === 0) {
+
+            //skip base class
+            if ($className === Controller::class) {
                 continue;
             }
-            if ($className != Controller::class) {
-                $controllerReflectionClass = new ReflectionClass($className);
-                if (!$controllerReflectionClass->isAbstract()) {
-                    if (
-                        $className == "HideMailto" ||
-                        $className == "HideMailtoController" ||
-                        $className == "Mailto" ||
-                        $className instanceof SapphireTest ||
-                        $className instanceof BuildTask ||
-                        $className instanceof TaskRunner
-                    ) {
-                        continue;
-                    }
-                    $methods = $this->getPublicMethodsNotInherited($controllerReflectionClass, $className);
-                    foreach ($methods as $methodArray) {
-                        $array[$className."_".$methodArray["Method"]] = $methodArray;
+
+            //match to filter
+            $filterMatch = false;
+            foreach($this->Config()->controller_name_space_filter as $filter) {
+                if(strpos($className, $filter) !== false) {
+                    $filterMatch = true;
+                }
+            }
+            if(! $filterMatch) {
+                // echo '<hr />Ditching because of classname: '.$className;
+                continue;
+            }
+
+            //check for abstract ones
+            $controllerReflectionClass = new ReflectionClass($className);
+            if ($controllerReflectionClass->isAbstract()) {
+                continue;
+            }
+
+            $hasRoute = false;
+            $hasURLSegmentVar = false;
+            $hasLinkMethod = false;
+
+            //check for ones that can not be constructed
+            $params = $controllerReflectionClass->getConstructor()->getParameters();
+            if($controllerReflectionClass->isSubclassOf(ContentController::class)) {
+                //special construct, can't handle ...
+                if(count($params) > 1 ) {
+                    echo '<hr />Ditching because of param count > 1: '.$className;
+                    continue;
+                }
+                $dataRecordClassName = substr($className, 0, -1 * strlen('Controller'));
+                if(class_exists($dataRecordClassName)) {
+                    $dataRecordClassObject = DataObject::get_one($dataRecordClassName);
+                    if($dataRecordClassObject) {
+                        $tmp = $dataRecordClassObject->Link();
+                        $tmpArray = explode('?', $tmp);
+                        $this->controllerLinks[$className] = $tmpArray[0];
+                        $hasLinkMethod = true;
                     }
                 }
             }
-        }
-        $finalArray = [];
-        $doubleLinks = [];
-        foreach ($array as $index  => $classNameMethodArray) {
-            if(1 === 2) {
-                try {
-                    $classObject = @Injector::inst()->get($classNameMethodArray["ClassName"]);
-                    if($classObject) {
-                        if(Config::inst()->get($classNameMethodArray["ClassName"], 'url_segment')) {
-                            if ($classNameMethodArray["Method"] == "templateoverviewtests") {
-                                $this->customLinks = array_merge($classObject->templateoverviewtests(), $this->customLinks);
-                            } else {
-                                $link = $classObject->Link($classNameMethodArray["Method"]);
-                                if ($link == $classNameMethodArray["ClassName"]."/") {
-                                    $link = $classNameMethodArray["ClassName"]."/".$classNameMethodArray["Method"]."/";
+            elseif(count($params) > 0 ) {
+                echo '<hr />Ditching because of param count: '.$className;
+                continue;
+            }
+
+            if(! $hasLinkMethod) {
+                //find link in routes
+                $route = array_search($className, $routes);
+                if($route) {
+                    $routeArray = explode('//', $route);
+                    $route = $routeArray[0];
+                    $this->controllerLinks[$className] = $route;
+                    $hasRoute = true;
+                }
+                if(! $hasRoute) {
+                    //check if there is a link of some sort
+                    $urlSegment = Config::inst()->get($className, 'url_segment');
+                    $hasURLSegmentVar =  $urlSegment ? true : false;
+                    $this->controllerLinks[$className] = $urlSegment . '/';
+                    if(! $hasURLSegmentVar) {
+                        foreach ($controllerReflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+                            if ($method->class == $className) {
+                                if($method->name === 'Link') {
+                                    $this->controllerLinks[$className] = '->Link';
+                                    $hasLinkMethod = true;
+                                    break;
                                 }
-                                $classNameMethodArray["Link"] = $link;
-                                if ($classNameMethodArray["Link"][0] != "/") {
-                                    $classNameMethodArray["Link"] = Director::baseURL().$classNameMethodArray["Link"];
-                                }
-                                if (!isset($doubleLinks[$link])) {
-                                    $finalArray[] = $classNameMethodArray;
-                                }
-                                $doubleLinks[$link] = true;
-                            }
+                             }
                         }
                     }
-                } catch (Exception $e) {
-                    // echo 'Caught exception: ',  $e->getMessage(), "\n";
+                }
+            }
+
+            //add class and allowed actions
+            if($hasRoute || $hasURLSegmentVar || $hasLinkMethod) {
+                $array[$className] = (array)$allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);;
+            } else {
+                echo '<hr />Ditching because lack of link : '.$className;
+            }
+        }
+
+        //construct array!
+        $finalArray = [];
+        foreach ($array as $className  => $methods) {
+            try {
+                $classObject = Injector::inst()->get($className);
+            } catch (Error $e) {
+                $classObject = null;
+            }
+            if($classObject) {
+                if($this->controllerLinks[$className] === '->Link') {
+                    $link = $classObject->Link();
+                }
+                else {
+                    $link = $this->controllerLinks[$className];
+                }
+                if(substr($link, -1) !== '/') {
+                    $link = $link.'/';
+                }
+                // $finalArray[] = [
+                //     'ClassName' => $className,
+                //     'Link' => $link,
+                // ];
+                if($link) {
+                    foreach($methods as $method) {
+                        $finalArray[] = [
+                            'ClassName' => $className,
+                            'Link' => $link.$method.'/',
+                        ];
+                    }
                 }
             }
         }
+
         return $finalArray;
     }
 
 
-
-    private function getPublicMethodsNotInherited($classReflection, $className)
-    {
-        $classMethods = $classReflection->getMethods();
-        $classMethodNames = [];
-        foreach ($classMethods as $index => $method) {
-            if ($method->getDeclaringClass()->getName() !== $className) {
-                unset($classMethods[$index]);
-            } else {
-                $allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);
-                if (!is_array($allowedActionsArray)) {
-                    $allowedActionsArray = [];
-                } else {
-                    //return $allowedActionsArray;
-                }
-                $methodName = $method->getName();
-                /* Get a reflection object for the class method */
-                $reflect = new ReflectionMethod($className, $methodName);
-                /* For private, use isPrivate().  For protected, use isProtected() */
-                /* See the Reflection API documentation for more definitions */
-                if ($reflect->isPublic()) {
-                    if ($methodName == strtolower($methodName)) {
-                        if (strpos($methodName, "_") == null) {
-                            if (!in_array($methodName, array("index", "run", "init"))) {
-                                /* The method is one we're looking for, push it onto the return array */
-                                $error = "";
-                                if (!in_array($methodName, $allowedActionsArray) && !isset($allowedActionsArray[$methodName])) {
-                                    $error = "Can not find ".$className."::".$methodName." in allowed_actions";
-                                } else {
-                                    unset($allowedActionsArray[$className]);
-                                }
-                                $classMethodNames[$methodName] = array(
-                                    "ClassName" => $className,
-                                    "Method" => $methodName,
-                                    "Error" => $error
-                                );
-                            }
-                        }
-                    }
-                }
-                if (count($allowedActionsArray)) {
-                    $classSpecificAllowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);
-                    if (is_array($classSpecificAllowedActionsArray) && count($classSpecificAllowedActionsArray)) {
-                        foreach ($allowedActionsArray as $methodName => $methodNameWithoutKey) {
-                            if (is_numeric($methodName)) {
-                                $methodName = $methodNameWithoutKey;
-                            }
-                            if (isset($classSpecificAllowedActionsArray[$methodName])) {
-                                $classMethodNames[$methodName] = array(
-                                    "ClassName" => $className,
-                                    "Method" => $methodName,
-                                    "Error" => "May not follow the right method name formatting (all lower case)"
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return $classMethodNames;
-    }
 
 
 
@@ -488,7 +517,6 @@ class AllLinks
         foreach ($pushArray as $pushItem) {
             $pushItem = '/'.Director::makeRelative($pushItem);
             $pushItem = $this->sanitiseClassName($pushItem);
-            $pushItem = str_replace('?stage=Stage', '', $pushItem);
             if(! in_array($pushItem, $array)) {
                 array_push($array, $pushItem);
             }

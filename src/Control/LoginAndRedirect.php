@@ -19,7 +19,7 @@ class LoginAndRedirect extends Controller
     function login($request)
     {
         $url = $request->getVar('BackURL');
-        $member = CheckAllTemplates::get_test_user();
+        $member = CheckAllTemplatesResponseController::get_test_user();
         Security::setCurrentUser($member);
         Injector::inst()->get(CookieAuthenticationHandler::class)
             ->logIn($member, $persist = true);
@@ -32,7 +32,7 @@ class LoginAndRedirect extends Controller
         if(Environment::getEnv('ALLOW_SMOKE_TEST')) {
             return Director::isDev();
         } else {
-            die('Please set ALLOW_SMOKE_TEST in your environment variables');
+            die('Please set ALLOW_SMOKE_TEST in your environment variables to use this service.');
         }
     }
 

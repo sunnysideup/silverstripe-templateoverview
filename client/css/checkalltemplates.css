@@ -80,3 +80,12 @@ a {
     display: inline-block;
     padding: 2px;
 }
+
+
+.diff-removed {
+    background-color: #ffded7;
+}
+
+.diff-added {
+    background-color: #d7ffd7;
+}

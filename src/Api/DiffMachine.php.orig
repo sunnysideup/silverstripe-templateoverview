@@ -1,4 +1,5 @@
 <?php
+<<<<<<< HEAD
 namespace Sunnysideup\TemplateOverview\Api;
 
 use SebastianBergmann\Diff\Differ;
@@ -17,8 +18,8 @@ class DiffMachine
         $differ = new Differ($builder);
 
         $lines = $differ->diff(
-            self::cleanup_content($otherContent),
-            self::cleanup_content($content)
+            self::cleanup_content('aaa'.$content),
+            self::cleanup_content($otherContent)
         );
         $linesArray = explode("\n", $lines);
         $unsets = [];
@@ -53,5 +54,19 @@ class DiffMachine
         }
 
         return implode("\n", $contentArray);
+=======
+
+use SebastianBergmann\Diff\Differ;
+namespace Sunnysideup\TemplateOverview\Api;
+
+class ComparisonMachine
+{
+    public static function compare($content, $otherURL)
+    {
+        $otherContent = file_get_contents($otherURL);
+        $differ = new Differ;
+        
+        return $differ->diff($content, $otherContent);
+>>>>>>> 2ddc8d6c3f0ccb17b78fa455c1130daf8afeb53d
     }
 }

@@ -13,7 +13,7 @@ jQuery(document).ready(
 
 			list: jQuery('.checker-list .link-item').toArray(),
 
-			baseURL: '/dev/tasks/smoketest/',
+			baseURL: 'templateoverviewsmoketestresponse/testone/',
 
 			item: null,
 

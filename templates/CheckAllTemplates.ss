@@ -24,6 +24,7 @@
 	<table class='checker-list table'>
 		<thead>
 			<tr>
+				<th>Test</th>
 				<th>Link</th>
 				<th>HTTP&nbsp;response</th>
 				<th>Response&nbsp;time</th>
@@ -34,8 +35,10 @@
 		<tbody>
 			<% loop $Links %>
 			<tr id="link-{$ItemCount}" class="link-item <% if $IsCMSLink %>isCMSLink<% else %>isNonCMSLink<% end_if %>" data-is-cms-link="$IsCMSLink" data-link="$Link.XML">
+					<td class="test">
+                        <a href="{$AbsoluteBaseURL}templateoverviewsmoketestresponse/testone/?test={$Link.XML}&amp;iscmslink={$IsCMSLink}" target='_blank'>☢</a> &nbsp;&nbsp;
+					</td>
 					<td class="link">
-                        <a href="{$AbsoluteBaseURL}dev/tasks/smoketest/?test={$Link.XML}&amp;iscmslink={$IsCMSLink}" target='_blank'>☢</a> &nbsp;&nbsp;
 						<a href="{$AbsoluteBaseURLMinusSlash}$Link" target="_blank">$Link</a>
 					</td>
 					<td class="http-response"></td>

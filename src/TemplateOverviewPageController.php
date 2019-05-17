@@ -152,7 +152,7 @@ class TemplateOverviewPageController extends PageController
     public function listofobjectsused($request)
     {
         $classWeAreLookingFor = $request->param("ID");
-        $classWeAreLookingFor = singleton($classWeAreLookingFor);
+        $classWeAreLookingFor = Injector::inst()->get($classWeAreLookingFor);
         if ($classWeAreLookingFor instanceof DataObject) {
             $list = $this->ListOfAllSiteTreeClasses();
             foreach ($list as $item) {
