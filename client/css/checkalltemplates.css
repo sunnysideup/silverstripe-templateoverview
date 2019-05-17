@@ -89,3 +89,12 @@ a {
 .diff-added {
     background-color: #d7ffd7;
 }
+
+.http-response,
+.response-time,
+.isNonCMSLink .test {
+    text-align: center;
+}
+.test span {
+    font-size: 10px;
+}

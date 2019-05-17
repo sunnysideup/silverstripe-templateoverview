@@ -187,7 +187,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                         );
                         $rawResponseOtherSite = Convert::raw2htmlatt(str_replace('\'', '\\\'', $rawResponseOtherSite));
                         $diff = '
-                        <iframe id="iframe2" width="'.$width.'%" height="900" srcdoc=\''.$rawResponseOtherSite.'\' style="float: right;"></iframe>
+                        <iframe id="iframe2" width="'.$width.'%" height="7000" srcdoc=\''.$rawResponseOtherSite.'\' style="float: right;"></iframe>
 
                         <hr style="clear: both; margin-top: 20px; padding-top: 20px;" />
                         <h1>Diff</h1>
@@ -198,7 +198,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                 $rawResponse = Convert::raw2htmlatt(str_replace('\'', '\\\'', $this->rawResponse));
                 echo '
                     <h1>Response</h1>
-                    <iframe id="iframe" width="'.$width.'%" height="900" srcdoc=\''.$rawResponse.'\' style="'.$style.'"></iframe>
+                    <iframe id="iframe" width="'.$width.'%" height="7000" srcdoc=\''.$rawResponse.'\' style="'.$style.'"></iframe>
                 ';
                 echo $diff;
             }
