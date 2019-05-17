@@ -88,7 +88,7 @@ jQuery(document).ready(
                                     let responseTime = Math.round(100 * (checker.totalResponseTime / checker.numberOfTests)) / 100;
 									checker.totalResponseTime = checker.totalResponseTime + jsonData.responseTime;
 									jQuery('#NumberOfTests').text(checker.numberOfTests);
-									jQuery('#AverageResponseTime').text();
+									jQuery('#AverageResponseTime').text(responseTime);
 									jQuery('#NumberOfErrors').text(checker.numberOfErrors);
 									jQuery('#ErrorRate').text(errorRate);
 								}

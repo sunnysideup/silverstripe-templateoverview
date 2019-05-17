@@ -402,7 +402,7 @@ class AllLinks
             if($controllerReflectionClass->isSubclassOf(ContentController::class)) {
                 //special construct, can't handle ...
                 if(count($params) > 1 ) {
-                    echo '<hr />Ditching because of param count > 1: '.$className;
+                    // echo '<hr />Ditching because of param count > 1: '.$className;
                     continue;
                 }
                 $dataRecordClassName = substr($className, 0, -1 * strlen('Controller'));
@@ -417,7 +417,7 @@ class AllLinks
                 }
             }
             elseif(count($params) > 0 ) {
-                echo '<hr />Ditching because of param count: '.$className;
+                // echo '<hr />Ditching because of param count: '.$className;
                 continue;
             }
 
@@ -453,7 +453,7 @@ class AllLinks
             if($hasRoute || $hasURLSegmentVar || $hasLinkMethod) {
                 $array[$className] = (array)$allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);;
             } else {
-                echo '<hr />Ditching because lack of link : '.$className;
+                // echo '<hr />Ditching because lack of link : '.$className;
             }
         }
 
