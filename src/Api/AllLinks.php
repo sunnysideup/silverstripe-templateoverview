@@ -71,16 +71,6 @@ class AllLinks
      */
     private static $controller_name_space_filter = [];
 
-
-    /**
-     * this variable can help with situations where there are
-     * unfixable bugs in Live and you want to run the tests
-     * on Draft instead... (or vice versa)
-     * @var String (Live or '')
-     */
-    protected $stage = '';
-
-
     /**
     * @var array
     */
@@ -187,7 +177,7 @@ class AllLinks
         return [
             'allNonCMSLinks' => $this->allNonCMSLinks,
             'allCMSLinks' => $this->allCMSLinks,
-            'otherLinks' => $this->otherControllerMethods,
+            'otherLinks' => $this->otherControllerMethods
         ];
     }
 
@@ -491,6 +481,7 @@ class AllLinks
                 // ];
                 if($link) {
                     foreach($methods as $method) {
+                        unset($array[$className][$method]);
                         $finalArray[] = [
                             'ClassName' => $className,
                             'Link' => $link.$method.'/',
@@ -498,6 +489,12 @@ class AllLinks
                     }
                 }
             }
+        }
+        foreach($array as $className => $methods) {
+            $finalArray[] = [
+                'ClassName' => $className,
+                'Link' => '???/'.$method.'/',
+            ];
         }
 
         return $finalArray;

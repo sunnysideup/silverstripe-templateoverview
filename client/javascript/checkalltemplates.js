@@ -68,11 +68,10 @@ jQuery(document).ready(
 
 							checker.item = checker.list.shift();
 
-							var splitData = data.split('</h1>');
 							var jsonData = null;
 
-							if (splitData.length > 1 && splitData[1]) {
-								jsonData = JSON.parse(splitData[1]);
+							if (data.length > 1) {
+								jsonData = JSON.parse(data);
                                 if(jsonData.status !== 'success') {
                                     checker.numberOfErrors++;
                                 }
