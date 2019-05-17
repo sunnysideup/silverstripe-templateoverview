@@ -51,9 +51,21 @@ class AllLinks
     use Configurable;
 
 
-    private static $model_admin_alternatives = [
-        'admin/archive' => 'CMSEditLinkForTestPurposesNOTINUSE'
-    ];
+    /**
+     * url snippets that if found in links should exclude the link altogether.
+     * e.g. 'admin/registry'
+     *
+     * @var array
+     */
+    private static $exclude_list = [];
+
+    /**
+     * List of alternative links for modeladmins
+     * e.g. 'admin/archive' => 'CMSEditLinkForTestPurposesNOTINUSE'
+     *
+     * @var array
+     */
+    private static $model_admin_alternatives = [];
 
 
     /**
@@ -511,7 +523,13 @@ class AllLinks
       */
     private function addToArrayOfLinks($array, $pushArray)
     {
+        $excludeList = $this->Config()->exclude_list;
         foreach ($pushArray as $pushItem) {
+            foreach($excludeList as $excludeItem) {
+                if(stripos($pushItem, $excludeItem) !== false) {
+                    continue 2;
+                }
+            }
             $pushItem = '/'.Director::makeRelative($pushItem);
             $pushItem = $this->sanitiseClassName($pushItem);
             if(! in_array($pushItem, $array)) {
