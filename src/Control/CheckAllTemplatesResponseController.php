@@ -60,6 +60,14 @@ use GuzzleHttp\Psr7;
 class CheckAllTemplatesResponseController extends Controller implements Flushable
 {
 
+    /**
+     * Defines methods that can be called directly
+     * @var array
+     */
+    private static $allowed_actions = [
+        'testone' => 'ADMIN'
+    ];
+
     public static function flush()
     {
         $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
@@ -138,13 +146,6 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
      */
     private $debug = false;
 
-    /**
-     * Defines methods that can be called directly
-     * @var array
-     */
-    private static $allowed_actions = [
-        'testone' => 'ADMIN'
-    ];
 
     /**
      * Main function
@@ -179,7 +180,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                     if($this->isSuccess && !$isCMSLink) {
                         $otherURL = $comparisonBaseURL . $testURL;
                         $testContent = str_replace(Director::absoluteBaseURL(), $comparisonBaseURL, $this->rawResponse);
-                        $rawResponseOtherSite = file_get_contents($otherURL);
+                        $rawResponseOtherSite = @file_get_contents($otherURL);
                         $diff = DiffMachine::compare(
                             $testContent,
                             $rawResponseOtherSite
