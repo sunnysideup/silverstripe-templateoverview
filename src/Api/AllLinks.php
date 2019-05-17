@@ -475,10 +475,10 @@ class AllLinks
                 if(substr($link, -1) !== '/') {
                     $link = $link.'/';
                 }
-                // $finalArray[] = [
-                //     'ClassName' => $className,
-                //     'Link' => $link,
-                // ];
+                $finalArray[] = [
+                    'ClassName' => $className,
+                    'Link' => $link,
+                ];
                 if($link) {
                     foreach($methods as $method) {
                         unset($array[$className][$method]);
