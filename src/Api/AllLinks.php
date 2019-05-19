@@ -214,7 +214,13 @@ class AllLinks
                     ->exclude(["ClassName" => $excludedClasses])
                     ->sort(DB::get_conn()->random().' ASC')
                     ->first();
-                if ($page) {
+                if (!$page) {
+                    $page = Versioned::get_by_stage($class, Versioned::LIVE)
+                        ->exclude(["ClassName" => $excludedClasses])
+                        ->sort(DB::get_conn()->random().' ASC')
+                        ->first();
+                }
+                if($page) {
                     if ($pageInCMS) {
                         $url = $page->CMSEditLink();
                         $return[] = $url;
@@ -224,13 +230,6 @@ class AllLinks
                         $url = $page->Link();
                         $return[] = $url;
                     }
-                }
-                $page = Versioned::get_by_stage($class, Versioned::LIVE)
-                    ->exclude(["ClassName" => $excludedClasses])
-                    ->sort(DB::get_conn()->random().' ASC')
-                    ->first();
-                if ($page) {
-                    $url = $page->Link();
                 }
             }
         }
