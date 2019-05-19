@@ -210,12 +210,12 @@ class AllLinks
         foreach ($this->siteTreeClassNames as $class) {
             for($i = 0; $i < $this->Config()->number_of_examples; $i++) {
                 $excludedClasses = $this->arrayExcept($this->siteTreeClassNames, $class);
-                $page = Versioned::get_by_stage($class, Versioned::DRAFT)
+                $page = Versioned::get_by_stage($class, Versioned::LIVE)
                     ->exclude(["ClassName" => $excludedClasses])
                     ->sort(DB::get_conn()->random().' ASC')
                     ->first();
-                if (!$page) {
-                    $page = Versioned::get_by_stage($class, Versioned::LIVE)
+                if (! $page) {
+                    $page = Versioned::get_by_stage($class, Versioned::DRAFT)
                         ->exclude(["ClassName" => $excludedClasses])
                         ->sort(DB::get_conn()->random().' ASC')
                         ->first();
@@ -524,9 +524,11 @@ class AllLinks
     {
         $excludeList = $this->Config()->exclude_list;
         foreach ($pushArray as $pushItem) {
-            foreach($excludeList as $excludeItem) {
-                if(stripos($pushItem, $excludeItem) !== false) {
-                    continue 2;
+            if(is_array($excludeList) && count($excludeList)) {
+                foreach($excludeList as $excludeItem) {
+                    if(stripos($pushItem, $excludeItem) !== false) {
+                        continue 2;
+                    }
                 }
             }
             $pushItem = '/'.Director::makeRelative($pushItem);
