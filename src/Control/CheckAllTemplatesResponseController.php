@@ -203,6 +203,8 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                 echo $diff;
             }
             return;
+        } else {
+            user_error('no test url provided.');
         }
 
     }
