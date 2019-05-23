@@ -418,7 +418,7 @@ class AllLinks
                 }
                 $dataRecordClassName = substr($className, 0, -1 * strlen('Controller'));
                 if(class_exists($dataRecordClassName)) {
-                    $dataRecordClassObject = DataObject::get_one($dataRecordClassName);
+                    $dataRecordClassObject = DataObject::get_one($dataRecordClassName, null, DB::get_conn()->random().' ASC');
                     if($dataRecordClassObject) {
                         $tmp = $dataRecordClassObject->Link();
                         $tmpArray = explode('?', $tmp);
@@ -477,6 +477,15 @@ class AllLinks
                 $classObject = null;
             }
             if($classObject) {
+                if($classObject->hasMethod('templateOverviewTests')) {
+                    $customLinks = $classObject->templateOverviewTests();
+                    foreach($customLinks as $customLink) {
+                        $finalArray[] = [
+                            'ClassName' => $className,
+                            'Link' => $customLinks,
+                        ];
+                    }
+                }
                 if($this->controllerLinks[$className] === '->Link') {
                     $link = $classObject->Link();
                 }
