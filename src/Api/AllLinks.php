@@ -424,6 +424,15 @@ class AllLinks
                         $tmpArray = explode('?', $tmp);
                         $this->controllerLinks[$className] = $tmpArray[0];
                         $hasLinkMethod = true;
+                        if($dataRecordClassObject->hasMethod('templateOverviewTests')) {
+                            $customLinks = $dataRecordClassObject->templateOverviewTests();
+                            foreach($customLinks as $customLink) {
+                                $finalArray[] = [
+                                    'ClassName' => $className,
+                                    'Link' => $customLink,
+                                ];
+                            }
+                        }
                     }
                 }
             }
@@ -469,7 +478,6 @@ class AllLinks
         }
 
         //construct array!
-        $finalArray = [];
         foreach ($array as $className  => $methods) {
             try {
                 $classObject = Injector::inst()->get($className);
@@ -482,7 +490,7 @@ class AllLinks
                     foreach($customLinks as $customLink) {
                         $finalArray[] = [
                             'ClassName' => $className,
-                            'Link' => $customLinks,
+                            'Link' => $customLink,
                         ];
                     }
                 }
