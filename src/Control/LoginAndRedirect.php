@@ -35,7 +35,7 @@ class LoginAndRedirect extends Controller
 
     public function isDev()
     {
-        if(Environment::getEnv('ALLOW_SMOKE_TEST')) {
+        if(Environment::getEnv('SS_ALLOW_SMOKE_TEST')) {
             $allowedIPs = Config::inst()->get(self::class, 'allowed_ips');
             if(IPUtils::checkIP($this->request->getIP(), $allowedIPs)) {
                 return Director::isDev();
@@ -43,7 +43,7 @@ class LoginAndRedirect extends Controller
                 die('Please include your ip address in LoginAndRedirect.allowed_ips: '.$this->request->getIP(). '. Currently set are: '.implode(', ', $allowedIPs));
             }
         } else {
-            die('Please set ALLOW_SMOKE_TEST in your environment variables to use this service.');
+            die('Please set SS_ALLOW_SMOKE_TEST in your environment variables to use this service.');
         }
     }
 
