@@ -386,6 +386,13 @@ class AllLinks
                 continue;
             }
 
+            //check for abstract ones
+            $controllerReflectionClass = new ReflectionClass($className);
+            if ($controllerReflectionClass->isAbstract()) {
+                // echo '<hr />Ditching because of abstract: '.$className;
+                continue;
+            }
+
             //match to filter
             $filterMatch = false;
             foreach($this->Config()->controller_name_space_filter as $filter) {
@@ -394,28 +401,30 @@ class AllLinks
                 }
             }
             if(! $filterMatch) {
-                // echo '<hr />Ditching because of classname: '.$className;
+                // $finalArray[] = [
+                //     'ClassName' => $className,
+                //     'Link' => 'out of scope',
+                // ];
                 continue;
             }
 
-            //check for abstract ones
-            $controllerReflectionClass = new ReflectionClass($className);
-            if ($controllerReflectionClass->isAbstract()) {
-                continue;
-            }
 
             $hasRoute = false;
             $hasURLSegmentVar = false;
             $hasLinkMethod = false;
 
             //check for ones that can not be constructed
+            if($controllerReflectionClass->isSubclassOf(LeftAndMain::class)) {
+                continue;
+            }
+
             $params = $controllerReflectionClass->getConstructor()->getParameters();
             if($controllerReflectionClass->isSubclassOf(ContentController::class)) {
                 //special construct, can't handle ...
-                if(count($params) > 1 ) {
-                    // echo '<hr />Ditching because of param count > 1: '.$className;
-                    continue;
-                }
+                // if(count($params) > 1 ) {
+                //     // echo '<hr />Ditching because of param count > 1: '.$className;
+                //     continue;
+                // }
                 $dataRecordClassName = substr($className, 0, -1 * strlen('Controller'));
                 if(class_exists($dataRecordClassName)) {
                     $dataRecordClassObject = DataObject::get_one($dataRecordClassName, null, DB::get_conn()->random().' ASC');
@@ -427,10 +436,7 @@ class AllLinks
                         if($dataRecordClassObject->hasMethod('templateOverviewTests')) {
                             $customLinks = $dataRecordClassObject->templateOverviewTests();
                             foreach($customLinks as $customLink) {
-                                $finalArray[] = [
-                                    'ClassName' => $className,
-                                    'Link' => $customLink,
-                                ];
+                                $finalArray[$customLink] = $className;
                             }
                         }
                     }
@@ -476,7 +482,7 @@ class AllLinks
                 // echo '<hr />Ditching because lack of link : '.$className;
             }
         }
-
+        // die('---');
         //construct array!
         foreach ($array as $className  => $methods) {
             try {
@@ -488,10 +494,7 @@ class AllLinks
                 if($classObject->hasMethod('templateOverviewTests')) {
                     $customLinks = $classObject->templateOverviewTests();
                     foreach($customLinks as $customLink) {
-                        $finalArray[] = [
-                            'ClassName' => $className,
-                            'Link' => $customLink,
-                        ];
+                        $finalArray[$customLink] = $className;
                     }
                 }
                 if($this->controllerLinks[$className] === '->Link') {
@@ -503,29 +506,32 @@ class AllLinks
                 if(substr($link, -1) !== '/') {
                     $link = $link.'/';
                 }
-                $finalArray[] = [
-                    'ClassName' => $className,
-                    'Link' => $link,
-                ];
+                $finalArray[$link] = $className;
                 if($link) {
                     foreach($methods as $method) {
                         unset($array[$className][$method]);
-                        $finalArray[] = [
-                            'ClassName' => $className,
-                            'Link' => $link.$method.'/',
-                        ];
+                        $finalArray[$link.$method.'/'] = $className;
                     }
                 }
             }
         }
         foreach($array as $className => $methods) {
-            $finalArray[] = [
+            $finalArray['???/'.$method.'/'] = $className;
+        }
+        foreach($finalArray as $link => $className) {
+            $finalFinalArray[] = [
                 'ClassName' => $className,
-                'Link' => '???/'.$method.'/',
+                'Link' => $link,
             ];
         }
+        usort($finalFinalArray, function ($a, $b) {
+            if ($a['ClassName'] !== $b['ClassName']) {
+               return $a['ClassName'] <=> $b['ClassName'];
+            }
 
-        return $finalArray;
+            return $a['Link'] <=> $b['Link'];
+        });
+        return $finalFinalArray;
     }
 
 
