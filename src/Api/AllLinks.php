@@ -373,6 +373,7 @@ class AllLinks
     {
         $array = [];
         $finalArray = [];
+        $finalFinalArray = [];
         $classes = ClassInfo::subclassesFor(Controller::class);
         $routes = Config::inst()->get(Director::class, 'rules');
         //foreach($manifest as $class => $compareFilePath) {
