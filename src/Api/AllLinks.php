@@ -50,6 +50,10 @@ class AllLinks
     use Injectable;
     use Configurable;
 
+    public static function is_admin_link($link)
+    {
+        return substr(ltrim($link, '/'),  0 , 5) === 'admin' ? true : false;
+    }
 
     /**
      * url snippets that if found in links should exclude the link altogether.
@@ -158,7 +162,7 @@ class AllLinks
 
         foreach($this->Config()->get('custom_links') as $link) {
             $link = '/'.ltrim($link, '/').'/';
-            if(substr($link,  0 , 6) === '/admin') {
+            if(self::is_admin_link($link)) {
                 $this->customCMSLinks[] = $link;
             } else {
                 $this->customNonCMSLinks[] = $link;
@@ -254,21 +258,27 @@ class AllLinks
                     for($i = 0; $i < $this->Config()->number_of_examples; $i++) {
                         $obj = DataObject::get_one($class, ["ClassName" => $class], DB::get_conn()->random().' ASC');
                         if ($obj) {
-                            $url = null;
                             if ($inCMS) {
                                 if($obj->hasMethod('CMSEditLink')) {
-                                    $url = $obj->CMSEditLink();
+                                    $return[] = $obj->CMSEditLink();
+                                }
+                                if($obj->hasMethod('CMSAddLink')) {
+                                    $return[] = $obj->CMSAddLink();
+                                }
+                                if($obj->hasMethod('CMSListLink')) {
+                                    $return[] = $obj->CMSListLink();
                                 }
                                 if($obj->hasMethod('PreviewLink')) {
-                                    $url = $obj->PreviewLink();
+                                    $return[] = $obj->PreviewLink();
                                 }
                             } else {
                                 if($obj->hasMethod('Link')) {
-                                    $url = $obj->Link();
+                                    $return[] = $obj->Link();
                                 }
-                            }
-                            if($url) {
-                                $return[] = $url;
+                                if($obj->hasMethod('getLink')) {
+                                    $return[] = $obj->getLink();
+                                }
+
                             }
                         }
                     }
@@ -537,8 +547,6 @@ class AllLinks
 
 
 
-
-
     /**
       * Pushes an array of items to an array
       * @param Array $array Array to push items to (will overwrite)
@@ -548,6 +556,13 @@ class AllLinks
     {
         $excludeList = $this->Config()->exclude_list;
         foreach ($pushArray as $pushItem) {
+            //clean
+            if(self::is_admin_link($pushItem)) {
+                $pushItem = str_replace('?stage=Stage', '', $pushItem);
+            }
+            $pushItem = $this->sanitiseClassName($pushItem);
+            $pushItem = '/'.Director::makeRelative($pushItem);
+
             if(is_array($excludeList) && count($excludeList)) {
                 foreach($excludeList as $excludeItem) {
                     if(stripos($pushItem, $excludeItem) !== false) {
@@ -555,8 +570,6 @@ class AllLinks
                     }
                 }
             }
-            $pushItem = '/'.Director::makeRelative($pushItem);
-            $pushItem = $this->sanitiseClassName($pushItem);
             if(! in_array($pushItem, $array)) {
                 array_push($array, $pushItem);
             }
@@ -619,5 +632,7 @@ class AllLinks
         }
         return true;
     }
+
+
 
 }

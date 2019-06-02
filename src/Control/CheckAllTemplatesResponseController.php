@@ -218,7 +218,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         if (strlen(trim($url)) < 1) {
             user_error("empty url"); //Checks for empty strings.
         }
-        if (strpos($url, "/admin") === 0 || strpos($url, "admin") === 0) {
+        if (AllLinks::is_admin_link($url)) {
             $validate = false;
         } else {
             $validate = Config::inst()->get(CheckAllTemplatesResponseController::class, 'use_w3_validation');
