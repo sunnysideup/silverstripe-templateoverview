@@ -79,7 +79,7 @@ class CheckAllTemplates extends BuildTask
     /**
      * @var Boolean
      */
-    private $w3validation = true;
+    private $w3validation = false;
 
     /**
      * @var Boolean
