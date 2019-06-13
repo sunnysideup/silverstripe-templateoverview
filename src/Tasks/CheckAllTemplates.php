@@ -2,6 +2,8 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
+use SilverStripe\Security\Security;
+use SilverStripe\Security\Permission;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ArrayList;
@@ -46,6 +48,12 @@ class CheckAllTemplates extends BuildTask
             $this->debug = true;
         }
 
+
+        //we have this check here so that even in dev mode you have to log in.
+        //because if you do not log in, the test will not work.
+        if (!Permission::check('ADMIN')) {
+            return Security::permissionFailure();
+        }
 
         $count = 0;
 
