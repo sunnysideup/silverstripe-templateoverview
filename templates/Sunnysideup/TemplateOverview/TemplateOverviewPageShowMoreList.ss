@@ -1,1 +1,1 @@
-<% include TemplateOverviewPageMoreDetail %>
+<% include Sunnysideup\\TemplateOverview\\Includes\\TemplateOverviewPageMoreDetail %>
