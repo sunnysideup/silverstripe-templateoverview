@@ -256,7 +256,12 @@ class AllLinks
             if(! in_array($class, array_merge($this->siteTreeClassNames, [DataObject::class]))) {
                 if($this->isValidClass($class)) {
                     for($i = 0; $i < $this->Config()->number_of_examples; $i++) {
-                        $obj = DataObject::get_one($class, ["ClassName" => $class], DB::get_conn()->random().' ASC');
+                        $obj = DataObject::get_one(
+                            $class,
+                            ["ClassName" => $class],
+                            null,
+                            DB::get_conn()->random().' ASC'
+                        );
                         if ($obj) {
                             if ($inCMS) {
                                 if($obj->hasMethod('CMSEditLink')) {
@@ -438,7 +443,12 @@ class AllLinks
                 // }
                 $dataRecordClassName = substr($className, 0, -1 * strlen('Controller'));
                 if(class_exists($dataRecordClassName)) {
-                    $dataRecordClassObject = DataObject::get_one($dataRecordClassName, null, DB::get_conn()->random().' ASC');
+                    $dataRecordClassObject = DataObject::get_one(
+                        $dataRecordClassName,
+                        null,
+                        null,
+                        DB::get_conn()->random().' ASC'
+                    );
                     if($dataRecordClassObject) {
                         $tmp = $dataRecordClassObject->Link();
                         $tmpArray = explode('?', $tmp);
@@ -488,7 +498,7 @@ class AllLinks
 
             //add class and allowed actions
             if($hasRoute || $hasURLSegmentVar || $hasLinkMethod) {
-                $array[$className] = (array)$allowedActionsArray = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);;
+                $array[$className] = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);;
             } else {
                 // echo '<hr />Ditching because lack of link : '.$className;
             }
@@ -498,7 +508,7 @@ class AllLinks
         foreach ($array as $className  => $methods) {
             try {
                 $classObject = Injector::inst()->get($className);
-            } catch (Error $e) {
+            } catch (\Error $e) {
                 $classObject = null;
             }
             if($classObject) {
@@ -527,7 +537,9 @@ class AllLinks
             }
         }
         foreach($array as $className => $methods) {
-            $finalArray['???/'.$method.'/'] = $className;
+            foreach($methods as $method) {
+                $finalArray['???/'.$method.'/'] = $className;
+            }
         }
         foreach($finalArray as $link => $className) {
             $finalFinalArray[] = [
@@ -596,7 +608,7 @@ class AllLinks
     /**
       * Takes an array, takes one item out, and returns new array
       * @param Array $array Array which will have an item taken out of it.
-      * @param - $exclusion Item to be taken out of $array
+      * @param $exclusion Item to be taken out of $array
       * @return Array New array.
       */
     private function arrayExcept($array, $exclusion)
