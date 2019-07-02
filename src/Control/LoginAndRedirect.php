@@ -15,11 +15,11 @@ use SilverStripe\Security\MemberAuthenticator\CookieAuthenticationHandler;
 class LoginAndRedirect extends Controller
 {
     private static $allowed_actions = [
-        'login' => '->isDev'
+        'login' => '->isDev',
     ];
 
     private static $allowed_ips = [
-        '127.0.0.1'
+        '127.0.0.1',
     ];
 
     function login($request)

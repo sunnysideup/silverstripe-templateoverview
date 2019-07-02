@@ -193,7 +193,7 @@ class AllLinks
         return [
             'allNonCMSLinks' => $this->allNonCMSLinks,
             'allCMSLinks' => $this->allCMSLinks,
-            'otherLinks' => $this->otherControllerMethods
+            'otherLinks' => $this->otherControllerMethods,
         ];
     }
 

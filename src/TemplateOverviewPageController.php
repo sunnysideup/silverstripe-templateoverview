@@ -46,11 +46,11 @@ class TemplateOverviewPageController extends PageController
 
     }
 
-    private static $allowed_actions = array(
+    private static $allowed_actions = [
         "showmore" => true,
         "quicklist" => true,
-        "listofobjectsused" => true
-    );
+        "listofobjectsused" => true,
+    ];
 
     public function init()
     {
@@ -84,11 +84,11 @@ class TemplateOverviewPageController extends PageController
         if ($obj) {
             $className = $obj->ClassName;
             $data = $className::get()
-                ->filter(array("ClassName" => $obj->ClassName))
+                ->filter(["ClassName" => $obj->ClassName])
                 ->limit(200);
-            $array = array(
-                "Results" => $data
-            );
+            $array = [
+                "Results" => $data,
+            ];
         } else {
             $array = [];
         }

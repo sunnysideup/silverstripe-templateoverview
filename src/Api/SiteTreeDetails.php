@@ -29,7 +29,7 @@ class SiteTreeDetails
     private static $classes_to_exclude = [
         SiteTree::class,
         RedirectorPage::class,
-        VirtualPage::class
+        VirtualPage::class,
     ];
 
     /**
@@ -57,7 +57,7 @@ class SiteTreeDetails
                 if (!in_array($className, $this->config()->get("classes_to_exclude"))) {
                     if ($this->showAll) {
                         $objects = $className::get()
-                            ->filter(array("ClassName" => $className))
+                            ->filter(["ClassName" => $className])
                             ->sort(DB::get_conn()->random()." ASC")
                             ->limit(25);
                         $count = 0;
@@ -75,12 +75,12 @@ class SiteTreeDetails
                     } else {
                         $obj = null;
                         $obj = $className::get()
-                            ->filter(array("ClassName" => $className))
+                            ->filter(["ClassName" => $className])
                             ->sort("RAND() ASC")
                             ->limit(1)
                             ->first();
                         if ($obj) {
-                            $count = SiteTree::get()->filter(array("ClassName" => $obj->ClassName))->count();
+                            $count = SiteTree::get()->filter(["ClassName" => $obj->ClassName])->count();
                         } else {
                             $obj = $className::create();
                             $count = 0;

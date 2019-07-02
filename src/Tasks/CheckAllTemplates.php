@@ -59,7 +59,7 @@ class CheckAllTemplates extends BuildTask
 
         $allLinks = Injector::inst()->get(AllLinks::class)->getAllLinks();
 
-        $sections = array("allNonCMSLinks", "allCMSLinks");
+        $sections = ["allNonCMSLinks", "allCMSLinks"];
         $links = ArrayList::create();
 
         foreach ($sections as $isCMSLink => $sectionVariable) {

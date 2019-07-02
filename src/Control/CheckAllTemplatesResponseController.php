@@ -65,7 +65,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
      * @var array
      */
     private static $allowed_actions = [
-        'testone' => 'ADMIN'
+        'testone' => 'ADMIN',
     ];
 
     public static function flush()
@@ -355,7 +355,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                         self::get_user_email(),
                         self::get_password(),
                     ],
-                    'Authorization' => ['Basic '.$credentials]
+                    'Authorization' => ['Basic '.$credentials],
                 ]
             );
         } catch (RequestException $exception) {

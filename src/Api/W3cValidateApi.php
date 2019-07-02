@@ -15,11 +15,11 @@ class W3cValidateApi
     private $output = 'soap12';
     private $uri = '';
     private $fragment = '';
-    private $postVars = array();
+    private $postVars = [];
     private $validResult = false;
     private $errorCount = 0;
     private $showErrors = true;
-    private $errorList = array();
+    private $errorList = [];
 
 
     private function W3cValidateApi()
@@ -61,7 +61,7 @@ class W3cValidateApi
 
 
         $user_agent= 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.1.4322)';
-        $options = array(
+        $options = [
             CURLOPT_CUSTOMREQUEST  =>"POST",        //set request type post or get
             CURLOPT_POST           =>1,            //set to GET
             CURLOPT_USERAGENT      => $user_agent, //"test from www.sunnysideup.co.nz",//$user_agent, //set user agent
@@ -76,8 +76,8 @@ class W3cValidateApi
             CURLOPT_TIMEOUT        => 120,      // timeout on response
             CURLOPT_MAXREDIRS      => 10,       // stop after 10 redirects
             CURLOPT_POSTFIELDS     => $this->postVars,
-            CURLOPT_URL            => $this->baseURL
-        );
+            CURLOPT_URL            => $this->baseURL,
+        ];
         // Initialize the curl session
         $ch = curl_init();
         curl_setopt_array($ch, $options);
