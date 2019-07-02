@@ -75,7 +75,7 @@ class AllLinks
     /**
      * @var int
      */
-    private static $number_of_examples = 3;
+    private static $number_of_examples = 7;
 
     /**
      * @var array
