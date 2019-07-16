@@ -20,7 +20,7 @@
         }
     ],
     "require": {
-        "silverstripe/recipe-cms": "~4@stable"
+        "silverstripe/recipe-cms": "~4@stable",
         "sunnysideup/prettyphoto": "*",
         "guzzlehttp/guzzle": "~6",
         "sebastian/diff": "*"
