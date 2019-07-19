@@ -149,8 +149,6 @@ class AllLinks
      */
     protected $siteTreeClassNames = [];
 
-    protected $controllerLinks = [];
-
     /**
      * returns an array of allNonCMSLinks => [] , allCMSLinks => [], otherControllerMethods => []
      * @return array
@@ -381,166 +379,63 @@ class AllLinks
     }
 
     /**
-     *
+     * @todo break up!
      * @return array
      */
     public function ListOfAllControllerMethods()
     {
-        $array = [];
+        $controllerLinks = [];
+        $allowedActions = [];
         $finalArray = [];
         $finalFinalArray = [];
+
         $classes = ClassInfo::subclassesFor(Controller::class);
-        $routes = Config::inst()->get(Director::class, 'rules');
+        $isValid = AllLinksControllerInfo::set_valid_name_spaces($this->Config()->controller_name_space_filter);
+
         //foreach($manifest as $class => $compareFilePath) {
         //if(stripos($compareFilePath, $absFolderPath) === 0) $matchedClasses[] = $class;
         //}
         // $manifest = ClassLoader::inst()->getManifest()->getClasses();
         foreach ($classes as $className) {
-
-            //skip base class
-            if ($className === Controller::class) {
+            $isValid = AllLinksControllerInfo::is_valid_controller($className);
+            if(! $isValid) {
                 continue;
             }
+            $controllerLinks[$className] = '';
 
-            //check for abstract ones
-            $controllerReflectionClass = new ReflectionClass($className);
-            if ($controllerReflectionClass->isAbstract()) {
-                // echo '<hr />Ditching because of abstract: '.$className;
-                continue;
-            }
+            //main links
 
-            //match to filter
-            $filterMatch = false;
-            foreach($this->Config()->controller_name_space_filter as $filter) {
-                if(strpos($className, $filter) !== false) {
-                    $filterMatch = true;
-                }
+            //custom links
+            $customLinks = AllLinksControllerInfo::find_custom_links($className);
+            foreach($customLinks as $customLink) {
+                $finalArray[$customLink] = $className;
             }
-            if(! $filterMatch) {
-                // $finalArray[] = [
-                //     'ClassName' => $className,
-                //     'Link' => 'out of scope',
-                // ];
-                continue;
+            $link = AllLinksControllerInfo::find_link($className);
+            if($link) {
+                $controllerLinks[$className] = $link;
             }
-
-
-            $hasRoute = false;
-            $hasURLSegmentVar = false;
-            $hasLinkMethod = false;
-
-            //check for ones that can not be constructed
-            if($controllerReflectionClass->isSubclassOf(LeftAndMain::class)) {
-                continue;
-            }
-
-            $params = $controllerReflectionClass->getConstructor()->getParameters();
-            if($controllerReflectionClass->isSubclassOf(ContentController::class)) {
-                //special construct, can't handle ...
-                // if(count($params) > 1 ) {
-                //     // echo '<hr />Ditching because of param count > 1: '.$className;
-                //     continue;
-                // }
-                $dataRecordClassName = substr($className, 0, -1 * strlen('Controller'));
-                if(class_exists($dataRecordClassName)) {
-                    $dataRecordClassObject = DataObject::get_one(
-                        $dataRecordClassName,
-                        null,
-                        null,
-                        DB::get_conn()->random().' ASC'
-                    );
-                    if($dataRecordClassObject) {
-                        $tmp = $dataRecordClassObject->Link();
-                        $tmpArray = explode('?', $tmp);
-                        $this->controllerLinks[$className] = $tmpArray[0];
-                        $hasLinkMethod = true;
-                        if($dataRecordClassObject->hasMethod('templateOverviewTests')) {
-                            $customLinks = $dataRecordClassObject->templateOverviewTests();
-                            foreach($customLinks as $customLink) {
-                                $finalArray[$customLink] = $className;
-                            }
-                        }
-                    }
-                }
-            }
-            elseif(count($params) > 0 ) {
-                // echo '<hr />Ditching because of param count: '.$className;
-                continue;
-            }
-
-            if(! $hasLinkMethod) {
-                //find link in routes
-                $route = array_search($className, $routes);
-                if($route) {
-                    $routeArray = explode('//', $route);
-                    $route = $routeArray[0];
-                    $this->controllerLinks[$className] = $route;
-                    $hasRoute = true;
-                }
-                if(! $hasRoute) {
-                    //check if there is a link of some sort
-                    $urlSegment = Config::inst()->get($className, 'url_segment');
-                    $hasURLSegmentVar =  $urlSegment ? true : false;
-                    $this->controllerLinks[$className] = $urlSegment . '/';
-                    if(! $hasURLSegmentVar) {
-                        foreach ($controllerReflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                            if ($method->class == $className) {
-                                if($method->name === 'Link') {
-                                    $this->controllerLinks[$className] = '->Link';
-                                    $hasLinkMethod = true;
-                                    break;
-                                }
-                             }
-                        }
-                    }
-                }
-            }
-
-            //add class and allowed actions
-            if($hasRoute || $hasURLSegmentVar || $hasLinkMethod) {
-                $array[$className] = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);;
-            } else {
-                // echo '<hr />Ditching because lack of link : '.$className;
-            }
+            $allowedActions[$className] = AllLinksControllerInfo::find_allowed_actions($className);
         }
         // die('---');
         //construct array!
-        foreach ($array as $className  => $methods) {
-            try {
-                $classObject = Injector::inst()->get($className);
-            } catch (\Error $e) {
-                $classObject = null;
-            }
-            if($classObject) {
-                if($classObject->hasMethod('templateOverviewTests')) {
-                    $customLinks = $classObject->templateOverviewTests();
-                    foreach($customLinks as $customLink) {
-                        $finalArray[$customLink] = $className;
-                    }
-                }
-                if($this->controllerLinks[$className] === '->Link') {
-                    $link = $classObject->Link();
-                }
-                else {
-                    $link = $this->controllerLinks[$className];
-                }
-                if(substr($link, -1) !== '/') {
-                    $link = $link.'/';
-                }
+        foreach ($allowedActions as $className  => $methods) {
+            $link = $controllerLinks[$className];
+            if($link) {
                 $finalArray[$link] = $className;
-                if($link) {
-                    foreach($methods as $method) {
-                        unset($array[$className][$method]);
-                        $finalArray[$link.$method.'/'] = $className;
-                    }
+            } else {
+                $link = '???';
+            }
+            if(substr($link, -1) !== '/') {
+                $link = $link.'/';
+            }
+            if(is_array($methods)) {
+                foreach($methods as $method) {
+                    unset($allowedActions[$className][$method]);
+                    $finalArray[$link.$method.'/'] = $className;
                 }
             }
         }
-        foreach($array as $className => $methods) {
-            foreach($methods as $method) {
-                $finalArray['???/'.$method.'/'] = $className;
-            }
-        }
+
         foreach($finalArray as $link => $className) {
             $finalFinalArray[] = [
                 'ClassName' => $className,
@@ -554,6 +449,7 @@ class AllLinks
 
             return $a['Link'] <=> $b['Link'];
         });
+
         return $finalFinalArray;
     }
 
@@ -644,6 +540,7 @@ class AllLinks
         }
         return true;
     }
+
 
 
 
