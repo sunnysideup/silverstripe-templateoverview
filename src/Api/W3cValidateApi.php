@@ -29,11 +29,6 @@ class W3cValidateApi
 
     private $errorList = [];
 
-    public function get_headers_from_curl_response($response)
-    {
-        return $header;
-    }
-
     public function W3Validate($uri = '', $fragment = '')
     {
         if ($uri) {
@@ -85,6 +80,7 @@ class W3cValidateApi
         $this->fragment = $fragment;
     }
 
+
     private function validate()
     {
         sleep(1);
@@ -109,42 +105,47 @@ class W3cValidateApi
             CURLOPT_POSTFIELDS => $this->postVars,
             CURLOPT_URL => $this->baseURL,
         ];
+        $httphttpCode = '000';
+
         // Initialize the curl session
         $ch = curl_init();
-        curl_setopt_array($ch, $options);
-        // Execute the session and capture the response
-        $out = curl_exec($ch);
+        if($ch) {
+            curl_setopt_array($ch, $options);
+            // Execute the session and capture the response
+            $out = curl_exec($ch);
 
-        //$err               = curl_errno( $ch );
-        //$errmsg            = curl_error( $ch );
-        //$header            = curl_getinfo( $ch );
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($httpCode === 200) {
-            $doc = simplexml_load_string($out);
-            $doc->registerXPathNamespace('m', 'http://www.w3.org/2005/10/markup-validator');
+            //$err               = curl_errno( $ch );
+            //$errmsg            = curl_error( $ch );
+            //$header            = curl_getinfo( $ch );
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if ($httpCode === 200) {
+                $doc = simplexml_load_string($out);
+                $doc->registerXPathNamespace('m', 'http://www.w3.org/2005/10/markup-validator');
 
-            //valid ??
-            $nodes = $doc->xpath('//m:markupvalidationresponse/m:validity');
-            $this->validResult = strval($nodes[0]) === 'true' ? true : false;
+                //valid ??
+                $nodes = $doc->xpath('//m:markupvalidationresponse/m:validity');
+                $this->validResult = strval($nodes[0]) === 'true' ? true : false;
 
-            //error count ??
-            $nodes = $doc->xpath('//m:markupvalidationresponse/m:errors/m:errorcount');
-            $this->errorCount = strval($nodes[0]);
-            //errors
-            $nodes = $doc->xpath('//m:markupvalidationresponse/m:errors/m:errorlist/m:error');
-            foreach ($nodes as $node) {
-                //line
-                $nodes = $node->xpath('m:line');
-                $line = strval($nodes[0]);
-                //col
-                $nodes = $node->xpath('m:col');
-                $col = strval($nodes[0]);
-                //message
-                $nodes = $node->xpath('m:message');
-                $message = strval($nodes[0]);
-                $this->errorList[] = $message . "(${line},${col})";
+                //error count ??
+                $nodes = $doc->xpath('//m:markupvalidationresponse/m:errors/m:errorcount');
+                $this->errorCount = strval($nodes[0]);
+                //errors
+                $nodes = $doc->xpath('//m:markupvalidationresponse/m:errors/m:errorlist/m:error');
+                foreach ($nodes as $node) {
+                    //line
+                    $nodes = $node->xpath('m:line');
+                    $line = strval($nodes[0]);
+                    //col
+                    $nodes = $node->xpath('m:col');
+                    $col = strval($nodes[0]);
+                    //message
+                    $nodes = $node->xpath('m:message');
+                    $message = strval($nodes[0]);
+                    $this->errorList[] = $message . "(${line},${col})";
+                }
             }
         }
+
         return $httpCode;
     }
 }

@@ -8,6 +8,7 @@ use SilverStripe\CMS\Model\VirtualPage;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
@@ -41,7 +42,7 @@ class SiteTreeDetails
 
     public function ListOfAllSiteTreeClasses($checkCurrentClass = true)
     {
-        if (! self::$list_of_all_classes) {
+        if (count(self::$list_of_all_classes)) {
             $ArrayOfAllClasses = [];
             //$classes = ClassInfo::subclassesFor("SiteTree");
             $classes = SiteTree::page_type_classes();
@@ -67,7 +68,6 @@ class SiteTreeDetails
                             }
                         }
                     } else {
-                        $obj = null;
                         $obj = $className::get()
                             ->filter(['ClassName' => $className])
                             ->sort('RAND() ASC')
@@ -79,7 +79,8 @@ class SiteTreeDetails
                             $obj = $className::create();
                             $count = 0;
                         }
-                        if ($ancestorToHide = $obj->stat('hide_ancestor')) {
+                        $ancestorToHide = Config::inst()->get($obj->ClassName, 'hide_ancestor');
+                        if ($ancestorToHide) {
                             $classesToRemove[] = $ancestorToHide;
                         }
                         $object = $this->createPageObject($obj, $count);
@@ -148,12 +149,11 @@ class SiteTreeDetails
         $listArray['Title'] = $obj->MenuTitle;
         $listArray['PreviewLink'] = $obj->PreviewLink();
         $listArray['CMSEditLink'] = $obj->CMSEditLink();
-        $staticIcon = $obj->stat('icon', true);
+        $staticIcon = Config::inst()->get($obj->ClassName, 'icon');
         if (is_array($staticIcon)) {
-            $iconArray = $obj->stat('icon');
-            $icon = $iconArray[0];
+            $icon = $staticIcon[0];
         } else {
-            $icon = $obj->stat('icon');
+            $icon = $staticIcon;
         }
         $iconFile = Director::baseFolder() . '/' . $icon;
         if (! file_exists($iconFile)) {
