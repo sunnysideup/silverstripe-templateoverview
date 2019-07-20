@@ -40,16 +40,16 @@ class LoginAndRedirect extends Controller
                 return Director::isDev();
             }
             user_error(
-                    'Please include your ip address in LoginAndRedirect.allowed_ips: ' .
+                'Please include your ip address in LoginAndRedirect.allowed_ips: ' .
                     $this->request->getIP() . '.
                     Currently set are: ' . implode(', ', $allowedIPs),
-                    E_USER_ERROR
-                );
+                E_USER_ERROR
+            );
             return;
         }
         user_error(
-                'Please set SS_ALLOW_SMOKE_TEST in your environment variables to use this service.',
-                E_USER_ERROR
-            );
+            'Please set SS_ALLOW_SMOKE_TEST in your environment variables to use this service.',
+            E_USER_ERROR
+        );
     }
 }

@@ -80,7 +80,6 @@ class W3cValidateApi
         $this->fragment = $fragment;
     }
 
-
     private function validate()
     {
         sleep(1);
@@ -105,11 +104,11 @@ class W3cValidateApi
             CURLOPT_POSTFIELDS => $this->postVars,
             CURLOPT_URL => $this->baseURL,
         ];
-        $httphttpCode = '000';
+        $httpCode = '000';
 
         // Initialize the curl session
         $ch = curl_init();
-        if($ch) {
+        if ($ch) {
             curl_setopt_array($ch, $options);
             // Execute the session and capture the response
             $out = curl_exec($ch);

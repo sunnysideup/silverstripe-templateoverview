@@ -2,52 +2,29 @@
 
 namespace Sunnysideup\TemplateOverview\Control;
 
-use ReflectionClass;
-use ReflectionMethod;
-use Psr\SimpleCache\CacheInterface;
-
-use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
-use Sunnysideup\TemplateOverview\Api\AllLinks;
-use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
-use Sunnysideup\TemplateOverview\Api\DiffMachine;
-
-
-use SilverStripe\Control\Director;
-use SilverStripe\Core\Convert;
-use SilverStripe\Security\Member;
-use SilverStripe\Security\Group;
-use SilverStripe\Core\Injector\Injector;
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Core\ClassInfo;
-use SilverStripe\Core\Flushable;
-use SilverStripe\Admin\ModelAdmin;
-use SilverStripe\Admin\CMSMenu;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\DB;
-use SilverStripe\Control\Controller;
-use SilverStripe\Control\HTTPApplication;
-use SilverStripe\Control\HTTPRequestBuilder;
-use SilverStripe\Core\Manifest\ClassLoader;
-use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Dev\BuildTask;
-use SilverStripe\Dev\TaskRunner;
-use SilverStripe\Core\Config\Config;
-use SilverStripe\Core\CoreKernel;
-use SilverStripe\Core\Startup\ErrorControlChainMiddleware;
-use SilverStripe\Versioned\Versioned;
-use SilverStripe\View\ArrayData;
-use SilverStripe\View\Requirements;
-use SilverStripe\View\SSViewer;
-
-use SilverStripe\Security\MemberAuthenticator\MemberAuthenticator;
-use SilverStripe\Security\DefaultAdminService;
-use SilverStripe\Security\Permission;
+use GuzzleHttp\Client;
 
 use GuzzleHttp\Cookie\CookieJar;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7;
+
+
+use Psr\SimpleCache\CacheInterface;
+use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Convert;
+use SilverStripe\Core\Flushable;
+use SilverStripe\Core\Injector\Injector;
+
+use SilverStripe\Security\DefaultAdminService;
+use SilverStripe\Security\Member;
+use SilverStripe\Security\MemberAuthenticator\MemberAuthenticator;
+
+use SilverStripe\Security\Permission;
+use Sunnysideup\TemplateOverview\Api\AllLinks;
+use Sunnysideup\TemplateOverview\Api\DiffMachine;
+use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
 
 /**
  * @description (see $this->description)
@@ -59,7 +36,6 @@ use GuzzleHttp\Psr7;
 
 class CheckAllTemplatesResponseController extends Controller implements Flushable
 {
-
     /**
      * Defines methods that can be called directly
      * @var array
@@ -67,12 +43,6 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     private static $allowed_actions = [
         'testone' => 'ADMIN',
     ];
-
-    public static function flush()
-    {
-        $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
-        $cache->clear();
-    }
 
     private static $use_default_admin = true;
 
@@ -86,11 +56,38 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
     private static $create_diff = false;
 
+    private $guzzleCookieJar = null;
+
+    private $guzzleClient = null;
+
+    private $guzzleHasError = false;
+
+    private $isSuccess = false;
+
+    /**
+     * temporary Admin used to log in.
+     * @var Member
+     */
+    private $member = null;
+
+    private $rawResponse = '';
+
+    /**
+     * @var boolean
+     */
+    private $debug = false;
+
+    public static function flush()
+    {
+        $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
+        $cache->clear();
+    }
+
     public static function get_user_email()
     {
-        $userName = Config::inst()->get(CheckAllTemplatesResponseController::class, 'username');
+        $userName = Config::inst()->get(self::class, 'username');
         if (! $userName) {
-            if (Config::inst()->get(CheckAllTemplatesResponseController::class, 'use_default_admin')) {
+            if (Config::inst()->get(self::class, 'use_default_admin')) {
                 $userName = DefaultAdminService::getDefaultAdminUsername();
             } else {
                 $userName = 'smoketest@test.com.ssu';
@@ -102,14 +99,14 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
     public static function get_password()
     {
-        $password = Config::inst()->get(CheckAllTemplatesResponseController::class, 'password');
+        $password = Config::inst()->get(self::class, 'password');
         if (! $password) {
-            if (Config::inst()->get(CheckAllTemplatesResponseController::class, 'use_default_admin')) {
+            if (Config::inst()->get(self::class, 'use_default_admin')) {
                 $password = DefaultAdminService::getDefaultAdminPassword();
             } else {
                 $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
                 if (! $cache->has('password')) {
-                    $password = strtolower('aa'.substr(uniqid(), 0, 8)).'_.,'.strtoupper('BB'.substr(uniqid(), 0, 8));
+                    $password = strtolower('aa' . substr(uniqid(), 0, 8)) . '_.,' . strtoupper('BB' . substr(uniqid(), 0, 8));
                     $cache->set('password', $password);
                 }
                 $password = $cache->get('password');
@@ -121,32 +118,8 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
     public static function get_test_user()
     {
-        return Injector::inst()->get(CheckAllTemplatesResponseController::class)->getTestUser();
+        return Injector::inst()->get(self::class)->getTestUser();
     }
-
-
-    private $guzzleCookieJar = null;
-
-    private $guzzleClient = null;
-
-    private $guzzleHasError = false;
-
-    private $isSuccess = false;
-
-
-    /**
-     * temporary Admin used to log in.
-     * @var Member
-     */
-    private $member = null;
-
-    private $rawResponse = '';
-
-    /**
-     * @var Boolean
-     */
-    private $debug = false;
-
 
     /**
      * Main function
@@ -154,12 +127,12 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
      * 1. check on url specified in GET variable.
      * 2. create a list of urls to check
      *
-     * @param HTTPRequest
+     * @param HTTPRequest $request
      */
     public function testone($request)
     {
         $isCMSLink = $request->getVar('iscmslink') ? true : false;
-        $testURL = $request->getVar('test') ? : null;
+        $testURL = $request->getVar('test') ?: null;
 
         // 1. actually test a URL and return the data
         if ($testURL) {
@@ -169,16 +142,15 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $this->deleteUser();
             $this->cleanup();
             print $content;
-            if(! Director::is_ajax()) {
-                ;
-                $diff =  '';
-                $comparisonBaseURL = Config::inst()->get(CheckAllTemplatesResponseController::class, 'comparision_base_url');
+            if (! Director::is_ajax()) {
+                $diff = '';
+                $comparisonBaseURL = Config::inst()->get(self::class, 'comparision_base_url');
                 $width = '98%';
                 $style = 'border: none;';
-                if($comparisonBaseURL) {
+                if ($comparisonBaseURL) {
                     $width = '48%';
                     $style = 'float: left;';
-                    if($this->isSuccess && !$isCMSLink && $this->Config()->create_diff) {
+                    if ($this->isSuccess && ! $isCMSLink && $this->Config()->create_diff) {
                         $otherURL = $comparisonBaseURL . $testURL;
                         $testContent = str_replace(Director::absoluteBaseURL(), $comparisonBaseURL, $this->rawResponse);
                         $rawResponseOtherSite = @file_get_contents($otherURL);
@@ -188,41 +160,114 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                         );
                         $rawResponseOtherSite = Convert::raw2htmlatt(str_replace('\'', '\\\'', $rawResponseOtherSite));
                         $diff = '
-                        <iframe id="iframe2" width="'.$width.'%" height="7000" srcdoc=\''.$rawResponseOtherSite.'\' style="float: right;"></iframe>
+                        <iframe id="iframe2" width="' . $width . '%" height="7000" srcdoc=\'' . $rawResponseOtherSite . '\' style="float: right;"></iframe>
 
                         <hr style="clear: both; margin-top: 20px; padding-top: 20px;" />
                         <h1>Diff</h1>
                         <link href="/resources/vendor/sunnysideup/templateoverview/client/css/checkalltemplates.css" rel="stylesheet" type="text/css" />
-                        '.$diff;
+                        ' . $diff;
                     }
                 }
                 $rawResponse = Convert::raw2htmlatt(str_replace('\'', '\\\'', $this->rawResponse));
                 echo '
                     <h1>Response</h1>
-                    <iframe id="iframe" width="'.$width.'%" height="7000" srcdoc=\''.$rawResponse.'\' style="'.$style.'"></iframe>
+                    <iframe id="iframe" width="' . $width . '%" height="7000" srcdoc=\'' . $rawResponse . '\' style="' . $style . '"></iframe>
                 ';
                 echo $diff;
             }
             return;
+        }
+        user_error('no test url provided.');
+    }
+
+    public function getTestUser()
+    {
+        if (Config::inst()->get(self::class, 'use_default_admin')) {
+            $this->member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
+            return $this->member;
+        }
+        //Make temporary admin member
+        $filter = ['Email' => self::get_user_email()];
+        $this->member = Member::get()
+            ->filter($filter)
+            ->first();
+        if ($this->member) {
         } else {
-            user_error('no test url provided.');
+            $this->member = Member::create($filter);
+        }
+        $this->member->Password = self::get_password();
+        $this->member->LockedOutUntil = null;
+        $this->member->FirstName = 'Test';
+        $this->member->Surname = 'User';
+        $this->member->write();
+        $auth = new MemberAuthenticator();
+        $result = $auth->checkPassword($this->member, self::get_password());
+        if (! $result->isValid()) {
+            user_error('Error in creating test user.', E_USER_ERROR);
+            return;
+        }
+        $service = Injector::inst()->get(DefaultAdminService::class);
+        $adminGroup = $service->findOrCreateAdminGroup();
+        $this->member->Groups()->add($adminGroup);
+        if (Permission::checkMember($this->member, 'ADMIN')) {
+            user_error('No admin group exists', E_USER_ERROR);
+            return;
         }
 
+        return $this->member;
+    }
+
+    /**
+     * @return
+     */
+    protected function guzzleSendRequest($url)
+    {
+        $this->guzzleHasError = false;
+        $credentials = base64_encode(self::get_user_email() . ':' . self::get_password());
+        try {
+            $response = $this->guzzleClient->request(
+                'GET',
+                $url,
+                [
+                    'cookies' => $this->guzzleCookieJar,
+                    'headers' => [
+                        'PHP_AUTH_USER' => self::get_user_email(),
+                        'PHP_AUTH_PW' => self::get_password(),
+                    ],
+                    'auth' => [
+                        self::get_user_email(),
+                        self::get_password(),
+                    ],
+                    'Authorization' => ['Basic ' . $credentials],
+                ]
+            );
+        } catch (RequestException $exception) {
+            $this->rawResponse = $exception->getResponse();
+            $this->guzzleHasError = true;
+            //echo Psr7\str($exception->getRequest());
+            if ($exception->hasResponse()) {
+                $response = $exception->getResponse();
+                $this->rawResponse = $exception->getResponseBodySummary($response);
+            } else {
+                $response = null;
+            }
+        }
+        return $response;
     }
 
     /**
      * ECHOES the result of testing the URL....
-     * @param String $url
+     * @param string $url
      */
     private function testURL($url)
     {
         if (strlen(trim($url)) < 1) {
-            user_error("empty url"); //Checks for empty strings.
+            user_error('empty url'); //Checks for empty strings.
         }
         if (AllLinks::is_admin_link($url)) {
             $validate = false;
         } else {
-            $validate = Config::inst()->get(CheckAllTemplatesResponseController::class, 'use_w3_validation');
+            $validate = Config::inst()->get(self::class, 'use_w3_validation');
         }
         $testURL = Director::absoluteURL('/templateoverviewloginandredirect/login/?BackURL=');
         $testURL .= urlencode($url);
@@ -258,24 +303,24 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         }
 
         //uncaught errors ...
-        if ($this->rawResponse && substr($this->rawResponse, 0, 12) == "Fatal error") {
+        if ($this->rawResponse && substr($this->rawResponse, 0, 12) === 'Fatal error') {
             $data['status'] = 'error';
             $data['content'] = $this->rawResponse;
-        } elseif ($httpResponse == 200 && $this->rawResponse && strlen($this->rawResponse) < 500) {
+        } elseif ($httpResponse === 200 && $this->rawResponse && strlen($this->rawResponse) < 500) {
             $data['status'] = 'error';
             $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
         }
 
         $data['w3Content'] = 'n/a';
 
-        if ($httpResponse != 200) {
+        if ($httpResponse !== 200) {
             $data['status'] = 'error';
             $data['content'] .= 'unexpected response: ' . $error . $this->rawResponse;
         } else {
             $this->isSuccess = true;
             if ($validate) {
                 $w3Obj = new W3cValidateApi();
-                $data['w3Content'] = $w3Obj->W3Validate("", $this->rawResponse);
+                $data['w3Content'] = $w3Obj->W3Validate('', $this->rawResponse);
             }
         }
 
@@ -293,10 +338,8 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         return $content;
     }
 
-
     /**
      * creates the basic curl
-     *
      */
     private function guzzleSetup()
     {
@@ -334,92 +377,9 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         );
     }
 
-    /**
-     *
-     * @return
-     */
-    protected function guzzleSendRequest($url)
-    {
-        $this->guzzleHasError = false;
-        $credentials = base64_encode(self::get_user_email().':'.self::get_password());
-        try {
-            $response = $this->guzzleClient->request(
-                'GET',
-                $url,
-                [
-                    'cookies' => $this->guzzleCookieJar,
-                    'headers' => [
-                        'PHP_AUTH_USER' => self::get_user_email(),
-                        'PHP_AUTH_PW' => self::get_password(),
-                    ],
-                    'auth' => [
-                        self::get_user_email(),
-                        self::get_password(),
-                    ],
-                    'Authorization' => ['Basic '.$credentials],
-                ]
-            );
-        } catch (RequestException $exception) {
-            $this->rawResponse = $exception->getResponse();
-            $this->guzzleHasError = true;
-            //echo Psr7\str($exception->getRequest());
-            if ($exception->hasResponse()) {
-                $response = $exception->getResponse();
-                $this->rawResponse = $exception->getResponseBodySummary($response);
-            } else {
-                $response = null;
-            }
-        }
-        return $response;
-    }
-
-
-
-    /**
-     *
-     */
-    public function getTestUser()
-    {
-        if (Config::inst()->get(CheckAllTemplatesResponseController::class, 'use_default_admin')) {
-            $this->member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
-            return $this->member;
-        } else {
-            //Make temporary admin member
-            $filter = ["Email" => self::get_user_email()];
-            $this->member = Member::get()
-                ->filter($filter)
-                ->first();
-            if ($this->member) {
-            } else {
-                $this->member = Member::create($filter);
-            }
-            $this->member->Password = self::get_password();
-            $this->member->LockedOutUntil = null;
-            $this->member->FirstName = 'Test';
-            $this->member->Surname = 'User';
-            $this->member->write();
-            $auth = new MemberAuthenticator();
-            $result = $auth->checkPassword($this->member, self::get_password());
-            if (! $result->isValid()) {
-                user_error('Error in creating test user.', E_USER_ERROR);
-                return;
-            }
-            $service = Injector::inst()->get(DefaultAdminService::class);
-            $adminGroup = $service->findOrCreateAdminGroup();
-            $this->member->Groups()->add($adminGroup);
-            if (Permission::checkMember($this->member, 'ADMIN')) {
-                user_error("No admin group exists", E_USER_ERROR);
-                return;
-            }
-
-            return $this->member;
-        }
-    }
-
-
     private function deleteUser()
     {
-        if (Config::inst()->get(CheckAllTemplatesResponseController::class, 'use_default_admin')) {
+        if (Config::inst()->get(self::class, 'use_default_admin')) {
             //do nothing;
         } else {
             if ($this->member) {
@@ -428,16 +388,12 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         }
     }
 
-
     /**
      * cleans up the curl connection.
-     *
      */
     private function cleanup()
     {
     }
-
-
 
     // private function debugme($lineNumber, $variable = "")
     // {

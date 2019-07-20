@@ -2,37 +2,32 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
-use SilverStripe\Security\Security;
-use SilverStripe\Security\Permission;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\ORM\ArrayList;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\View\SSViewer;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\Security\Permission;
+use SilverStripe\Security\Security;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
+use SilverStripe\View\SSViewer;
 use SilverStripe\View\ViewableData;
 
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 
-
 class CheckAllTemplates extends BuildTask
 {
-
-    private static $segment = 'smoketest';
-
     /**
-     *
      * @inheritdoc
      */
     protected $title = 'Check URLs for HTTP errors';
 
     /**
-     *
      * @inheritdoc
      */
-    protected $description = "Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited in ModelAdmin, checking for HTTP response errors (e.g. 404). Click start to run.";
+    protected $description = 'Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited in ModelAdmin, checking for HTTP response errors (e.g. 404). Click start to run.';
 
+    private static $segment = 'smoketest';
 
     /**
      * Main function
@@ -40,16 +35,15 @@ class CheckAllTemplates extends BuildTask
      * 1. check on url specified in GET variable.
      * 2. create a list of urls to check
      *
-     * @param HTTPRequest
+     * @param HTTPRequest $request
      */
     public function run($request)
     {
         ini_set('max_execution_time', 3000);
 
-
         //we have this check here so that even in dev mode you have to log in.
         //because if you do not log in, the test will not work.
-        if (!Permission::check('ADMIN')) {
+        if (! Permission::check('ADMIN')) {
             return Security::permissionFailure();
         }
 
@@ -57,7 +51,7 @@ class CheckAllTemplates extends BuildTask
 
         $allLinks = Injector::inst()->get(AllLinks::class)->getAllLinks();
 
-        $sections = ["allNonCMSLinks", "allCMSLinks"];
+        $sections = ['allNonCMSLinks', 'allCMSLinks'];
         $links = ArrayList::create();
 
         foreach ($sections as $isCMSLink => $sectionVariable) {
@@ -72,14 +66,14 @@ class CheckAllTemplates extends BuildTask
             }
         }
 
-        $otherLinks = "";
-        $className = "";
+        $otherLinks = '';
+        $className = '';
         foreach ($allLinks['otherLinks'] as $linkArray) {
-            if ($linkArray["ClassName"] != $className) {
-                $className = $linkArray["ClassName"];
-                $otherLinks .= "</ul><h2>".$className."</h2><ul>";
+            if ($linkArray['ClassName'] !== $className) {
+                $className = $linkArray['ClassName'];
+                $otherLinks .= '</ul><h2>' . $className . '</h2><ul>';
             }
-            $otherLinks .= "<li><a href=\"" . $linkArray["Link"] . "\">" . $linkArray["Link"] . "</a></li>";
+            $otherLinks .= '<li><a href="' . $linkArray['Link'] . '">' . $linkArray['Link'] . '</a></li>';
         }
 
         Requirements::javascript('https://code.jquery.com/jquery-3.3.1.min.js');
