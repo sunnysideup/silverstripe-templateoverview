@@ -32,6 +32,9 @@ class SiteTreeDetails
      */
     protected $counter = 0;
 
+    protected $classesToRemove = [];
+    protected $arrayOfAllClasses = [];
+
     private static $list_of_all_classes = [];
 
     private static $classes_to_exclude = [
@@ -42,64 +45,10 @@ class SiteTreeDetails
 
     public function ListOfAllSiteTreeClasses($checkCurrentClass = true)
     {
-        if (count(self::$list_of_all_classes)) {
-            $ArrayOfAllClasses = [];
-            //$classes = ClassInfo::subclassesFor("SiteTree");
-            $classes = SiteTree::page_type_classes();
-            $classesToRemove = [];
+        if (count(self::$list_of_all_classes) === 0) {
 
-            foreach ($classes as $className) {
-                if (! in_array($className, $this->config()->get('classes_to_exclude'), true)) {
-                    if ($this->showAll) {
-                        $objects = $className::get()
-                            ->filter(['ClassName' => $className])
-                            ->sort(DB::get_conn()->random() . ' ASC')
-                            ->limit(25);
-                        $count = 0;
-                        if ($objects->count()) {
-                            foreach ($objects as $obj) {
-                                if (! $count) {
-                                    if ($ancestorToHide = $obj->stat('hide_ancestor')) {
-                                        $classesToRemove[] = $ancestorToHide;
-                                    }
-                                }
-                                $object = $this->createPageObject($obj, $count++);
-                                $ArrayOfAllClasses[$object->indexNumber] = clone $object;
-                            }
-                        }
-                    } else {
-                        $obj = $className::get()
-                            ->filter(['ClassName' => $className])
-                            ->sort('RAND() ASC')
-                            ->limit(1)
-                            ->first();
-                        if ($obj) {
-                            $count = SiteTree::get()->filter(['ClassName' => $obj->ClassName])->count();
-                        } else {
-                            $obj = $className::create();
-                            $count = 0;
-                        }
-                        $ancestorToHide = Config::inst()->get($obj->ClassName, 'hide_ancestor');
-                        if ($ancestorToHide) {
-                            $classesToRemove[] = $ancestorToHide;
-                        }
-                        $object = $this->createPageObject($obj, $count);
-                        $ArrayOfAllClasses[$object->indexNumber] = clone $object;
-                    }
-                }
-            }
+            $this->getArrayOfAllClasses();
 
-            //remove the hidden ancestors...
-            if ($classesToRemove && count($classesToRemove)) {
-                $classesToRemove = array_unique($classesToRemove);
-                // unset from $classes
-                foreach ($ArrayOfAllClasses as $tempKey => $tempClass) {
-                    if (in_array($tempClass->ClassName, $classesToRemove, true)) {
-                        unset($ArrayOfAllClasses[$tempKey]);
-                    }
-                }
-            }
-            ksort($ArrayOfAllClasses);
             self::$list_of_all_classes = new ArrayList();
             $currentClassname = '';
             if ($checkCurrentClass) {
@@ -109,8 +58,8 @@ class SiteTreeDetails
                     }
                 }
             }
-            if (count($ArrayOfAllClasses)) {
-                foreach ($ArrayOfAllClasses as $item) {
+            if (count($this->arrayOfAllClasses)) {
+                foreach ($this->arrayOfAllClasses as $item) {
                     if ($item->ClassName === $currentClassname) {
                         $item->LinkingMode = 'current';
                     } else {
@@ -121,6 +70,75 @@ class SiteTreeDetails
             }
         }
         return self::$list_of_all_classes;
+    }
+
+    protected function getArrayOfAllClasses()
+    {
+        //$classes = ClassInfo::subclassesFor("SiteTree");
+        $classes = SiteTree::page_type_classes();
+        foreach ($classes as $className) {
+            if (! in_array($className, $this->config()->get('classes_to_exclude'), true)) {
+                if ($this->showAll) {
+                    $objects = $className::get()
+                        ->filter(['ClassName' => $className])
+                        ->sort(DB::get_conn()->random() . ' ASC')
+                        ->limit(25);
+                    $count = 0;
+                    if ($objects->count()) {
+                        foreach ($objects as $obj) {
+                            $object = $this->createPageObject($obj, $count++);
+                            $this->arrayOfAllClasses[$object->indexNumber] = clone $object;
+                        }
+                    }
+                } else {
+                    $obj = $className::get()
+                        ->filter(['ClassName' => $className])
+                        ->sort('RAND() ASC')
+                        ->limit(1)
+                        ->first();
+                    if ($obj) {
+                        $count = SiteTree::get()->filter(['ClassName' => $obj->ClassName])->count();
+                    } else {
+                        $obj = $className::create();
+                        $count = 0;
+                    }
+                    $object = $this->createPageObject($obj, $count);
+                    $this->arrayOfAllClasses[$object->indexNumber] = clone $object;
+                }
+                $this->removeHideAncestorBasedOnObject($obj);
+            }
+        }
+        $this->removeHideAncestors();
+
+        //remove the hidden ancestors...
+
+        ksort($this->arrayOfAllClasses);
+
+        return $this->arrayOfAllClasses;
+    }
+
+
+    protected function removeHideAncestorBasedOnObject($obj)
+    {
+        if($obj) {
+            $ancestorToHide = Config::inst()->get($obj->ClassName, 'hide_ancestor');
+            if ($ancestorToHide) {
+                $this->classesToRemove[] = $ancestorToHide;
+            }
+        }
+    }
+
+    protected function removeHideAncestors()
+    {
+        if ($this->classesToRemove && count($this->classesToRemove)) {
+            $this->classesToRemove = array_unique($this->classesToRemove);
+            // unset from $classes
+            foreach ($this->arrayOfAllClasses as $tempKey => $tempClass) {
+                if (in_array($tempClass->ClassName, $this->classesToRemove, true)) {
+                    unset($this->arrayOfAllClasses[$tempKey]);
+                }
+            }
+        }
     }
 
     public function ShowAll()

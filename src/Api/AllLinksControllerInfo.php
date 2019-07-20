@@ -1,75 +1,140 @@
 <?php
-
 namespace Sunnysideup\TemplateOverview\Api;
 
+use Error;
 use ReflectionClass;
 use ReflectionMethod;
 
+use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 
 
+use Sunnysideup\TemplateOverview\Api\AllLinks;
+use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
 
-
-use SilverStripe\Admin\LeftAndMain;
-use SilverStripe\CMS\Controllers\ContentController;
-use SilverStripe\Control\Controller;
+//
 use SilverStripe\Control\Director;
-use SilverStripe\Core\Config\Config;
+use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\Admin\LeftAndMain;
+use SilverStripe\Admin\CMSMenu;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use SilverStripe\Control\Controller;
+use SilverStripe\Core\Config\Config;
+
+use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Injector\Injectable;
 
 class AllLinksControllerInfo
 {
-    /**
-     * @var array
-     */
-    protected static $reflectionClasses = [];
+    use Configurable;
+    use Injectable;
 
     /**
      * @var array
      */
-    protected static $classObjects = [];
+    protected $linksAndActions = [];
 
     /**
      * @var array
      */
-    protected static $dataRecordClassNames = [];
+    protected $reflectionClasses = [];
 
     /**
      * @var array
      */
-    protected static $dataRecordClassObjects = [];
+    protected $classObjects = [];
+
 
     /**
-     * @var array|null
+     * @var array
      */
-    protected static $routes = null;
+    protected $dataRecordClassNames = [];
 
-    protected static $nameSpaces = [];
+    /**
+     * @var array
+     */
+    protected $dataRecordClassObjects = [];
 
-    public static function set_valid_name_spaces($nameSpaces)
+    /**
+     * @var null|array
+     */
+    protected $routes = null;
+
+    /**
+     * @var array
+     */
+    protected $nameSpaces = [];
+
+    /**
+     * @param  array
+     *
+     * @return AllLinksControllerInfo
+     */
+    public function setValidNameSpaces($nameSpaces) :AllLinksControllerInfo
     {
-        self::$nameSpaces = $nameSpaces;
+        $this->nameSpaces = $nameSpaces;
+
+        return $this;
     }
+
+    /**
+     * returns Array with Links and Actions
+     * @return array
+     */
+    public static function getLinksAndActions() : array
+    {
+        if(count($this->linksAndActions) === 0) {
+            $this->linksAndActions['Links'] = [];
+            $this->linksAndActions['Actions'] = [];
+            $this->linksAndActions['CustomLinks'] = [];
+            $classes = ClassInfo::subclassesFor(Controller::class);
+            foreach ($classes as $className) {
+                $isValid = $this->isValidController($className);
+                if(! $isValid) {
+                    continue;
+                }
+                $this->linksAndActions['Links'][$className] = '';
+
+                //main links
+
+                //custom links
+                $customLinks = $this->findCustomLinks($className);
+                foreach($customLinks as $customLink) {
+                    $this->linksAndActions['CustomLinks'][$customLink] = $className;
+                }
+                $link = $this->findLink($className);
+                if($link) {
+                    $this->linksAndActions['Links'][$className] = $link;
+                }
+                $this->linksAndActions['Actions'][$className] = $this->findAllowedActions($className);
+            }
+        }
+
+        return $this->linksAndActions;
+    }
+
 
     /**
      * can it be used?
      * @param  string $className
      * @return bool
      */
-    public static function is_valid_controller($className): bool
+    protected function isValidController($className) : bool
     {
-        return self::controller_reflection_class($className) ? true : false;
+        return $this->controllerReflectionClass($className) ? true : false;
     }
 
     /**
+     *
      * @param  string $className
-     * @return ReflectionClass|null
+     * @return null|ReflectionClass
      */
-    public static function controller_reflection_class($className)
+    protected function controllerReflectionClass($className)
     {
-        if (! isset(self::$reflectionClasses[$className])) {
-            self::$reflectionClasses[$className] = null;
+        if(! isset($this->reflectionClasses[$className])) {
+            $this->reflectionClasses[$className] = null;
             //skip base class
             if ($className === Controller::class) {
                 return null;
@@ -83,94 +148,95 @@ class AllLinksControllerInfo
             }
 
             //match to filter
-            $filterMatch = count(self::$nameSpaces) ? false : true;
-            foreach (self::$nameSpaces as $filter) {
-                if (strpos($className, $filter) !== false) {
+            $filterMatch = count($this->nameSpaces) ? false : true;
+            foreach($this->nameSpaces as $filter) {
+                if(strpos($className, $filter) !== false) {
                     $filterMatch = true;
                 }
             }
-            if ($filterMatch === false) {
+            if($filterMatch === false) {
                 return null;
             }
 
             //check for ones that can not be constructed
-            if ($controllerReflectionClass->isSubclassOf(LeftAndMain::class)) {
+            if($controllerReflectionClass->isSubclassOf(LeftAndMain::class)) {
                 return null;
             }
             $params = $controllerReflectionClass->getConstructor()->getParameters();
-            if ($controllerReflectionClass->isSubclassOf(ContentController::class)) {
+            if($controllerReflectionClass->isSubclassOf(ContentController::class)) {
                 //do nothing
-            } elseif (count($params) > 0) {
+            } elseif(count($params) > 0) {
                 return null;
             }
 
-            self::$reflectionClasses[$className] = $controllerReflectionClass;
+            $this->reflectionClasses[$className] = $controllerReflectionClass;
 
-            return self::$reflectionClasses[$className];
+            return $this->reflectionClasses[$className];
+        } else {
+            return $this->reflectionClasses[$className];
         }
-        return self::$reflectionClasses[$className];
     }
 
     /**
      * @param  string $className
      * @return string
      */
-    public static function find_singleton($className)
+    protected function findSingleton($className)
     {
-        if (self::controller_reflection_class($className)) {
-            self::$classObjects[$className] = null;
-            if (! isset(self::$classObjects[$className])) {
+        if($this->controllerReflectionClass($className)) {
+            $this->classObjects[$className] = null;
+            if(! isset($this->classObjects[$className])) {
                 try {
-                    self::$classObjects[$className] = Injector::inst()->get($className);
+                    $this->classObjects[$className] = Injector::inst()->get($className);
                 } catch (\Error $e) {
-                    self::$classObjects[$className] = null;
+                    $this->classObjects[$className] = null;
                 }
             }
         }
 
-        return self::$classObjects[$className];
+        return $this->classObjects[$className];
     }
 
     /**
      * @param  string $className
-     * @return DataObject|null
+     * @return null|DataObject
      */
-    public static function find_data_record($className)
+    protected function findDataRecord($className)
     {
-        if (! isset(self::$dataRecordClassObjects[$className])) {
-            self::$dataRecordClassObjects[$className] = null;
+        if(! isset($this->dataRecordClassObjects[$className])) {
+            $this->dataRecordClassObjects[$className] = null;
             $dataRecordClassName = substr($className, 0, -1 * strlen('Controller'));
-            if (class_exists($dataRecordClassName)) {
-                self::$dataRecordClassNames[$className] = $dataRecordClassName;
-                self::$dataRecordClassObjects[$className] = DataObject::get_one(
+            if(class_exists($dataRecordClassName)) {
+                $this->dataRecordClassNames[$className] = $dataRecordClassName;
+                $this->dataRecordClassObjects[$className] = DataObject::get_one(
                     $dataRecordClassName,
                     null,
                     null,
-                    DB::get_conn()->random() . ' ASC'
+                    DB::get_conn()->random().' ASC'
                 );
+
             }
         }
 
-        return self::$dataRecordClassObjects[$className];
+        return $this->dataRecordClassObjects[$className];
     }
-
     /**
      * @param  string $className
      * @return array
      */
-    public static function find_custom_links($className): array
+    protected function findCustomLinks($className) : array
     {
         $array1 = [];
         $array2 = [];
-        $classObject = self::find_singleton($className);
-        if ($classObject) {
-            if ($classObject->hasMethod('templateOverviewTests')) {
+        $classObject = $this->findSingleton($className);
+        if($classObject) {
+            if($classObject->hasMethod('templateOverviewTests')) {
                 $array1 = $classObject->templateOverviewTests();
             }
         }
-        $object = self::find_data_record($className);
-        if ($object) {
-            if ($object->hasMethod('templateOverviewTests')) {
+        $object = $this->findDataRecord($className);
+        if($object) {
+            if($object->hasMethod('templateOverviewTests')) {
                 $array2 = $object->templateOverviewTests();
             }
         }
@@ -181,10 +247,10 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return array
      */
-    public static function find_allowed_actions($className): array
+    protected function findAllowedActions($className) : array
     {
-        $allowedActions = Config::inst()->get($className, 'allowed_actions', Config::UNINHERITED);
-        if (is_array($allowedActions)) {
+        $allowedActions = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);
+        if(is_array($allowedActions)) {
             return $allowedActions;
         }
         return [];
@@ -194,15 +260,15 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    public static function find_link($className): string
+    protected function findLink($className) : string
     {
-        $link = self::find_controller_link($className);
-        if (! $link) {
-            $link = self::find_route_link($className);
-            if (! $link) {
-                $link = self::find_segment_link($className);
-                if (! $link) {
-                    $link = self::find_method_link($className);
+        $link = $this->findControllerLink($className);
+        if(! $link) {
+            $link = $this->findRouteLink($className);
+            if(! $link) {
+                $link = $this->findSegmentLink($className);
+                if(! $link) {
+                    $link = $this->findMethodLink($className);
                 }
             }
         }
@@ -214,10 +280,10 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected static function find_controller_link($className): string
+    protected function findControllerLink($className) : string
     {
-        $object = self::find_data_record($className);
-        if ($object) {
+        $object = $this->findDataRecord($className);
+        if($object) {
             $tmp = $object->Link();
             $tmpArray = explode('?', $tmp);
             return $tmpArray[0];
@@ -230,15 +296,17 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected static function find_route_link($className): string
+    protected function findRouteLink($className) : string
     {
-        if (self::$routes === null) {
-            self::$routes = Config::inst()->get(Director::class, 'rules');
+        if($this->routes === null) {
+            $this->routes = Config::inst()->get(Director::class, 'rules');
         }
-        $route = array_search($className, self::$routes, true);
-        if ($route) {
+        $route = array_search($className, $this->routes);
+        if($route) {
             $routeArray = explode('//', $route);
-            return $routeArray[0];
+            $route = $routeArray[0];
+
+            return $route;
         }
 
         return '';
@@ -248,11 +316,11 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected static function find_segment_link($className): string
+    protected function findSegmentLink($className) : string
     {
         //check if there is a link of some sort
         $urlSegment = Config::inst()->get($className, 'url_segment');
-        if ($urlSegment) {
+        if($urlSegment) {
             $urlSegment .= '/';
         } else {
             $urlSegment = '';
@@ -264,22 +332,25 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected static function find_method_link($className): string
+    protected function findMethodLink($className) : string
     {
-        $controllerReflectionClass = self::controller_reflection_class($className);
-        if ($controllerReflectionClass) {
+        $controllerReflectionClass = $this->controllerReflectionClass($className);
+        if($controllerReflectionClass) {
             foreach ($controllerReflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                if ($method->class === $className) {
-                    if ($method->name === 'Link') {
-                        $classObject = self::find_singleton($className);
-                        if ($classObject) {
+                if ($method->class == $className) {
+                    if($method->name === 'Link') {
+                        $classObject = $this->findSingleton($className);
+                        if($classObject) {
                             return $classObject->Link();
                         }
                     }
-                }
+                 }
             }
         }
 
         return '';
     }
+
+
+
 }
