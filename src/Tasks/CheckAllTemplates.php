@@ -42,7 +42,7 @@ class CheckAllTemplates extends BuildTask
      *
      * @param HTTPRequest
      */
-    public function run(HTTPRequest $request)
+    public function run($request)
     {
         ini_set('max_execution_time', 3000);
 
