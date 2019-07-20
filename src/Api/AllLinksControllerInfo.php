@@ -1,30 +1,25 @@
 <?php
+
 namespace Sunnysideup\TemplateOverview\Api;
 
-use Error;
 use ReflectionClass;
 use ReflectionMethod;
 
-use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 
 
-use Sunnysideup\TemplateOverview\Api\AllLinks;
-use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
 
-//
-use SilverStripe\Control\Director;
-use SilverStripe\CMS\Controllers\ContentController;
-use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Core\ClassInfo;
 use SilverStripe\Admin\LeftAndMain;
-use SilverStripe\Admin\CMSMenu;
-use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\DB;
+use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
-
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Core\Injector\Injector;
+
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DB;
 
 class AllLinksControllerInfo
 {
@@ -46,7 +41,6 @@ class AllLinksControllerInfo
      */
     protected $classObjects = [];
 
-
     /**
      * @var array
      */
@@ -58,7 +52,7 @@ class AllLinksControllerInfo
     protected $dataRecordClassObjects = [];
 
     /**
-     * @var null|array
+     * @var array|null
      */
     protected $routes = null;
 
@@ -68,11 +62,11 @@ class AllLinksControllerInfo
     protected $nameSpaces = [];
 
     /**
-     * @param  array
+     * @param  array $nameSpaces
      *
      * @return AllLinksControllerInfo
      */
-    public function setValidNameSpaces($nameSpaces) :AllLinksControllerInfo
+    public function setValidNameSpaces($nameSpaces): self
     {
         $this->nameSpaces = $nameSpaces;
 
@@ -83,16 +77,16 @@ class AllLinksControllerInfo
      * returns Array with Links and Actions
      * @return array
      */
-    public static function getLinksAndActions() : array
+    public static function getLinksAndActions(): array
     {
-        if(count($this->linksAndActions) === 0) {
+        if (count($this->linksAndActions) === 0) {
             $this->linksAndActions['Links'] = [];
             $this->linksAndActions['Actions'] = [];
             $this->linksAndActions['CustomLinks'] = [];
             $classes = ClassInfo::subclassesFor(Controller::class);
             foreach ($classes as $className) {
                 $isValid = $this->isValidController($className);
-                if(! $isValid) {
+                if (! $isValid) {
                     continue;
                 }
                 $this->linksAndActions['Links'][$className] = '';
@@ -101,11 +95,11 @@ class AllLinksControllerInfo
 
                 //custom links
                 $customLinks = $this->findCustomLinks($className);
-                foreach($customLinks as $customLink) {
+                foreach ($customLinks as $customLink) {
                     $this->linksAndActions['CustomLinks'][$customLink] = $className;
                 }
                 $link = $this->findLink($className);
-                if($link) {
+                if ($link) {
                     $this->linksAndActions['Links'][$className] = $link;
                 }
                 $this->linksAndActions['Actions'][$className] = $this->findAllowedActions($className);
@@ -115,25 +109,23 @@ class AllLinksControllerInfo
         return $this->linksAndActions;
     }
 
-
     /**
      * can it be used?
      * @param  string $className
      * @return bool
      */
-    protected function isValidController($className) : bool
+    protected function isValidController($className): bool
     {
         return $this->controllerReflectionClass($className) ? true : false;
     }
 
     /**
-     *
      * @param  string $className
-     * @return null|ReflectionClass
+     * @return ReflectionClass|null
      */
     protected function controllerReflectionClass($className)
     {
-        if(! isset($this->reflectionClasses[$className])) {
+        if (! isset($this->reflectionClasses[$className])) {
             $this->reflectionClasses[$className] = null;
             //skip base class
             if ($className === Controller::class) {
@@ -149,32 +141,31 @@ class AllLinksControllerInfo
 
             //match to filter
             $filterMatch = count($this->nameSpaces) ? false : true;
-            foreach($this->nameSpaces as $filter) {
-                if(strpos($className, $filter) !== false) {
+            foreach ($this->nameSpaces as $filter) {
+                if (strpos($className, $filter) !== false) {
                     $filterMatch = true;
                 }
             }
-            if($filterMatch === false) {
+            if ($filterMatch === false) {
                 return null;
             }
 
             //check for ones that can not be constructed
-            if($controllerReflectionClass->isSubclassOf(LeftAndMain::class)) {
+            if ($controllerReflectionClass->isSubclassOf(LeftAndMain::class)) {
                 return null;
             }
             $params = $controllerReflectionClass->getConstructor()->getParameters();
-            if($controllerReflectionClass->isSubclassOf(ContentController::class)) {
+            if ($controllerReflectionClass->isSubclassOf(ContentController::class)) {
                 //do nothing
-            } elseif(count($params) > 0) {
+            } elseif (count($params) > 0) {
                 return null;
             }
 
             $this->reflectionClasses[$className] = $controllerReflectionClass;
 
             return $this->reflectionClasses[$className];
-        } else {
-            return $this->reflectionClasses[$className];
         }
+        return $this->reflectionClasses[$className];
     }
 
     /**
@@ -183,9 +174,9 @@ class AllLinksControllerInfo
      */
     protected function findSingleton($className)
     {
-        if($this->controllerReflectionClass($className)) {
+        if ($this->controllerReflectionClass($className)) {
             $this->classObjects[$className] = null;
-            if(! isset($this->classObjects[$className])) {
+            if (! isset($this->classObjects[$className])) {
                 try {
                     $this->classObjects[$className] = Injector::inst()->get($className);
                 } catch (\Error $e) {
@@ -199,44 +190,44 @@ class AllLinksControllerInfo
 
     /**
      * @param  string $className
-     * @return null|DataObject
+     * @return DataObject|null
      */
     protected function findDataRecord($className)
     {
-        if(! isset($this->dataRecordClassObjects[$className])) {
+        if (! isset($this->dataRecordClassObjects[$className])) {
             $this->dataRecordClassObjects[$className] = null;
             $dataRecordClassName = substr($className, 0, -1 * strlen('Controller'));
-            if(class_exists($dataRecordClassName)) {
+            if (class_exists($dataRecordClassName)) {
                 $this->dataRecordClassNames[$className] = $dataRecordClassName;
                 $this->dataRecordClassObjects[$className] = DataObject::get_one(
                     $dataRecordClassName,
                     null,
                     null,
-                    DB::get_conn()->random().' ASC'
+                    DB::get_conn()->random() . ' ASC'
                 );
-
             }
         }
 
         return $this->dataRecordClassObjects[$className];
     }
+
     /**
      * @param  string $className
      * @return array
      */
-    protected function findCustomLinks($className) : array
+    protected function findCustomLinks($className): array
     {
         $array1 = [];
         $array2 = [];
         $classObject = $this->findSingleton($className);
-        if($classObject) {
-            if($classObject->hasMethod('templateOverviewTests')) {
+        if ($classObject) {
+            if ($classObject->hasMethod('templateOverviewTests')) {
                 $array1 = $classObject->templateOverviewTests();
             }
         }
         $object = $this->findDataRecord($className);
-        if($object) {
-            if($object->hasMethod('templateOverviewTests')) {
+        if ($object) {
+            if ($object->hasMethod('templateOverviewTests')) {
                 $array2 = $object->templateOverviewTests();
             }
         }
@@ -247,10 +238,10 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return array
      */
-    protected function findAllowedActions($className) : array
+    protected function findAllowedActions($className): array
     {
-        $allowedActions = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);
-        if(is_array($allowedActions)) {
+        $allowedActions = Config::inst()->get($className, 'allowed_actions', Config::UNINHERITED);
+        if (is_array($allowedActions)) {
             return $allowedActions;
         }
         return [];
@@ -260,14 +251,14 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected function findLink($className) : string
+    protected function findLink($className): string
     {
         $link = $this->findControllerLink($className);
-        if(! $link) {
+        if (! $link) {
             $link = $this->findRouteLink($className);
-            if(! $link) {
+            if (! $link) {
                 $link = $this->findSegmentLink($className);
-                if(! $link) {
+                if (! $link) {
                     $link = $this->findMethodLink($className);
                 }
             }
@@ -280,10 +271,10 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected function findControllerLink($className) : string
+    protected function findControllerLink($className): string
     {
         $object = $this->findDataRecord($className);
-        if($object) {
+        if ($object) {
             $tmp = $object->Link();
             $tmpArray = explode('?', $tmp);
             return $tmpArray[0];
@@ -296,17 +287,15 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected function findRouteLink($className) : string
+    protected function findRouteLink($className): string
     {
-        if($this->routes === null) {
+        if ($this->routes === null) {
             $this->routes = Config::inst()->get(Director::class, 'rules');
         }
-        $route = array_search($className, $this->routes);
-        if($route) {
+        $route = array_search($className, $this->routes, true);
+        if ($route) {
             $routeArray = explode('//', $route);
-            $route = $routeArray[0];
-
-            return $route;
+            return $routeArray[0];
         }
 
         return '';
@@ -316,11 +305,11 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected function findSegmentLink($className) : string
+    protected function findSegmentLink($className): string
     {
         //check if there is a link of some sort
         $urlSegment = Config::inst()->get($className, 'url_segment');
-        if($urlSegment) {
+        if ($urlSegment) {
             $urlSegment .= '/';
         } else {
             $urlSegment = '';
@@ -332,25 +321,22 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected function findMethodLink($className) : string
+    protected function findMethodLink($className): string
     {
         $controllerReflectionClass = $this->controllerReflectionClass($className);
-        if($controllerReflectionClass) {
+        if ($controllerReflectionClass) {
             foreach ($controllerReflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                if ($method->class == $className) {
-                    if($method->name === 'Link') {
+                if ($method->class === $className) {
+                    if ($method->name === 'Link') {
                         $classObject = $this->findSingleton($className);
-                        if($classObject) {
+                        if ($classObject) {
                             return $classObject->Link();
                         }
                     }
-                 }
+                }
             }
         }
 
         return '';
     }
-
-
-
 }
