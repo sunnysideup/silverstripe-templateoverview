@@ -426,7 +426,8 @@ class AllLinks
     private function arrayExcept($array, $exclusion)
     {
         $newArray = $array;
-        for ($i = 0; $i < count($newArray); $i++) {
+        $count = count($newArray);
+        for ($i = 0; $i < $count; $i++) {
             if ($newArray[$i] === $exclusion) {
                 unset($newArray[$i]);
             }
