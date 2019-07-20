@@ -1,50 +1,25 @@
 <?php
-namespace Sunnysideup\TemplateOverview\Api;
 
+namespace Sunnysideup\TemplateOverview\Api;
 
 use ReflectionClass;
 use ReflectionMethod;
 
-use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 
 
-use Sunnysideup\TemplateOverview\Api\AllLinks;
-use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
 
 
-use SilverStripe\Control\Director;
-use SilverStripe\Core\Convert;
-use SilverStripe\Security\Member;
-use SilverStripe\Security\Group;
-use SilverStripe\Core\Injector\Injector;
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\CMS\Controllers\ContentController;
-use SilverStripe\Core\ClassInfo;
-use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Admin\LeftAndMain;
-use SilverStripe\Admin\CMSMenu;
+use SilverStripe\CMS\Controllers\ContentController;
+use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
-use SilverStripe\Control\Controller;
-use SilverStripe\Control\HTTPApplication;
-use SilverStripe\Control\HTTPRequestBuilder;
-use SilverStripe\Core\Manifest\ClassLoader;
-use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Dev\BuildTask;
-use SilverStripe\Dev\TaskRunner;
-use SilverStripe\Core\Config\Config;
-use SilverStripe\Core\CoreKernel;
-use SilverStripe\Core\Startup\ErrorControlChainMiddleware;
-use SilverStripe\Versioned\Versioned;
-
-
-use SilverStripe\Core\Config\Configurable;
-use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\Core\Extensible;
 
 class AllLinksControllerInfo
 {
-
     /**
      * @var array
      */
@@ -54,7 +29,6 @@ class AllLinksControllerInfo
      * @var array
      */
     protected static $classObjects = [];
-
 
     /**
      * @var array
@@ -67,7 +41,7 @@ class AllLinksControllerInfo
     protected static $dataRecordClassObjects = [];
 
     /**
-     * @var null|array
+     * @var array|null
      */
     protected static $routes = null;
 
@@ -83,19 +57,18 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return bool
      */
-    public static function is_valid_controller($className) : bool
+    public static function is_valid_controller($className): bool
     {
         return self::controller_reflection_class($className) ? true : false;
     }
 
     /**
-     *
      * @param  string $className
-     * @return null|ReflectionClass
+     * @return ReflectionClass|null
      */
     public static function controller_reflection_class($className)
     {
-        if(! isset(self::$reflectionClasses[$className])) {
+        if (! isset(self::$reflectionClasses[$className])) {
             self::$reflectionClasses[$className] = null;
             //skip base class
             if ($className === Controller::class) {
@@ -111,32 +84,31 @@ class AllLinksControllerInfo
 
             //match to filter
             $filterMatch = count(self::$nameSpaces) ? false : true;
-            foreach(self::$nameSpaces as $filter) {
-                if(strpos($className, $filter) !== false) {
+            foreach (self::$nameSpaces as $filter) {
+                if (strpos($className, $filter) !== false) {
                     $filterMatch = true;
                 }
             }
-            if($filterMatch === false) {
+            if ($filterMatch === false) {
                 return null;
             }
 
             //check for ones that can not be constructed
-            if($controllerReflectionClass->isSubclassOf(LeftAndMain::class)) {
+            if ($controllerReflectionClass->isSubclassOf(LeftAndMain::class)) {
                 return null;
             }
             $params = $controllerReflectionClass->getConstructor()->getParameters();
-            if($controllerReflectionClass->isSubclassOf(ContentController::class)) {
+            if ($controllerReflectionClass->isSubclassOf(ContentController::class)) {
                 //do nothing
-            } elseif(count($params) > 0) {
+            } elseif (count($params) > 0) {
                 return null;
             }
 
             self::$reflectionClasses[$className] = $controllerReflectionClass;
 
             return self::$reflectionClasses[$className];
-        } else {
-            return self::$reflectionClasses[$className];
         }
+        return self::$reflectionClasses[$className];
     }
 
     /**
@@ -145,9 +117,9 @@ class AllLinksControllerInfo
      */
     public static function find_singleton($className)
     {
-        if(self::controller_reflection_class($className)) {
+        if (self::controller_reflection_class($className)) {
             self::$classObjects[$className] = null;
-            if(! isset(self::$classObjects[$className])) {
+            if (! isset(self::$classObjects[$className])) {
                 try {
                     self::$classObjects[$className] = Injector::inst()->get($className);
                 } catch (\Error $e) {
@@ -161,44 +133,44 @@ class AllLinksControllerInfo
 
     /**
      * @param  string $className
-     * @return null|DataObject
+     * @return DataObject|null
      */
     public static function find_data_record($className)
     {
-        if(! isset(self::$dataRecordClassObjects[$className])) {
+        if (! isset(self::$dataRecordClassObjects[$className])) {
             self::$dataRecordClassObjects[$className] = null;
             $dataRecordClassName = substr($className, 0, -1 * strlen('Controller'));
-            if(class_exists($dataRecordClassName)) {
+            if (class_exists($dataRecordClassName)) {
                 self::$dataRecordClassNames[$className] = $dataRecordClassName;
                 self::$dataRecordClassObjects[$className] = DataObject::get_one(
                     $dataRecordClassName,
                     null,
                     null,
-                    DB::get_conn()->random().' ASC'
+                    DB::get_conn()->random() . ' ASC'
                 );
-
             }
         }
 
         return self::$dataRecordClassObjects[$className];
     }
+
     /**
      * @param  string $className
      * @return array
      */
-    public static function find_custom_links($className) : array
+    public static function find_custom_links($className): array
     {
         $array1 = [];
         $array2 = [];
         $classObject = self::find_singleton($className);
-        if($classObject) {
-            if($classObject->hasMethod('templateOverviewTests')) {
+        if ($classObject) {
+            if ($classObject->hasMethod('templateOverviewTests')) {
                 $array1 = $classObject->templateOverviewTests();
             }
         }
         $object = self::find_data_record($className);
-        if($object) {
-            if($object->hasMethod('templateOverviewTests')) {
+        if ($object) {
+            if ($object->hasMethod('templateOverviewTests')) {
                 $array2 = $object->templateOverviewTests();
             }
         }
@@ -209,10 +181,10 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return array
      */
-    public static function find_allowed_actions($className) : array
+    public static function find_allowed_actions($className): array
     {
-        $allowedActions = Config::inst()->get($className, "allowed_actions", Config::UNINHERITED);
-        if(is_array($allowedActions)) {
+        $allowedActions = Config::inst()->get($className, 'allowed_actions', Config::UNINHERITED);
+        if (is_array($allowedActions)) {
             return $allowedActions;
         }
         return [];
@@ -222,14 +194,14 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    public static function find_link($className) : string
+    public static function find_link($className): string
     {
         $link = self::find_controller_link($className);
-        if(! $link) {
+        if (! $link) {
             $link = self::find_route_link($className);
-            if(! $link) {
+            if (! $link) {
                 $link = self::find_segment_link($className);
-                if(! $link) {
+                if (! $link) {
                     $link = self::find_method_link($className);
                 }
             }
@@ -242,10 +214,10 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected static function find_controller_link($className) : string
+    protected static function find_controller_link($className): string
     {
         $object = self::find_data_record($className);
-        if($object) {
+        if ($object) {
             $tmp = $object->Link();
             $tmpArray = explode('?', $tmp);
             return $tmpArray[0];
@@ -258,17 +230,15 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected static function find_route_link($className) : string
+    protected static function find_route_link($className): string
     {
-        if(self::$routes === null) {
+        if (self::$routes === null) {
             self::$routes = Config::inst()->get(Director::class, 'rules');
         }
-        $route = array_search($className, self::$routes);
-        if($route) {
+        $route = array_search($className, self::$routes, true);
+        if ($route) {
             $routeArray = explode('//', $route);
-            $route = $routeArray[0];
-
-            return $route;
+            return $routeArray[0];
         }
 
         return '';
@@ -278,11 +248,11 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected static function find_segment_link($className) : string
+    protected static function find_segment_link($className): string
     {
         //check if there is a link of some sort
         $urlSegment = Config::inst()->get($className, 'url_segment');
-        if($urlSegment) {
+        if ($urlSegment) {
             $urlSegment .= '/';
         } else {
             $urlSegment = '';
@@ -294,25 +264,22 @@ class AllLinksControllerInfo
      * @param  string $className
      * @return string
      */
-    protected static function find_method_link($className) : string
+    protected static function find_method_link($className): string
     {
         $controllerReflectionClass = self::controller_reflection_class($className);
-        if($controllerReflectionClass) {
+        if ($controllerReflectionClass) {
             foreach ($controllerReflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                if ($method->class == $className) {
-                    if($method->name === 'Link') {
+                if ($method->class === $className) {
+                    if ($method->name === 'Link') {
                         $classObject = self::find_singleton($className);
-                        if($classObject) {
+                        if ($classObject) {
                             return $classObject->Link();
                         }
                     }
-                 }
+                }
             }
         }
 
         return '';
     }
-
-
-
 }

@@ -6,30 +6,37 @@
 
 namespace Sunnysideup\TemplateOverview;
 
-use SilverStripe\CMS\Model\SiteTree;
+use \Page;
 
-use SilverStripe\Core\ClassInfo;
-use SilverStripe\Core\Injector\Injector;
+use \PageController;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
-use SilverStripe\Security\Member;
-use SilverStripe\Security\Permission;
-use SilverStripe\View\Requirements;
-
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\DataObject;
 
 use SilverStripe\ORM\DB;
+
+use SilverStripe\Security\Member;
+use SilverStripe\Security\Permission;
+
+use SilverStripe\Security\Security;
+use SilverStripe\View\Requirements;
 
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 
-use \PageController;
-use \Page;
-
 class TemplateOverviewPageController extends PageController
 {
-
     private static $url_segment = 'templates';
+
+    private static $allowed_actions = [
+        'showmore' => true,
+        'quicklist' => true,
+        'listofobjectsused' => true,
+    ];
 
     /**
      * The ContentController will take the URLSegment parameter from the URL and use that to look
@@ -39,32 +46,23 @@ class TemplateOverviewPageController extends PageController
      */
     public function __construct($dataRecord = null)
     {
-
         $this->dataRecord = Page::get()->first();
 
         parent::__construct($this->dataRecord);
-
     }
-
-    private static $allowed_actions = [
-        "showmore" => true,
-        "quicklist" => true,
-        "listofobjectsused" => true,
-    ];
 
     public function init()
     {
         parent::init();
-        if (! Director::is_cli() && !Director::isDev() && ! Permission::check('ADMIN')) {
+        if (! Director::is_cli() && ! Director::isDev() && ! Permission::check('ADMIN')) {
             return Security::permissionFailure();
         }
         Requirements::javascript('sunnysideup/templateoverview: client/javascript/TemplateOverviewPage.js');
-        Requirements::css("sunnysideup/templateoverview: client/css/TemplateOverviewPage.css");
+        Requirements::css('sunnysideup/templateoverview: client/css/TemplateOverviewPage.css');
         if (class_exists(PrettyPhoto::class)) {
             PrettyPhoto::include_code();
-        } else {
-            //user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
         }
+        //user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
     }
 
     public function index(HTTPRequest $request = null)
@@ -79,33 +77,32 @@ class TemplateOverviewPageController extends PageController
 
     public function showmore($request)
     {
-        $id = $request->param("ID");
+        $id = $request->param('ID');
         $obj = SiteTree::get()->byID(intval($id));
         if ($obj) {
             $className = $obj->ClassName;
             $data = $className::get()
-                ->filter(["ClassName" => $obj->ClassName])
+                ->filter(['ClassName' => $obj->ClassName])
                 ->limit(200);
             $array = [
-                "Results" => $data,
+                'Results' => $data,
             ];
         } else {
             $array = [];
         }
-        return $this->customise($array)->renderWith("Sunnysideup\\TemplateOverview\\TemplateOverviewPageShowMoreList");
+        return $this->customise($array)->renderWith('Sunnysideup\\TemplateOverview\\TemplateOverviewPageShowMoreList');
     }
-
 
     public function ConfigurationDetails()
     {
         $m = Member::currentUser();
         if ($m) {
-            if ($m->inGroup("ADMIN")) {
+            if ($m->inGroup('ADMIN')) {
                 $baseFolder = Director::baseFolder();
-                $myFile = $baseFolder."/".$this->project()."/_config.php";
+                $myFile = $baseFolder . '/' . $this->project() . '/_config.php';
                 $fh = fopen($myFile, 'r');
                 $string = '';
-                while (!feof($fh)) {
+                while (! feof($fh)) {
                     $string .= fgets($fh, 1024);
                 }
                 fclose($fh);
@@ -114,31 +111,29 @@ class TemplateOverviewPageController extends PageController
         }
     }
 
+    public function Link($action = null)
+    {
+        $v = '/' . $this->Config()->url_segment;
+        if ($action) {
+            $v .= $action . '/';
+        }
 
-      public function Link($action = null)
-      {
-          $v = '/'.$this->Config()->url_segment;
-          if ($action) {
-              $v .= $action . '/';
-          }
-
-          return $v;
-      }
-
+        return $v;
+    }
 
     public function TestTaskLink()
     {
-        return "/dev/tasks/CheckAllTemplates/";
+        return '/dev/tasks/CheckAllTemplates/';
     }
 
     public function QuickListLink()
     {
-        return $this->Link("quicklist");
+        return $this->Link('quicklist');
     }
 
     public function ImagesListLink()
     {
-        return $this->Link("listofobjectsused/Image");
+        return $this->Link('listofobjectsused/Image');
     }
 
     public function quicklist()
@@ -151,24 +146,24 @@ class TemplateOverviewPageController extends PageController
 
     public function listofobjectsused($request)
     {
-        $classWeAreLookingFor = $request->param("ID");
+        $classWeAreLookingFor = $request->param('ID');
         $classWeAreLookingFor = Injector::inst()->get($classWeAreLookingFor);
         if ($classWeAreLookingFor instanceof DataObject) {
             $list = $this->ListOfAllSiteTreeClasses();
             foreach ($list as $item) {
                 $config = Config::inst();
-                $listOfImages = $config->get($item->ClassName, "has_one")
-                 + $config->get($item->ClassName, "has_many")
-                 + $config->get($item->ClassName, "many_many");
+                $listOfImages = $config->get($item->ClassName, 'has_one')
+                 + $config->get($item->ClassName, 'has_many')
+                 + $config->get($item->ClassName, 'many_many');
                 foreach ($listOfImages as $fieldName => $potentialImage) {
                     $innerSingleton = singleton($potentialImage);
                     if ($innerSingleton instanceof $classWeAreLookingFor) {
-                        DB::alteration_message($item->ClassName.".". $fieldName);
+                        DB::alteration_message($item->ClassName . '.' . $fieldName);
                     }
                 }
             }
         } else {
-            user_error("Please specify the ID for the model you are looking for - e.g. /listofobjectsused/Image/", E_USER_ERROR);
+            user_error('Please specify the ID for the model you are looking for - e.g. /listofobjectsused/Image/', E_USER_ERROR);
         }
     }
 
@@ -183,9 +178,8 @@ class TemplateOverviewPageController extends PageController
         return $siteTreeDetails->ListOfAllSiteTreeClasses();
     }
 
-
     public function TotalCount()
     {
-        return count(ClassInfo::subclassesFor("SiteTree"))-1;
+        return count(ClassInfo::subclassesFor('SiteTree')) - 1;
     }
 }
