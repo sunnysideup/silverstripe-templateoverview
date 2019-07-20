@@ -157,7 +157,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
      *
      * @param HTTPRequest
      */
-    public function testone($request)
+    public function testone(HTTPRequest $request)
     {
         $isCMSLink = $request->getVar('iscmslink') ? true : false;
         $testURL = $request->getVar('test') ? : null;
