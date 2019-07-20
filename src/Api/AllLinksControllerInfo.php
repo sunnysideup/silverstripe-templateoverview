@@ -77,7 +77,7 @@ class AllLinksControllerInfo
      * returns Array with Links and Actions
      * @return array
      */
-    public static function getLinksAndActions(): array
+    public function getLinksAndActions(): array
     {
         if (count($this->linksAndActions) === 0) {
             $this->linksAndActions['Links'] = [];

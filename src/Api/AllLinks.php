@@ -98,14 +98,6 @@ class AllLinks
     private static $exclude_list = [];
 
     /**
-     * List of alternative links for modeladmins
-     * e.g. 'admin/archive' => 'CMSEditLinkForTestPurposesNOTINUSE'
-     *
-     * @var array
-     */
-    private static $model_admin_alternatives = [];
-
-    /**
      * @var int
      */
     private static $number_of_examples = 1;
@@ -120,9 +112,24 @@ class AllLinks
      */
     private static $controller_name_space_filter = [];
 
-    public static function is_admin_link($link)
+    /**
+     * @param  string  $link
+     * @return bool
+     */
+    public static function is_admin_link($link): bool
     {
         return substr(ltrim($link, '/'), 0, 5) === 'admin' ? true : false;
+    }
+
+    /**
+     * Sanitise a model class' name for inclusion in a link
+     *
+     * @param string $class
+     * @return string
+     */
+    public static function sanitise_class_name($class)
+    {
+        return str_replace('\\', '-', $class);
     }
 
     /**
@@ -232,17 +239,6 @@ class AllLinks
         });
 
         return $finalFinalArray;
-    }
-
-    /**
-     * Sanitise a model class' name for inclusion in a link
-     *
-     * @param string $class
-     * @return string
-     */
-    protected function sanitiseClassName($class)
-    {
-        return str_replace('\\', '-', $class);
     }
 
     protected function isValidClass($class)
@@ -386,7 +382,7 @@ class AllLinks
             if (self::is_admin_link($pushItem)) {
                 $pushItem = str_replace('?stage=Stage', '', $pushItem);
             }
-            $pushItem = $this->sanitiseClassName($pushItem);
+            $pushItem = self::sanitise_class_name($pushItem);
             $pushItem = '/' . Director::makeRelative($pushItem);
 
             if (is_array($excludeList) && count($excludeList)) {
