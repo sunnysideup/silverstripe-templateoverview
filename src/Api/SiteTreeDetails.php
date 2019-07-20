@@ -33,7 +33,6 @@ class SiteTreeDetails
     protected $counter = 0;
 
     protected $classesToRemove = [];
-
     protected $arrayOfAllClasses = [];
 
     private static $list_of_all_classes = [];
@@ -47,6 +46,7 @@ class SiteTreeDetails
     public function ListOfAllSiteTreeClasses($checkCurrentClass = true)
     {
         if (count(self::$list_of_all_classes) === 0) {
+
             $this->getArrayOfAllClasses();
 
             self::$list_of_all_classes = new ArrayList();
@@ -70,12 +70,6 @@ class SiteTreeDetails
             }
         }
         return self::$list_of_all_classes;
-    }
-
-    public function ShowAll()
-    {
-        $this->showAll = true;
-        return [];
     }
 
     protected function getArrayOfAllClasses()
@@ -123,9 +117,10 @@ class SiteTreeDetails
         return $this->arrayOfAllClasses;
     }
 
+
     protected function removeHideAncestorBasedOnObject($obj)
     {
-        if ($obj) {
+        if($obj) {
             $ancestorToHide = Config::inst()->get($obj->ClassName, 'hide_ancestor');
             if ($ancestorToHide) {
                 $this->classesToRemove[] = $ancestorToHide;
@@ -135,7 +130,7 @@ class SiteTreeDetails
 
     protected function removeHideAncestors()
     {
-        if ($this->classesToRemove && count($this->classesToRemove)) {
+        if (! empty($this->classesToRemove)) {
             $this->classesToRemove = array_unique($this->classesToRemove);
             // unset from $classes
             foreach ($this->arrayOfAllClasses as $tempKey => $tempClass) {
@@ -144,6 +139,12 @@ class SiteTreeDetails
                 }
             }
         }
+    }
+
+    public function ShowAll()
+    {
+        $this->showAll = true;
+        return [];
     }
 
     /**
