@@ -111,7 +111,7 @@ class SiteTreeDetails
                     $object = $this->createPageObject($obj, $count);
                     $this->arrayOfAllClasses[$object->indexNumber] = clone $object;
                 }
-                $this->removeHideAncestorBasedOnObject($obj);
+                $this->removeHideAncestorBasedOnObject($className);
             }
         }
         $this->removeHideAncestors();
@@ -123,13 +123,11 @@ class SiteTreeDetails
         return $this->arrayOfAllClasses;
     }
 
-    protected function removeHideAncestorBasedOnObject($obj)
+    protected function removeHideAncestorBasedOnObject($className)
     {
-        if ($obj) {
-            $ancestorToHide = Config::inst()->get($obj->ClassName, 'hide_ancestor');
-            if ($ancestorToHide) {
-                $this->classesToRemove[] = $ancestorToHide;
-            }
+        $ancestorToHide = Config::inst()->get($className, 'hide_ancestor');
+        if ($ancestorToHide) {
+            $this->classesToRemove[$ancestorToHide] = $ancestorToHide;
         }
     }
 
