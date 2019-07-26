@@ -3,6 +3,6 @@ Name: 'TemplateoverviewRoutes'
 ---
 SilverStripe\Control\Director:
   rules:
-    'templates//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\TemplateOverviewPageController'
+    'templateoverviewtemplates//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\TemplateOverviewPageController'
     'templateoverviewloginandredirect//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\LoginAndRedirect'
     'templateoverviewsmoketestresponse//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\CheckAllTemplatesResponseController'

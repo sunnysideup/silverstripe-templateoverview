@@ -10,6 +10,7 @@ use \Page;
 
 use \PageController;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
@@ -27,7 +28,7 @@ use SilverStripe\View\Requirements;
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 
-class TemplateOverviewPageController extends PageController
+class TemplateOverviewPageController extends ContentController
 {
     private static $url_segment = 'templates';
 
@@ -37,36 +38,28 @@ class TemplateOverviewPageController extends PageController
         'listofobjectsused' => true,
     ];
 
-    /**
-     * The ContentController will take the URLSegment parameter from the URL and use that to look
-     * up a SiteTree record.
-     *
-     * @param SiteTree $dataRecord
-     */
-    public function __construct($dataRecord = null)
-    {
-        $this->dataRecord = Page::get()->first();
 
-        parent::__construct($this->dataRecord);
-    }
 
     public function init()
     {
         parent::init();
-        if (! Director::is_cli() && ! Director::isDev() && ! Permission::check('ADMIN')) {
+        if (Director::is_cli() || Director::isDev() || Permission::check('ADMIN')) {
+            Requirements::javascript('//code.jquery.com/jquery-1.7.2.min.js');
+            Requirements::javascript('sunnysideup/templateoverview: client/javascript/TemplateOverviewPage.js');
+            Requirements::css('sunnysideup/templateoverview: client/css/TemplateOverviewPage.css');
+            if (class_exists(PrettyPhoto::class)) {
+                PrettyPhoto::include_code();
+            }
+            //user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
+        } else{
             return Security::permissionFailure();
         }
-        Requirements::javascript('sunnysideup/templateoverview: client/javascript/TemplateOverviewPage.js');
-        Requirements::css('sunnysideup/templateoverview: client/css/TemplateOverviewPage.css');
-        if (class_exists(PrettyPhoto::class)) {
-            PrettyPhoto::include_code();
-        }
-        //user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
     }
 
     public function index(HTTPRequest $request = null)
     {
-        return $this->renderWith(['Page', 'Page']);
+        $this->renderWith(['Page', 'Page']);
+        return [];
     }
 
     public function Content()
@@ -161,6 +154,6 @@ class TemplateOverviewPageController extends PageController
 
     public function TotalCount()
     {
-        return count(ClassInfo::subclassesFor('SiteTree')) - 1;
+        return count(ClassInfo::subclassesFor(SiteTree::class)) - 1;
     }
 }
