@@ -1,11 +1,11 @@
 <?php
 
-namespace Sunnysideup\TemplateOverview\Api;
+namespace Sunnysideup\TemplateOverview\Api\Providers;
+use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
+use Sunnysideup\TemplateOverview\Api\AllLinks;
 
 use ReflectionClass;
 use ReflectionMethod;
-
-
 
 
 use SilverStripe\Admin\LeftAndMain;
@@ -14,17 +14,13 @@ use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
-use SilverStripe\Core\Config\Configurable;
-use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 
-class AllLinksControllerInfo
+class AllLinksControllerInfo extends AllLinksProviderBase
 {
-    use Configurable;
-    use Injectable;
 
     /**
      * @var array
@@ -71,6 +67,56 @@ class AllLinksControllerInfo
         $this->nameSpaces = $nameSpaces;
 
         return $this;
+    }
+
+
+    /**
+     * @return array
+     */
+    public function getAllLinksInner(): array
+    {
+        $finalFinalArray = [];
+
+        $linksAndActions = $this->getLinksAndActions();
+        $allowedActions = $linksAndActions['Actions'];
+        $controllerLinks = $linksAndActions['Links'];
+        $finalArray = $linksAndActions['CustomLinks'];
+
+        // die('---');
+        //construct array!
+        foreach ($allowedActions as $className => $methods) {
+            $link = $controllerLinks[$className];
+            if ($link) {
+                $finalArray[$link] = $className;
+            } else {
+                $link = '???';
+            }
+            if (substr($link, -1) !== '/') {
+                $link .= '/';
+            }
+            if (is_array($methods)) {
+                foreach ($methods as $method) {
+                    unset($allowedActions[$className][$method]);
+                    $finalArray[$link . $method . '/'] = $className;
+                }
+            }
+        }
+
+        foreach ($finalArray as $link => $className) {
+            $finalFinalArray[] = [
+                'ClassName' => $className,
+                'Link' => $link,
+            ];
+        }
+        usort($finalFinalArray, function ($a, $b) {
+            if ($a['ClassName'] !== $b['ClassName']) {
+                return $a['ClassName'] <=> $b['ClassName'];
+            }
+
+            return $a['Link'] <=> $b['Link'];
+        });
+
+        return $finalFinalArray;
     }
 
     /**

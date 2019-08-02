@@ -1,7 +1,8 @@
 <?php
 
-namespace Sunnysideup\TemplateOverview\Api;
-
+namespace Sunnysideup\TemplateOverview\Api\Providers;
+use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
+use Sunnysideup\TemplateOverview\Api\AllLinks;
 use SilverStripe\Admin\CMSMenu;
 use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Core\Config\Configurable;
@@ -11,12 +12,8 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 
-class AllLinksModelAdmin
+class AllLinksModelAdmin extends AllLinksProviderBase
 {
-    use Configurable;
-    use Injectable;
-
-    protected $numberOfExamples = 1;
 
     /**
      * List of alternative links for modeladmins
@@ -26,14 +23,7 @@ class AllLinksModelAdmin
      */
     private static $model_admin_alternatives = [];
 
-    public function setNumberOfExamples($n): self
-    {
-        $this->numberOfExamples = $n;
-
-        return $this;
-    }
-
-    public function findModelAdminLinks(): array
+    public function getAllLinksInner(): array
     {
         $links = [];
         $modelAdmins = CMSMenu::get_cms_classes(ModelAdmin::class);

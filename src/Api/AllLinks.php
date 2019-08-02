@@ -4,6 +4,10 @@ namespace Sunnysideup\TemplateOverview\Api;
 
 use ReflectionClass;
 
+use Sunnysideup\TemplateOverview\Api\Providers\AllLinksControllerInfo;
+use Sunnysideup\TemplateOverview\Api\Providers\AllLinksDataObjects;
+use Sunnysideup\TemplateOverview\Api\Providers\AllLinksModelAdmin;
+use Sunnysideup\TemplateOverview\Api\Providers\AllLinksReports;
 
 
 
@@ -22,11 +26,9 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\Versioned\Versioned;
 
-class AllLinks
+class AllLinks extends AllLinksProviderBase
 {
-    use Extensible;
-    use Injectable;
-    use Configurable;
+
 
     /**
      * @var array
@@ -76,18 +78,17 @@ class AllLinks
     /**
      * @var array
      */
+    protected $reportLinks = [];
+
+    /**
+     * @var array
+     */
     protected $leftAndMainLnks = [];
 
     /**
      * @var array
      */
     protected $customCMSLinks = [];
-
-    /**
-     * @var array
-     * Pages to check by class name. For example, for "ClassPage", will check the first instance of the cart page.
-     */
-    protected $siteTreeClassNames = [];
 
     /**
      * url snippets that if found in links should exclude the link altogether.
@@ -136,9 +137,8 @@ class AllLinks
      * returns an array of allNonCMSLinks => [] , allCMSLinks => [], otherControllerMethods => []
      * @return array
      */
-    public function getAllLinks()
+    public function getAllLinks() : array
     {
-        $this->siteTreeClassNames = $this->listOfAllSiteTreeClasses();
 
         foreach ($this->Config()->get('custom_links') as $link) {
             $link = '/' . ltrim($link, '/') . '/';
@@ -160,11 +160,13 @@ class AllLinks
         $this->dataObjectsInCMS = $this->ListOfDataObjectsLinks(true);
         $this->modelAdmins = $this->ListOfAllModelAdmins();
         $this->leftAndMainLnks = $this->ListOfAllLeftAndMains();
+        $this->reportLinks = $this->listOfAllReports();
 
         $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->pagesInCMS);
         $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->dataObjectsInCMS);
         $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->modelAdmins);
         $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->leftAndMainLnks);
+        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->reportLinks);
         $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->customCMSLinks);
         sort($this->allCMSLinks);
 
@@ -186,7 +188,7 @@ class AllLinks
         $obj = Injector::inst()->get(AllLinksModelAdmin::class);
         $obj->setNumberOfExamples($this->Config()->number_of_examples);
 
-        return $obj->findModelAdminLinks();
+        return $obj->getAllLinksInner();
     }
 
     /**
@@ -194,60 +196,20 @@ class AllLinks
      */
     public function ListOfAllControllerMethods(): array
     {
-        $finalFinalArray = [];
-
         $obj = Injector::inst()->get(AllLinksControllerInfo::class);
         $obj->setValidNameSpaces($this->Config()->controller_name_space_filter);
 
-        $linksAndActions = $obj->getLinksAndActions();
-        $allowedActions = $linksAndActions['Actions'];
-        $controllerLinks = $linksAndActions['Links'];
-        $finalArray = $linksAndActions['CustomLinks'];
-
-        // die('---');
-        //construct array!
-        foreach ($allowedActions as $className => $methods) {
-            $link = $controllerLinks[$className];
-            if ($link) {
-                $finalArray[$link] = $className;
-            } else {
-                $link = '???';
-            }
-            if (substr($link, -1) !== '/') {
-                $link .= '/';
-            }
-            if (is_array($methods)) {
-                foreach ($methods as $method) {
-                    unset($allowedActions[$className][$method]);
-                    $finalArray[$link . $method . '/'] = $className;
-                }
-            }
-        }
-
-        foreach ($finalArray as $link => $className) {
-            $finalFinalArray[] = [
-                'ClassName' => $className,
-                'Link' => $link,
-            ];
-        }
-        usort($finalFinalArray, function ($a, $b) {
-            if ($a['ClassName'] !== $b['ClassName']) {
-                return $a['ClassName'] <=> $b['ClassName'];
-            }
-
-            return $a['Link'] <=> $b['Link'];
-        });
-
-        return $finalFinalArray;
+        return $obj->getAllLinksInner();
     }
-
-    protected function isValidClass($class)
+    /**
+     * @return array
+     */
+    public function ListOfDataObjectsLinks(bool $inCMS): array
     {
-        $obj = new ReflectionClass($class);
-        if ($obj->isAbstract()) {
-            return false;
-        }
-        return true;
+        $obj = Injector::inst()->get(AllLinksDataObjects::class);
+        $obj->setNumberOfExamples($this->Config()->number_of_examples);
+
+        return $obj->getAllLinksInner($inCMS);
     }
 
     /**
@@ -259,13 +221,14 @@ class AllLinks
      *
      * @return array
      */
-    private function ListOfPagesLinks($pageInCMS = false)
+    public function ListOfPagesLinks($pageInCMS = false)
     {
         //first() will return null or the object
         $return = [];
-        foreach ($this->siteTreeClassNames as $class) {
+        $siteTreeClassNames = $this->getListOfAllSiteTreeClasses();
+        foreach ($siteTreeClassNames as $class) {
             for ($i = 0; $i < $this->Config()->number_of_examples; $i++) {
-                $excludedClasses = $this->arrayExcept($this->siteTreeClassNames, $class);
+                $excludedClasses = $this->arrayExcept($siteTreeClassNames, $class);
                 $page = Versioned::get_by_stage($class, Versioned::LIVE)
                     ->exclude(['ClassName' => $excludedClasses])
                     ->sort(DB::get_conn()->random() . ' ASC')
@@ -294,60 +257,9 @@ class AllLinks
     }
 
     /**
-     * @param bool $inCMS
-     *
      * @return array
      */
-    private function ListOfDataObjectsLinks($inCMS = false)
-    {
-        //first() will return null or the object
-        $return = [];
-        $list = ClassInfo::subclassesFor(DataObject::class);
-        foreach ($list as $class) {
-            if (! in_array($class, array_merge($this->siteTreeClassNames, [DataObject::class]), true)) {
-                if ($this->isValidClass($class)) {
-                    for ($i = 0; $i < $this->Config()->number_of_examples; $i++) {
-                        $obj = DataObject::get_one(
-                            $class,
-                            ['ClassName' => $class],
-                            null,
-                            DB::get_conn()->random() . ' ASC'
-                        );
-                        if ($obj) {
-                            if ($inCMS) {
-                                if ($obj->hasMethod('CMSEditLink')) {
-                                    $return[] = $obj->CMSEditLink();
-                                }
-                                if ($obj->hasMethod('CMSAddLink')) {
-                                    $return[] = $obj->CMSAddLink();
-                                }
-                                if ($obj->hasMethod('CMSListLink')) {
-                                    $return[] = $obj->CMSListLink();
-                                }
-                                if ($obj->hasMethod('PreviewLink')) {
-                                    $return[] = $obj->PreviewLink();
-                                }
-                            } else {
-                                if ($obj->hasMethod('Link')) {
-                                    $return[] = $obj->Link();
-                                }
-                                if ($obj->hasMethod('getLink')) {
-                                    $return[] = $obj->getLink();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return $return;
-    }
-
-    /**
-     * @return array
-     */
-    private function ListOfAllLeftAndMains()
+    public function ListOfAllLeftAndMains()
     {
         //first() will return null or the object
         $return = [];
@@ -367,6 +279,17 @@ class AllLinks
         return $return;
     }
 
+
+    /**
+     * returns a list of all reports
+     * @return array
+     */
+    public function ListOfAllReports()
+    {
+        $reportsLinks = Injector::inst()->get(AllLinksReports::class);
+        return $reportsLinks->getAllLinksInner();
+    }
+
     /**
      * Pushes an array of items to an array
      * @param array $array Array to push items to (will overwrite)
@@ -374,7 +297,7 @@ class AllLinks
      *
      * @return array
      */
-    private function addToArrayOfLinks($array, $pushArray): array
+    protected function addToArrayOfLinks($array, $pushArray): array
     {
         $excludeList = $this->Config()->exclude_list;
         foreach ($pushArray as $pushItem) {
@@ -399,39 +322,5 @@ class AllLinks
         return $array;
     }
 
-    /**
-     * returns a list of all SiteTree Classes
-     * @return array
-     */
-    private function listOfAllSiteTreeClasses()
-    {
-        $pages = [];
-        $siteTreeDetails = Injector::inst()->get(SiteTreeDetails::class);
-        $list = $siteTreeDetails->ListOfAllSiteTreeClasses();
-        foreach ($list as $page) {
-            $pages[] = $page->ClassName;
-        }
 
-        return $pages;
-    }
-
-    /**
-     * Takes an array, takes one item out, and returns new array
-     *
-     * @param array $array Array which will have an item taken out of it.
-     * @param string $exclusion Item to be taken out of $array
-     *
-     * @return array New array.
-     */
-    private function arrayExcept($array, $exclusion)
-    {
-        $newArray = $array;
-        $count = count($newArray);
-        for ($i = 0; $i < $count; $i++) {
-            if ($newArray[$i] === $exclusion) {
-                unset($newArray[$i]);
-            }
-        }
-        return $newArray;
-    }
 }
