@@ -320,14 +320,6 @@ class AllLinks extends AllLinksProviderBase
                         }
                     }
                 }
-                if (! empty($excludeListStartsWith)) {
-                    foreach ($excludeListStartsWith as $excludeItemStartsWith) {
-                        $sub = substr($pushItem, 0 ,strlen($excludeItemStartsWith));
-                        if (stripos($pushItem, $excludeItem) !== false) {
-                            continue 2;
-                        }
-                    }
-                }
                 if (! in_array($pushItem, $array, true)) {
                     array_push($array, $pushItem);
                 }
