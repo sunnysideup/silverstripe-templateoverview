@@ -106,7 +106,12 @@ class AllLinks extends AllLinksProviderBase
     /**
      * @var array
      */
-    private static $custom_links = [];
+    private static $custom_links = [
+        'Security/login',
+        'Security/logout',
+        'Security/lostpassword',
+        'Security/lostpassword/passwordsent',
+    ];
 
     /**
      * @var array
@@ -307,16 +312,25 @@ class AllLinks extends AllLinksProviderBase
             }
             $pushItem = self::sanitise_class_name($pushItem);
             $pushItem = '/' . Director::makeRelative($pushItem);
-
-            if (is_array($excludeList) && count($excludeList)) {
-                foreach ($excludeList as $excludeItem) {
-                    if (stripos($pushItem, $excludeItem) !== false) {
-                        continue 2;
+            if($pushItem) {
+                if (! empty($excludeList)) {
+                    foreach ($excludeList as $excludeItem) {
+                        if (stripos($pushItem, $excludeItem) !== false) {
+                            continue 2;
+                        }
                     }
                 }
-            }
-            if (! in_array($pushItem, $array, true)) {
-                array_push($array, $pushItem);
+                if (! empty($excludeListStartsWith)) {
+                    foreach ($excludeListStartsWith as $excludeItemStartsWith) {
+                        $sub = substr($pushItem, 0 ,strlen($excludeItemStartsWith));
+                        if (stripos($pushItem, $excludeItem) !== false) {
+                            continue 2;
+                        }
+                    }
+                }
+                if (! in_array($pushItem, $array, true)) {
+                    array_push($array, $pushItem);
+                }
             }
         }
         return $array;
