@@ -160,7 +160,7 @@ class SiteTreeDetails
         $listArray['Count'] = $count;
         $listArray['ID'] = $obj->ID;
         $listArray['URLSegment'] = $obj->URLSegment;
-        $listArray['ControllerLink'] = '/templates/';
+        $listArray['ControllerLink'] = '/templateoverviewtemplates/';
         $listArray['Title'] = $obj->MenuTitle;
         $listArray['PreviewLink'] = $obj->PreviewLink();
         $listArray['CMSEditLink'] = $obj->CMSEditLink();
