@@ -320,7 +320,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     protected function findControllerLink($className): string
     {
         $object = $this->findDataRecord($className);
-        if ($object) {
+        if ($object && $object->hasMethod('Link')){
             $tmp = $object->Link();
             $tmpArray = explode('?', $tmp);
             return $tmpArray[0];
