@@ -11,6 +11,7 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use SilverStripe\VersionedAdmin\ArchiveAdmin;
 
 class AllLinksModelAdmin extends AllLinksProviderBase
 {
@@ -46,7 +47,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                         }
                         $links = array_merge(
                             $links,
-                            $this->workOutLinksForModel($obj, $model, $modelAdminLink)
+                            $this->workOutLinksForModel($obj, $model, $modelAdminLink, $modelAdmin)
                         );
                     }
                 }
@@ -56,7 +57,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
         return $links;
     }
 
-    protected function workOutLinksForModel($obj, $model, $modelAdminLink)
+    protected function workOutLinksForModel($obj, $model, $modelAdminLink, $modelAdmin)
     {
         $links = [];
         $sanitizedModel = AllLinks::sanitise_class_name($model);
@@ -81,9 +82,11 @@ class AllLinksModelAdmin extends AllLinksProviderBase
             } else {
                 //needs to stay here for exception!
                 $links[] = $modelLink;
-                $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/new/';
-                if ($item) {
-                    $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/' . $item->ID . '/edit/';
+                if($modelAdmin !== ArchiveAdmin::class){
+                    $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/new/';
+                    if ($item) {
+                        $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/' . $item->ID . '/edit/';
+                    }
                 }
             }
         }
