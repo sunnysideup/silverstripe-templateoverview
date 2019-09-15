@@ -61,7 +61,7 @@ class AllLinksDataObjects extends AllLinksProviderBase
                                     $return[] = $obj->PreviewLink();
                                 }
                             } else {
-                                if ($obj->hasMethod('Link')) {
+                                if ($obj->hasMethod('Link')&& !isset($obj->LinkID)) {
                                     $return[] = $obj->Link();
                                 }
                                 if ($obj->hasMethod('getLink')) {
