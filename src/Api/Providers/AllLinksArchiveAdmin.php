@@ -4,16 +4,13 @@ namespace Sunnysideup\TemplateOverview\Api\Providers;
 use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 use SilverStripe\Admin\CMSMenu;
-use SilverStripe\Admin\ModelAdmin;
-use SilverStripe\Core\Config\Configurable;
-
-use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\VersionedAdmin\ArchiveAdmin;
 
-class AllLinksModelAdmin extends AllLinksProviderBase
+class AllLinksArchiveAdmin extends AllLinksProviderBase
 {
 
     /**
@@ -27,8 +24,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
     public function getAllLinksInner(): array
     {
         $links = [];
-        $modelAdmins = CMSMenu::get_cms_classes(ModelAdmin::class);
-        unset($modelAdmins[array_search(ArchiveAdmin::class, $modelAdmins)]);
+        $modelAdmins = CMSMenu::get_cms_classes(ArchiveAdmin::class);
         if (! empty($modelAdmins)) {
             foreach ($modelAdmins as $modelAdmin) {
                 $obj = Injector::inst()->get($modelAdmin);
@@ -64,9 +60,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
         $sanitizedModel = AllLinks::sanitise_class_name($model);
         $modelLink = $modelAdminLink . $sanitizedModel . '/';
         for ($i = 0; $i < $this->numberOfExamples; $i++) {
-            $item = $model::get()
-                ->sort(DB::get_conn()->random() . ' ASC')
-                ->First();
+            $item = $this->getRandomArchivedItem($model);
             $exceptionMethod = '';
             foreach ($this->Config()->get('model_admin_alternatives') as $test => $method) {
                 if (! $method) {
@@ -83,13 +77,44 @@ class AllLinksModelAdmin extends AllLinksProviderBase
             } else {
                 //needs to stay here for exception!
                 $links[] = $modelLink;
-                $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/new/';
                 if ($item) {
-                    $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/' . $item->ID . '/edit/';
+                    if(is_subclass_of($model, SiteTree::class) || $model === SiteTree::class){
+                        $links[] = $modelLink . 'EditForm/field/Pages/item/' . $item->ID . '/view/';
+                    }
+                    else {
+                        $links[] = $modelLink . 'EditForm/field/Others/item/' . $item->ID . '/view/';
+                    }
                 }
             }
         }
 
         return $links;
+    }
+
+    protected function getRandomArchivedItem($class)
+    {
+        $list = singleton($class)->get();
+        $baseTable = singleton($list->dataClass())->baseTable();
+        $liveTable = $baseTable . '_Live';
+
+        $list = $list
+            ->setDataQueryParam('Versioned.mode', 'latest_versions');
+        // Join a temporary alias BaseTable_Draft, renaming this on execution to BaseTable
+        // See Versioned::augmentSQL() For reference on this alias
+        $draftTable = $baseTable . '_Draft';
+        $list = $list
+            ->leftJoin(
+                $draftTable,
+                "\"{$baseTable}\".\"ID\" = \"{$draftTable}\".\"ID\""
+            );
+
+        $list = $list->leftJoin(
+            $liveTable,
+            "\"{$baseTable}\".\"ID\" = \"{$liveTable}\".\"ID\""
+        );
+
+        $list = $list->where("\"{$draftTable}\".\"ID\" IS NULL");
+        $list = $list->sort(DB::get_conn()->random() . ' ASC');
+        return $list->First();
     }
 }

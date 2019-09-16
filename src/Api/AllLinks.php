@@ -25,6 +25,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\Versioned\Versioned;
+use Sunnysideup\TemplateOverview\Api\Providers\AllLinksArchiveAdmin;
 
 class AllLinks extends AllLinksProviderBase
 {
@@ -164,12 +165,14 @@ class AllLinks extends AllLinksProviderBase
         $this->pagesInCMS = $this->ListOfPagesLinks(true);
         $this->dataObjectsInCMS = $this->ListOfDataObjectsLinks(true);
         $this->modelAdmins = $this->ListOfAllModelAdmins();
+        $this->archiveCMSLinks = $this->ListOfAllArchiveCMSLinks();
         $this->leftAndMainLnks = $this->ListOfAllLeftAndMains();
         $this->reportLinks = $this->listOfAllReports();
 
         $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->pagesInCMS);
         $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->dataObjectsInCMS);
         $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->modelAdmins);
+        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->archiveCMSLinks);
         $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->leftAndMainLnks);
         $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->reportLinks);
         $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->customCMSLinks);
@@ -191,6 +194,18 @@ class AllLinks extends AllLinksProviderBase
     public function ListOfAllModelAdmins()
     {
         $obj = Injector::inst()->get(AllLinksModelAdmin::class);
+        $obj->setNumberOfExamples($this->Config()->number_of_examples);
+
+        return $obj->getAllLinksInner();
+    }
+
+    /**
+     * returns a list of all archive links
+     * @return array
+     */
+    public function ListOfAllArchiveCMSLinks()
+    {
+        $obj = Injector::inst()->get(AllLinksArchiveAdmin::class);
         $obj->setNumberOfExamples($this->Config()->number_of_examples);
 
         return $obj->getAllLinksInner();
