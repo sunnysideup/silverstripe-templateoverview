@@ -28,7 +28,7 @@ use SilverStripe\View\Requirements;
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 
-class TemplateOverviewPageController extends ContentController
+class TemplateOverviewPageController extends PageController
 {
     private static $url_segment = 'templates';
 
@@ -37,8 +37,6 @@ class TemplateOverviewPageController extends ContentController
         'quicklist' => true,
         'listofobjectsused' => true,
     ];
-
-
 
     public function init()
     {
@@ -58,7 +56,7 @@ class TemplateOverviewPageController extends ContentController
 
     public function index(HTTPRequest $request = null)
     {
-        $this->renderWith(['Page', 'Page']);
+        // $this->renderWith(['Sunnysideup\\TemplateOverview\\TemplateOverviewPageController']);
         return [];
     }
 

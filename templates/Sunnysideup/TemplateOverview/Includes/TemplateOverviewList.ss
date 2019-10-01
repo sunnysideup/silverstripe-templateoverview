@@ -14,8 +14,8 @@
             <a href="https://developers.facebook.com/tools/debug/sharing/?q=$PreviewLink">in FB ...</a>
         </span>
         <% if Count > 1 %>
-        <span class="typo-more"><em>more:</em> <a href="$ControllerLink/showmore/$ID" class="typo-seemore" rel="entry-for-$URLSegment">more examples</a></span>
-        <span class="typo-less"><em>less:</em> <a href="#" class="typo-seeless" rel="entry-for-$URLSegment">hide it again!</a></span>
+        <span class="typo-more">show: <a href="$ControllerLink/showmore/$ID" class="typo-seemore" rel="entry-for-$URLSegment">more examples</a></span>
+        <span class="typo-less">hide: </em> <a href="#" class="typo-seeless" rel="entry-for-$URLSegment">less examples</a></span>
         <% end_if %>
         <ol id="entry-for-$URLSegment" class="MoreDetailOL"><li style="display: none;">&nbsp;</li></ol>
         <% end_if %>
