@@ -2,7 +2,7 @@
 
 
 
-class TemplateoverviewPageAPI extends Object
+class TemplateoverviewPageAPI extends SS_Object
 {
     private static $list_of_all_classes = array();
 

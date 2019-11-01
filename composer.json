@@ -22,7 +22,7 @@
     "require": {
         "silverstripe/framework": "~3.6",
         "silverstripe/cms": "~3.6",
-        "sunnysideup/prettyphoto": "3.x-dev"
+        "sunnysideup/prettyphoto": "3.7.x-dev"
     },
     "extra": {
         "installer-name": "templateoverview"
