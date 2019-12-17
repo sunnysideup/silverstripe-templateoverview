@@ -677,7 +677,7 @@ class CheckAllTemplates extends BuildTask
             if ($pageInCMS) {
                 $stage = "";
             } else {
-                $stage = $this->stage;
+                $stage = 'stage';
             }
 
             $page = $class::get()
