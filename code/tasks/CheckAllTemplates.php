@@ -498,7 +498,7 @@ class CheckAllTemplates extends BuildTask
         $modelAdmins = CMSMenu::get_cms_classes("ModelAdmin");
         if ($modelAdmins && count($modelAdmins)) {
             foreach ($modelAdmins as $modelAdmin) {
-                if (!in_array($modelAdmin, ["ModelAdminEcommerceBaseClass", "VersionedModelAdmin"])) {
+                if (!in_array($modelAdmin, ["ModelAdminEcommerceBaseClass", "VersionedModelAdmin", "CatalogPageAdmin"])) {
                     $obj = singleton($modelAdmin);
                     $modelAdminLink = $obj->Link();
                     $modelAdminLinkArray = explode("?", $modelAdminLink);
