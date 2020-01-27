@@ -545,7 +545,7 @@ class CheckAllTemplates extends BuildTask
         $frameworkBaseFolder = Director::baseFolder()."/framework/";
         if (Director::isDev()) {
             foreach ($classes as $className) {
-                if (!in_array($className, ["PafController", 'SphinxController'])) {
+                if (!in_array($className, ["PafController", "SphinxController"])) {
                     $lowerClassName = strtolower($className);
                     $location = $manifest[$lowerClassName];
                     if (strpos($location, $cmsBaseFolder) === 0 || strpos($location, $frameworkBaseFolder) === 0) {

@@ -32,7 +32,7 @@ class TemplateOverviewPage_Controller extends Page_Controller
         }
     }
 
-    public function index()
+    public function index(SS_HTTPRequest $r)
     {
         return $this->renderWith(['Page', 'Page']);
     }
