@@ -545,27 +545,29 @@ class CheckAllTemplates extends BuildTask
         $frameworkBaseFolder = Director::baseFolder()."/framework/";
         if (Director::isDev()) {
             foreach ($classes as $className) {
-                $lowerClassName = strtolower($className);
-                $location = $manifest[$lowerClassName];
-                if (strpos($location, $cmsBaseFolder) === 0 || strpos($location, $frameworkBaseFolder) === 0) {
-                    continue;
-                }
-                if ($className != "Controller") {
-                    $controllerReflectionClass = new ReflectionClass($className);
-                    if (!$controllerReflectionClass->isAbstract()) {
-                        if (
-                            $className == "HideMailto" ||
-                            $className == "HideMailto_Controller" ||
-                            $className == "Mailto" ||
-                            $className instanceof SapphireTest ||
-                            $className instanceof BuildTask ||
-                            $className instanceof TaskRunner
-                        ) {
-                            continue;
-                        }
-                        $methods = $this->getPublicMethodsNotInherited($controllerReflectionClass, $className);
-                        foreach ($methods as $methodArray) {
-                            $array[$className."_".$methodArray["Method"]] = $methodArray;
+                if (!in_array($className, ["PafController", 'SphinxController'])) {
+                    $lowerClassName = strtolower($className);
+                    $location = $manifest[$lowerClassName];
+                    if (strpos($location, $cmsBaseFolder) === 0 || strpos($location, $frameworkBaseFolder) === 0) {
+                        continue;
+                    }
+                    if ($className != "Controller") {
+                        $controllerReflectionClass = new ReflectionClass($className);
+                        if (!$controllerReflectionClass->isAbstract()) {
+                            if (
+                                $className == "HideMailto" ||
+                                $className == "HideMailto_Controller" ||
+                                $className == "Mailto" ||
+                                $className instanceof SapphireTest ||
+                                $className instanceof BuildTask ||
+                                $className instanceof TaskRunner
+                            ) {
+                                continue;
+                            }
+                            $methods = $this->getPublicMethodsNotInherited($controllerReflectionClass, $className);
+                            foreach ($methods as $methodArray) {
+                                $array[$className."_".$methodArray["Method"]] = $methodArray;
+                            }
                         }
                     }
                 }
