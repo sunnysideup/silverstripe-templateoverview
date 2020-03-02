@@ -681,23 +681,27 @@ class CheckAllTemplates extends BuildTask
             } else {
                 $stage = 'stage';
             }
-
-            $page = $class::get()
-                ->limit(1)
+            $limit = 1;
+            $limit = empty($_GET['limit']) ? 1 : intval($_GET['limit']);
+            $pages = $class::get()
+                ->limit($limit)
                 ->exclude(array("ClassName" => $excludedClasses))
                 ->sort("RAND()");
-            $page = $page->setDataQueryParam(array(
-                'Versioned.mode' => 'stage',
-                'Versioned.stage' => $stage
-            ));
-            $page = $page->first();
-            if ($page) {
-                if ($pageInCMS) {
-                    $url = $page->CMSEditLink();
-                } else {
-                    $url = $page->link();
+            $pages = $pages->setDataQueryParam(
+                array(
+                    'Versioned.mode' => 'stage',
+                    'Versioned.stage' => $stage
+                )
+            );
+            foreach ($pages as $page) {
+                if ($page) {
+                    if ($pageInCMS) {
+                        $url = $page->CMSEditLink();
+                    } else {
+                        $url = $page->link();
+                    }
+                    $return[] = $url;
                 }
-                $return[] = $url;
             }
         }
         return $return;
