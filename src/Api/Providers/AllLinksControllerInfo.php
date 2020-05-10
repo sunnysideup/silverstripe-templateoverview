@@ -148,7 +148,11 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                 if ($link) {
                     $this->linksAndActions['Links'][$className] = $link;
                 }
-                $this->linksAndActions['Actions'][$className] = $this->findAllowedActions($className);
+                $array = array_merge(
+                    $this->findAllowedActions($className),
+                    $this->findURLHandlers($className)
+                );
+                $this->linksAndActions['Actions'][$className] = $array;
             }
         }
 
@@ -287,22 +291,50 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     protected function findAllowedActions($className): array
     {
         $allowedActions = Config::inst()->get($className, 'allowed_actions', Config::UNINHERITED);
-        $array = [];
-        if (is_array($allowedActions)) {
-            if($this->isAssociativeArray($allowedActions)) {
-                $array = array_keys($allowedActions);
-            } else {
-                $array = $allowedActions;
+        $array = $this->getBestArray($allowedActions);
+        $array = $this->removeURLsWithDollars($array);
+
+        return $array;
+    }
+
+    /**
+     * @param  string $className
+     * @return array
+     */
+    protected function findURLHandlers($className): array
+    {
+        $urlHandlers = Config::inst()->get($className, 'url_handlers', Config::UNINHERITED);
+        $array = $this->getBestArray($urlHandlers);
+        $array = $this->removeURLsWithDollars($array);
+
+        return $array;
+    }
+
+    protected function getBestArray($array) : array
+    {
+        if (is_array($array)) {
+            if($this->isAssociativeArray($array)) {
+                $array = array_keys($array);
             }
+        } else {
+            $array = [];
         }
+
+        return $array;
+    }
+
+    protected function removeURLsWithDollars(array $array) : array
+    {
         //below does not work...
         foreach($array as $key => $value) {
             if(strpos($value, '$') !== false) {
                 unset($array[$key]);
             }
         }
+
         return $array;
     }
+
 
     private function isAssociativeArray(array $arr) : bool
     {
