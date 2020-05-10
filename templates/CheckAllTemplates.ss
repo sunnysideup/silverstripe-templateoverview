@@ -12,7 +12,10 @@
 </head>
 <body>
     <div>
-        <a href="#" class="start btn">Start</a>
+        <% if $HasEnvironmentVariable %><a href="#" class="start btn">Start</a><% else %>
+            <span style="color: red">You must set the <strong>SS_ALLOW_SMOKE_TEST</strong> environment variable to <strong>TRUE</strong> to run the tests below!</span>
+        <% end_if %>
+        or open <a href="/dev/tasks/smoketest/?htmllist=1" target="_blank">basic list</a>
     </div>
     <p class="stats">
         <strong>Tests Done:</strong> <span id="NumberOfTests">0</span>,

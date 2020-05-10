@@ -12,6 +12,7 @@ use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
 use SilverStripe\View\SSViewer;
 use SilverStripe\View\ViewableData;
+use SilverStripe\Core\Environment;
 
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 
@@ -47,10 +48,19 @@ class CheckAllTemplates extends BuildTask
             return Security::permissionFailure();
         }
 
-        $count = 0;
-
         $allLinks = Injector::inst()->get(AllLinks::class)->getAllLinks();
+        if(! empty($_GET['htmllist'])) {
+            return $this->htmlListOutput($allLinks);
+        }
 
+        $this->defaultOutput($allLinks);
+    }
+
+
+    protected function defaultOutput(array $allLinks)
+    {
+
+        $count = 0;
         $sections = ['allNonCMSLinks', 'allCMSLinks'];
         $links = ArrayList::create();
 
@@ -82,14 +92,30 @@ class CheckAllTemplates extends BuildTask
 
         $template = new SSViewer('CheckAllTemplates');
 
-        print $template->process(
+        echo $template->process(
             ViewableData::create(),
             [
                 'Title' => $this->title,
                 'Links' => $links,
                 'OtherLinks' => $otherLinks,
                 'AbsoluteBaseURLMinusSlash' => trim(Director::absoluteBaseURL(), '/'),
+                'HasEnvironmentVariable' => (Environment::getEnv('SS_ALLOW_SMOKE_TEST') ? true : false),
             ]
         );
     }
+
+    protected function htmlListOutput(array $allLinks)
+    {
+        foreach($allLinks as $key => $list) {
+            foreach($list as $item) {
+                if($key === 'otherLinks') {
+                    $array[] = '<a href="/'.$item['Link'].'">'.$item['Link'].' ('.$item['ClassName'].')</a>';
+                } else {
+                    $array[] = '<a href="/'.$item.'">'.$item.'</a>';
+                }
+            }
+        }
+        echo '<ol><li>'.implode('</li><li>', $array).'</li></ol>';
+    }
+
 }
