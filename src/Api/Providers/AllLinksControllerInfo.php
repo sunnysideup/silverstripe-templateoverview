@@ -287,10 +287,30 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     protected function findAllowedActions($className): array
     {
         $allowedActions = Config::inst()->get($className, 'allowed_actions', Config::UNINHERITED);
+        $array = [];
         if (is_array($allowedActions)) {
-            return $allowedActions;
+            if($this->isAssociativeArray($allowedActions)) {
+                $array = array_keys($allowedActions);
+            } else {
+                $array = $allowedActions;
+            }
         }
-        return [];
+        //below does not work...
+        foreach($array as $key => $value) {
+            if(strpos($value, '$') !== false) {
+                unset($array[$key]);
+            }
+        }
+        return $array;
+    }
+
+    private function isAssociativeArray(array $arr) : bool
+    {
+        if ([] === $arr) {
+            return false;
+        }
+
+        return array_keys($arr) !== range(0, count($arr) - 1);
     }
 
     /**
