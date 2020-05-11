@@ -98,23 +98,34 @@ class CheckAllTemplates extends BuildTask
                 'Title' => $this->title,
                 'Links' => $links,
                 'OtherLinks' => $otherLinks,
-                'AbsoluteBaseURLMinusSlash' => trim(Director::absoluteBaseURL(), '/'),
+                'AbsoluteBaseURLMinusSlash' => $this->baseURL(),
                 'HasEnvironmentVariable' => (Environment::getEnv('SS_ALLOW_SMOKE_TEST') ? true : false),
             ]
         );
     }
 
+    protected function baseURL()
+    {
+        return trim(Director::absoluteBaseURL(), '/');
+    }
+
     protected function htmlListOutput(array $allLinks)
     {
+        $base = $this->baseURL();
         foreach($allLinks as $key => $list) {
             foreach($list as $item) {
+
                 if($key === 'otherLinks') {
-                    $array[] = '<a href="/'.$item['Link'].'">'.$item['Link'].' ('.$item['ClassName'].')</a>';
+                    $link = $base.$item['Link'];
+                    $title = $base.$item['Link'];
                 } else {
-                    $array[] = '<a href="/'.$item.'">'.$item.'</a>';
+                    $link = $base.$item;
+                    $title = $base.$item;
                 }
+                $array[$link] = '<a href="'.$link.'">'.$title.'</a>';
             }
         }
+        ksort($array);
         echo '<ol><li>'.implode('</li><li>', $array).'</li></ol>';
     }
 

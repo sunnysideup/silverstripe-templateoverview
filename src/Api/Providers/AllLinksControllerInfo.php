@@ -94,6 +94,9 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             if (substr($link, -1) !== '/') {
                 $link .= '/';
             }
+            if (substr($link, 0, 1) !== '/') {
+                $link = '/' . $link;
+            }
             if (is_array($methods)) {
                 foreach ($methods as $method) {
                     unset($allowedActions[$className][$method]);
@@ -291,10 +294,8 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     protected function findAllowedActions($className): array
     {
         $allowedActions = Config::inst()->get($className, 'allowed_actions', Config::UNINHERITED);
-        $array = $this->getBestArray($allowedActions);
-        $array = $this->removeURLsWithDollars($array);
 
-        return $array;
+        return $this->getBestArray($allowedActions);
     }
 
     /**
@@ -304,10 +305,8 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     protected function findURLHandlers($className): array
     {
         $urlHandlers = Config::inst()->get($className, 'url_handlers', Config::UNINHERITED);
-        $array = $this->getBestArray($urlHandlers);
-        $array = $this->removeURLsWithDollars($array);
 
-        return $array;
+        return $this->getBestArray($urlHandlers);
     }
 
     protected function getBestArray($array) : array
@@ -318,18 +317,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             }
         } else {
             $array = [];
-        }
-
-        return $array;
-    }
-
-    protected function removeURLsWithDollars(array $array) : array
-    {
-        //below does not work...
-        foreach($array as $key => $value) {
-            if(strpos($value, '$') !== false) {
-                unset($array[$key]);
-            }
         }
 
         return $array;
@@ -361,6 +348,8 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                 }
             }
         }
+        $link = '/'.$link.'/';
+        $link = str_replace('//', '/', $link);
 
         return $link;
     }
