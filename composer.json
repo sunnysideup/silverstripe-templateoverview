@@ -29,11 +29,11 @@
         "expose": [
             "client/javascript",
             "client/css"
-        ],
-        "autoload": {
-            "psr-4": {
-                "Sunnysideup\\TemplateOverview\\": "src/"
-            }
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "Sunnysideup\\TemplateOverview\\": "src/"
         }
     },
     "prefer-stable": true,
