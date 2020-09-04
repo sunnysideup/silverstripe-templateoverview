@@ -1,18 +1,18 @@
 <?php
 
 namespace Sunnysideup\TemplateOverview\Api\Providers;
-use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
-use Sunnysideup\TemplateOverview\Api\AllLinks;
+
 use SilverStripe\Admin\CMSMenu;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\VersionedAdmin\ArchiveAdmin;
+use Sunnysideup\TemplateOverview\Api\AllLinks;
+use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 
 class AllLinksArchiveAdmin extends AllLinksProviderBase
 {
-
     /**
      * List of alternative links for modeladmins
      * e.g. 'admin/archive' => 'CMSEditLinkForTestPurposesNOTINUSE'
@@ -78,10 +78,9 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
                 //needs to stay here for exception!
                 $links[] = $modelLink;
                 if ($item) {
-                    if(is_subclass_of($model, SiteTree::class) || $model === SiteTree::class){
+                    if (is_subclass_of($model, SiteTree::class) || $model === SiteTree::class) {
                         $links[] = $modelLink . 'EditForm/field/Pages/item/' . $item->ID . '/view/';
-                    }
-                    else {
+                    } else {
                         $links[] = $modelLink . 'EditForm/field/Others/item/' . $item->ID . '/view/';
                     }
                 }

@@ -1,27 +1,26 @@
 <?php
 
 namespace Sunnysideup\TemplateOverview\Api\Providers;
-use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
-use Sunnysideup\TemplateOverview\Api\AllLinks;
 
 use ReflectionClass;
+
 use ReflectionMethod;
-
-
 use SilverStripe\Admin\LeftAndMain;
+
+
 use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
-
 use SilverStripe\ORM\DataObject;
+
 use SilverStripe\ORM\DB;
+use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 
 class AllLinksControllerInfo extends AllLinksProviderBase
 {
-
     /**
      * @var array
      */
@@ -68,7 +67,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
         return $this;
     }
-
 
     /**
      * @return array
@@ -309,10 +307,10 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         return $this->getBestArray($urlHandlers);
     }
 
-    protected function getBestArray($array) : array
+    protected function getBestArray($array): array
     {
         if (is_array($array)) {
-            if($this->isAssociativeArray($array)) {
+            if ($this->isAssociativeArray($array)) {
                 $array = array_keys($array);
             }
         } else {
@@ -320,16 +318,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         }
 
         return $array;
-    }
-
-
-    private function isAssociativeArray(array $arr) : bool
-    {
-        if ([] === $arr) {
-            return false;
-        }
-
-        return array_keys($arr) !== range(0, count($arr) - 1);
     }
 
     /**
@@ -348,10 +336,8 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                 }
             }
         }
-        $link = '/'.$link.'/';
-        $link = str_replace('//', '/', $link);
-
-        return $link;
+        $link = '/' . $link . '/';
+        return str_replace('//', '/', $link);
     }
 
     /**
@@ -361,7 +347,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     protected function findControllerLink($className): string
     {
         $object = $this->findDataRecord($className);
-        if ($object && $object->hasMethod('Link')){
+        if ($object && $object->hasMethod('Link')) {
             $tmp = $object->Link();
             $tmpArray = explode('?', $tmp);
             return $tmpArray[0];
@@ -425,5 +411,14 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         }
 
         return '';
+    }
+
+    private function isAssociativeArray(array $arr): bool
+    {
+        if ($arr === []) {
+            return false;
+        }
+
+        return array_keys($arr) !== range(0, count($arr) - 1);
     }
 }

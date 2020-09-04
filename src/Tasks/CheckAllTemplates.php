@@ -3,6 +3,7 @@
 namespace Sunnysideup\TemplateOverview\Tasks;
 
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\ArrayList;
@@ -12,7 +13,6 @@ use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
 use SilverStripe\View\SSViewer;
 use SilverStripe\View\ViewableData;
-use SilverStripe\Core\Environment;
 
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 
@@ -49,17 +49,15 @@ class CheckAllTemplates extends BuildTask
         }
 
         $allLinks = Injector::inst()->get(AllLinks::class)->getAllLinks();
-        if(! empty($_GET['htmllist'])) {
+        if (! empty($_GET['htmllist'])) {
             return $this->htmlListOutput($allLinks);
         }
 
         $this->defaultOutput($allLinks);
     }
 
-
     protected function defaultOutput(array $allLinks)
     {
-
         $count = 0;
         $sections = ['allNonCMSLinks', 'allCMSLinks'];
         $links = ArrayList::create();
@@ -112,21 +110,19 @@ class CheckAllTemplates extends BuildTask
     protected function htmlListOutput(array $allLinks)
     {
         $base = $this->baseURL();
-        foreach($allLinks as $key => $list) {
-            foreach($list as $item) {
-
-                if($key === 'otherLinks') {
-                    $link = $base.$item['Link'];
-                    $title = $base.$item['Link'];
+        foreach ($allLinks as $key => $list) {
+            foreach ($list as $item) {
+                if ($key === 'otherLinks') {
+                    $link = $base . $item['Link'];
+                    $title = $base . $item['Link'];
                 } else {
-                    $link = $base.$item;
-                    $title = $base.$item;
+                    $link = $base . $item;
+                    $title = $base . $item;
                 }
-                $array[$link] = '<a href="'.$link.'">'.$title.'</a>';
+                $array[$link] = '<a href="' . $link . '">' . $title . '</a>';
             }
         }
         ksort($array);
-        echo '<ol><li>'.implode('</li><li>', $array).'</li></ol>';
+        echo '<ol><li>' . implode('</li><li>', $array) . '</li></ol>';
     }
-
 }

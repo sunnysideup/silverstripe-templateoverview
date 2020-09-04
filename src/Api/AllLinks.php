@@ -2,35 +2,25 @@
 
 namespace Sunnysideup\TemplateOverview\Api;
 
-use ReflectionClass;
+use SilverStripe\Admin\CMSMenu;
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\DB;
 
+
+
+
+use SilverStripe\Versioned\Versioned;
+use Sunnysideup\TemplateOverview\Api\Providers\AllLinksArchiveAdmin;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksControllerInfo;
+
+
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksDataObjects;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksModelAdmin;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksReports;
 
-
-
-
-use SilverStripe\Admin\CMSMenu;
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Control\Director;
-use SilverStripe\Core\ClassInfo;
-use SilverStripe\Core\Config\Configurable;
-use SilverStripe\Core\Extensible;
-use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\Core\Injector\Injector;
-
-
-use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\DB;
-use SilverStripe\Versioned\Versioned;
-use Sunnysideup\TemplateOverview\Api\Providers\AllLinksArchiveAdmin;
-
 class AllLinks extends AllLinksProviderBase
 {
-
-
     /**
      * @var array
      */
@@ -143,9 +133,8 @@ class AllLinks extends AllLinksProviderBase
      * returns an array of allNonCMSLinks => [] , allCMSLinks => [], otherControllerMethods => []
      * @return array
      */
-    public function getAllLinks() : array
+    public function getAllLinks(): array
     {
-
         foreach ($this->Config()->get('custom_links') as $link) {
             $link = '/' . ltrim($link, '/') . '/';
             if (self::is_admin_link($link)) {
@@ -221,6 +210,7 @@ class AllLinks extends AllLinksProviderBase
 
         return $obj->getAllLinksInner();
     }
+
     /**
      * @return array
      */
@@ -299,7 +289,6 @@ class AllLinks extends AllLinksProviderBase
         return $return;
     }
 
-
     /**
      * returns a list of all reports
      * @return array
@@ -327,7 +316,7 @@ class AllLinks extends AllLinksProviderBase
             }
             $pushItem = self::sanitise_class_name($pushItem);
             $pushItem = '/' . Director::makeRelative($pushItem);
-            if($pushItem) {
+            if ($pushItem) {
                 if (! empty($excludeList)) {
                     foreach ($excludeList as $excludeItem) {
                         if (stripos($pushItem, $excludeItem) !== false) {
@@ -342,6 +331,4 @@ class AllLinks extends AllLinksProviderBase
         }
         return $array;
     }
-
-
 }

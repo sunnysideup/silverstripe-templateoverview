@@ -1,21 +1,19 @@
 <?php
 
 namespace Sunnysideup\TemplateOverview\Api\Providers;
-use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
-use Sunnysideup\TemplateOverview\Api\AllLinks;
+
 use SilverStripe\Admin\CMSMenu;
 use SilverStripe\Admin\ModelAdmin;
-use SilverStripe\Core\Config\Configurable;
-
-use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
+
 use SilverStripe\ORM\DB;
 use SilverStripe\VersionedAdmin\ArchiveAdmin;
+use Sunnysideup\TemplateOverview\Api\AllLinks;
+use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 
 class AllLinksModelAdmin extends AllLinksProviderBase
 {
-
     /**
      * List of alternative links for modeladmins
      * e.g. 'admin/archive' => 'CMSEditLinkForTestPurposesNOTINUSE'
@@ -28,7 +26,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
     {
         $links = [];
         $modelAdmins = CMSMenu::get_cms_classes(ModelAdmin::class);
-        unset($modelAdmins[array_search(ArchiveAdmin::class, $modelAdmins)]);
+        unset($modelAdmins[array_search(ArchiveAdmin::class, $modelAdmins, true)]);
         if (! empty($modelAdmins)) {
             foreach ($modelAdmins as $modelAdmin) {
                 $obj = Injector::inst()->get($modelAdmin);

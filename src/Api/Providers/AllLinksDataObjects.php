@@ -1,30 +1,19 @@
 <?php
 
 namespace Sunnysideup\TemplateOverview\Api\Providers;
-use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
-use Sunnysideup\TemplateOverview\Api\AllLinks;
-use ReflectionClass;
-use ReflectionMethod;
 
-
-
-
-use SilverStripe\Admin\LeftAndMain;
-use SilverStripe\CMS\Controllers\ContentController;
-use SilverStripe\Control\Controller;
-use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
-use SilverStripe\Core\Config\Config;
-use SilverStripe\Core\Injector\Injector;
+
+
+
 
 use SilverStripe\ORM\DataObject;
+
 use SilverStripe\ORM\DB;
+use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 
 class AllLinksDataObjects extends AllLinksProviderBase
 {
-
-
-
     /**
      * @param bool $inCMS
      *
@@ -61,7 +50,7 @@ class AllLinksDataObjects extends AllLinksProviderBase
                                     $return[] = $obj->PreviewLink();
                                 }
                             } else {
-                                if ($obj->hasMethod('Link')&& !isset($obj->LinkID)) {
+                                if ($obj->hasMethod('Link') && ! isset($obj->LinkID)) {
                                     $return[] = $obj->Link();
                                 }
                                 if ($obj->hasMethod('getLink')) {

@@ -6,11 +6,8 @@
 
 namespace Sunnysideup\TemplateOverview;
 
-use \Page;
-
 use \PageController;
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
@@ -49,7 +46,7 @@ class TemplateOverviewPageController extends PageController
                 PrettyPhoto::include_code();
             }
             //user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
-        } else{
+        } else {
             return Security::permissionFailure();
         }
     }
