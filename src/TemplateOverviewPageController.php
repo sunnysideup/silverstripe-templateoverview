@@ -65,6 +65,7 @@ class TemplateOverviewPageController extends PageController
     public function showmore($request)
     {
         $id = $request->param('ID');
+        /** @var SiteTree|null */
         $obj = SiteTree::get()->byID(intval($id));
         if ($obj) {
             $className = $obj->ClassName;
@@ -121,9 +122,11 @@ class TemplateOverviewPageController extends PageController
             $list = $this->ListOfAllSiteTreeClasses();
             foreach ($list as $item) {
                 $config = Config::inst();
+
+                /** @var array */
                 $listOfImages = $config->get($item->ClassName, 'has_one')
-                 + $config->get($item->ClassName, 'has_many')
-                 + $config->get($item->ClassName, 'many_many');
+                    + $config->get($item->ClassName, 'has_many')
+                    + $config->get($item->ClassName, 'many_many');
                 foreach ($listOfImages as $fieldName => $potentialImage) {
                     $innerSingleton = singleton($potentialImage);
                     if ($innerSingleton instanceof $classWeAreLookingFor) {

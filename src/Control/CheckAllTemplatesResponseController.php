@@ -189,11 +189,11 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         }
         //Make temporary admin member
         $filter = ['Email' => self::get_user_email()];
+        /** @var Member|null */
         $this->member = Member::get()
             ->filter($filter)
             ->first();
-        if ($this->member) {
-        } else {
+        if (empty($this->member)) {
             $this->member = Member::create($filter);
         }
         $this->member->Password = self::get_password();
@@ -219,9 +219,11 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     }
 
     /**
-     * @return
+     * @param string $url
+     *
+     * @return mixed
      */
-    protected function guzzleSendRequest($url)
+    protected function guzzleSendRequest(string $url)
     {
         $this->guzzleHasError = false;
         $credentials = base64_encode(self::get_user_email() . ':' . self::get_password());
