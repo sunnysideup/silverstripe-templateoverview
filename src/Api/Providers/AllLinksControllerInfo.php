@@ -221,7 +221,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     /**
      * @param  string $className
-     * @return string
+     * @return DataObject
      */
     protected function findSingleton($className)
     {
