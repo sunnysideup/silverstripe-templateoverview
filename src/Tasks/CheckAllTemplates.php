@@ -110,7 +110,7 @@ class CheckAllTemplates extends BuildTask
     protected function htmlListOutput(array $allLinks)
     {
         $base = $this->baseURL();
-        $array= [];
+        $array = [];
         foreach ($allLinks as $key => $list) {
             foreach ($list as $item) {
                 if ($key === 'otherLinks') {
@@ -123,7 +123,7 @@ class CheckAllTemplates extends BuildTask
                 $array[$link] = '<a href="' . $link . '">' . $title . '</a>';
             }
         }
-        if(count($array)) {
+        if (count($array)) {
             ksort($array);
             echo '<ol><li>' . implode('</li><li>', $array) . '</li></ol>';
         } else {
