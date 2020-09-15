@@ -86,7 +86,7 @@ class CheckAllTemplates extends BuildTask
 
         Requirements::javascript('https://code.jquery.com/jquery-3.3.1.min.js');
         Requirements::javascript('sunnysideup/templateoverview:client/javascript/checkalltemplates.js');
-        Requirements::css('sunnysideup/templateoverview:client/css/checkalltemplates.css');
+        Requirements::themedCSS('client/css/checkalltemplates');
 
         $template = new SSViewer('CheckAllTemplates');
 
