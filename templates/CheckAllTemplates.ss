@@ -58,8 +58,14 @@
     <p>
         By adding a public method <i>templateoverviewtests</i> to any controller or page,
         returning an array of links, they will be included in the list here.
+        Alternatively, you can add links via yml:
     </p>
-
+    <pre>
+Sunnysideup\TemplateOverview\Api\AllLinks:
+  custom_links:
+    - /some-other-link-you-want-to-test-1/
+    - /some-other-link-you-want-to-test-2/
+    </pre>
     <% if $OtherLinks %>
     <h3>Suggestions</h3>
     <p>Below is a list of suggested controller links.</p>
