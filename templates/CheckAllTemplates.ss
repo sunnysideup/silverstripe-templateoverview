@@ -61,7 +61,7 @@
         Alternatively, you can add links via yml:
     </p>
     <pre>
-Sunnysideup\TemplateOverview\Api\AllLinks:
+Sunnysideup\\TemplateOverview\\Api\\AllLinks:
   custom_links:
     - /some-other-link-you-want-to-test-1/
     - /some-other-link-you-want-to-test-2/
