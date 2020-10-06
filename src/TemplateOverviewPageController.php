@@ -41,7 +41,7 @@ class TemplateOverviewPageController extends PageController
         if (Director::is_cli() || Director::isDev() || Permission::check('ADMIN')) {
             Requirements::javascript('//code.jquery.com/jquery-1.7.2.min.js');
             Requirements::javascript('sunnysideup/templateoverview: client/javascript/TemplateOverviewPage.js');
-            Requirements::themedCSS('client/css/TemplateOverviewPage.css');
+            Requirements::themedCSS('client/css/TemplateOverviewPage');
             if (class_exists(PrettyPhoto::class)) {
                 PrettyPhoto::include_code();
             }
