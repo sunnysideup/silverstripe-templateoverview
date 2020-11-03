@@ -11,6 +11,7 @@ use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
+use SilverStripe\View\ViewableData;
 use SilverStripe\View\SSViewer;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
