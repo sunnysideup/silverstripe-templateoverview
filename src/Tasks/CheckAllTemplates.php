@@ -16,7 +16,6 @@ use SilverStripe\View\SSViewer;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\View\ViewableData;
 
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 
