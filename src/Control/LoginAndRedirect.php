@@ -9,6 +9,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Security\MemberAuthenticator\CookieAuthenticationHandler;
+use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\Security;
 
 class LoginAndRedirect extends Controller
@@ -26,6 +27,7 @@ class LoginAndRedirect extends Controller
         $url = $request->getVar('BackURL');
         $member = CheckAllTemplatesResponseController::get_test_user();
         Security::setCurrentUser($member);
+        // Injector::inst()->get(IdentityStore::class)->logIn($member, true);
         Injector::inst()->get(CookieAuthenticationHandler::class)
             ->logIn($member, $persist = true);
         // die($url);
