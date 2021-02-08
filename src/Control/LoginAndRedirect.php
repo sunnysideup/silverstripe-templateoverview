@@ -8,8 +8,8 @@ use SilverStripe\Control\Util\IPUtils;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Security\MemberAuthenticator\CookieAuthenticationHandler;
 use SilverStripe\Security\IdentityStore;
+use SilverStripe\Security\MemberAuthenticator\CookieAuthenticationHandler;
 use SilverStripe\Security\Security;
 
 class LoginAndRedirect extends Controller
