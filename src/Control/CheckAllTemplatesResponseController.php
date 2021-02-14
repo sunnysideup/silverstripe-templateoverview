@@ -26,6 +26,7 @@ use SilverStripe\Security\Permission;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 use Sunnysideup\TemplateOverview\Api\DiffMachine;
 use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
+use SebastianBergmann\Diff\Differ;
 
 /**
  * @description (see $this->description)
@@ -142,9 +143,9 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $content = $this->testURL($testURL);
             $this->deleteUser();
             $this->cleanup();
+            $diff = 'Please install https://github.com/Kevin-Kip/meru/';
             print $content;
             if (! Director::is_ajax()) {
-                $diff = '';
                 $comparisonBaseURL = Config::inst()->get(self::class, 'comparision_base_url');
                 $width = '98%';
                 $style = 'border: none;';
@@ -155,18 +156,20 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                         $otherURL = $comparisonBaseURL . $testURL;
                         $testContent = str_replace(Director::absoluteBaseURL(), $comparisonBaseURL, $this->rawResponse);
                         $rawResponseOtherSite = @file_get_contents($otherURL);
-                        $diff = DiffMachine::compare(
-                            $testContent,
-                            $rawResponseOtherSite
-                        );
-                        $rawResponseOtherSite = Convert::raw2htmlatt(str_replace('\'', '\\\'', $rawResponseOtherSite));
-                        $diff = '
-                        <iframe id="iframe2" width="' . $width . '%" height="7000" srcdoc=\'' . $rawResponseOtherSite . '\' style="float: right;"></iframe>
+                        if(class_exists(Differ)) {
+                            $diff = (new Differ)->diff(
+                                $testContent,
+                                $rawResponseOtherSite
+                            );
+                            $rawResponseOtherSite = Convert::raw2htmlatt(str_replace('\'', '\\\'', $rawResponseOtherSite));
+                            $diff = '
+                            <iframe id="iframe2" width="' . $width . '%" height="7000" srcdoc=\'' . $rawResponseOtherSite . '\' style="float: right;"></iframe>
 
-                        <hr style="clear: both; margin-top: 20px; padding-top: 20px;" />
-                        <h1>Diff</h1>
-                        <link href="/resources/vendor/sunnysideup/templateoverview/client/css/checkalltemplates.css" rel="stylesheet" type="text/css" />
-                        ' . $diff;
+                            <hr style="clear: both; margin-top: 20px; padding-top: 20px;" />
+                            <h1>Diff</h1>
+                            <link href="/resources/vendor/sunnysideup/templateoverview/client/css/checkalltemplates.css" rel="stylesheet" type="text/css" />
+                            ' . $diff;
+                        }
                     }
                 }
                 $rawResponse = Convert::raw2htmlatt(str_replace('\'', '\\\'', $this->rawResponse));

@@ -25,6 +25,9 @@
         "guzzlehttp/guzzle": "^6",
         "sebastian/diff": "*"
     },
+    "suggest": {
+        "sebastian/diff": "Show diff for html files"
+    },
     "extra": {
         "expose": [
             "client/javascript",
