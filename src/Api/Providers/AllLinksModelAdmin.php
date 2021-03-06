@@ -21,6 +21,14 @@ class AllLinksModelAdmin extends AllLinksProviderBase
      * @var array
      */
     private static $model_admin_alternatives = [];
+    /**
+     * e.g. Search => Replace
+     * @var array
+     */
+    private static $replacers = [
+        '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor' =>
+            '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/QueuedJobDescriptor/'
+    ];
 
     public function getAllLinksInner(): array
     {
@@ -52,11 +60,12 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                 }
             }
         }
+        $links = $this->runReplacements($links);
 
         return $links;
     }
 
-    protected function workOutLinksForModel($modelAdminSingleton, $model, $modelAdminLink, $modelAdmin)
+    protected function workOutLinksForModel($modelAdminSingleton, string $model, string $modelAdminLink, string $modelAdmin)
     {
         $links = [];
         $sanitizedModel = AllLinks::sanitise_class_name($model);
@@ -96,7 +105,18 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                 }
             }
         }
+        return $links;
+    }
+
+    protected function runReplacements(array $links) : array
+    {
+        foreach($this->Config()->get('replacers') as $search => $replace) {
+            foreach($links as $key => $link) {
+                $links[$key] = str_replace($search, $replace, $link);
+            }
+        }
 
         return $links;
     }
+
 }
