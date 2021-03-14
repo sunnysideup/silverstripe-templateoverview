@@ -142,8 +142,9 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $content = $this->testURL($testURL);
             $this->deleteUser();
             $this->cleanup();
-            $diff = 'Please install https://github.com/Kevin-Kip/meru/';
-            print $content;
+            $diff = 'Please install https://github.com/Kevin-Kip/meru/ to see diff.';
+            //these echo is required!
+            echo $content;
             if (! Director::is_ajax()) {
                 $comparisonBaseURL = Config::inst()->get(self::class, 'comparision_base_url');
                 $width = '98%';
@@ -174,9 +175,11 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                 $rawResponse = Convert::raw2htmlatt(str_replace('\'', '\\\'', $this->rawResponse));
                 echo '
                     <h1>Response</h1>
-                    <iframe id="iframe" width="' . $width . '%" height="7000" srcdoc=\'' . $rawResponse . '\' style="' . $style . '"></iframe>
                 ';
                 echo $diff;
+                echo '
+                    <iframe id="iframe" width="' . $width . '" height="700" srcdoc=\'' . $rawResponse . '\' style="' . $style . '"></iframe>
+                ';
             }
             return;
         }
@@ -287,6 +290,8 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             'httpResponse' => '200',
             'content' => '',
             'responseTime' => round($end - $start, 4),
+            'type' => '',
+            'length' => '',
             'w3Content' => '',
         ];
 
@@ -311,8 +316,8 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         if ($this->rawResponse && substr($this->rawResponse, 0, 12) === 'Fatal error') {
             $data['status'] = 'error';
             $data['content'] = $this->rawResponse;
-        } elseif ($httpResponse === 200 && $this->rawResponse && strlen($this->rawResponse) < 500) {
-            $data['status'] = 'error';
+        } elseif ($httpResponse === 200 && $this->rawResponse && strlen($this->rawResponse) < 200) {
+            $data['status'] = 'error - no response';
             $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
         }
 
@@ -323,6 +328,8 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $data['content'] .= 'unexpected response: ' . $error . $this->rawResponse;
         } else {
             $this->isSuccess = true;
+            $data['type'] = $response->getHeaders()['Content-Type'][0] ?? 'no-content-type';
+            $data['length'] = $response->getHeaders()['Content-Length'][0] ?? '0';
             if ($validate) {
                 $w3Obj = new W3cValidateApi();
                 $data['w3Content'] = $w3Obj->W3Validate('', $this->rawResponse);
@@ -338,6 +345,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         $content .= '<p><strong>HTTP response:</strong> ' . $data['httpResponse'] . '</p>';
         $content .= '<p><strong>Content:</strong> ' . htmlspecialchars($data['content']) . '</p>';
         $content .= '<p><strong>Response time:</strong> ' . $data['responseTime'] . '</p>';
+        $content .= '<p><strong>Type:</strong> ' . $data['type'] . '</p>';
         $content .= '<p><strong>W3 Content:</strong> ' . $data['w3Content'] . '</p>';
 
         return $content;

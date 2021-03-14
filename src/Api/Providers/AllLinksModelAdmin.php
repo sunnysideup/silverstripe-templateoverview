@@ -21,6 +21,14 @@ class AllLinksModelAdmin extends AllLinksProviderBase
      * @var array
      */
     private static $model_admin_alternatives = [];
+    /**
+     * e.g. Search => Replace
+     * @var array
+     */
+    private static $replacers = [
+        '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor' =>
+            '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/QueuedJobDescriptor/'
+    ];
 
     public function getAllLinksInner(): array
     {
@@ -29,13 +37,13 @@ class AllLinksModelAdmin extends AllLinksProviderBase
         unset($modelAdmins[array_search(ArchiveAdmin::class, $modelAdmins, true)]);
         if (! empty($modelAdmins)) {
             foreach ($modelAdmins as $modelAdmin) {
-                $obj = Injector::inst()->get($modelAdmin);
-                $modelAdminLink = '/' . $obj->Link();
+                $modelAdminSingleton = Injector::inst()->get($modelAdmin);
+                $modelAdminLink = '/' . $modelAdminSingleton->Link();
                 $modelAdminLinkArray = explode('?', $modelAdminLink);
                 $modelAdminLink = $modelAdminLinkArray[0];
                 //$extraVariablesLink = $modelAdminLinkArray[1];
                 $links[] = $modelAdminLink;
-                $modelsToAdd = $obj->getManagedModels();
+                $modelsToAdd = $modelAdminSingleton->getManagedModels();
                 if ($modelsToAdd && count($modelsToAdd)) {
                     foreach ($modelsToAdd as $key => $model) {
                         if (is_array($model) || ! is_subclass_of($model, DataObject::class)) {
@@ -46,17 +54,18 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                         }
                         $links = array_merge(
                             $links,
-                            $this->workOutLinksForModel($obj, $model, $modelAdminLink, $modelAdmin)
+                            $this->workOutLinksForModel($modelAdminSingleton, $model, $modelAdminLink, $modelAdmin)
                         );
                     }
                 }
             }
         }
+        $links = $this->runReplacements($links);
 
         return $links;
     }
 
-    protected function workOutLinksForModel($obj, $model, $modelAdminLink, $modelAdmin)
+    protected function workOutLinksForModel($modelAdminSingleton, string $model, string $modelAdminLink, string $modelAdmin)
     {
         $links = [];
         $sanitizedModel = AllLinks::sanitise_class_name($model);
@@ -65,6 +74,11 @@ class AllLinksModelAdmin extends AllLinksProviderBase
             $item = $model::get()
                 ->sort(DB::get_conn()->random() . ' ASC')
                 ->First();
+            if ($item) {
+                $singleton = $item;
+            } else {
+                $singleton = Injector::inst()->get($modelAdmin);
+            }
             $exceptionMethod = '';
             foreach ($this->Config()->get('model_admin_alternatives') as $test => $method) {
                 if (! $method) {
@@ -81,13 +95,28 @@ class AllLinksModelAdmin extends AllLinksProviderBase
             } else {
                 //needs to stay here for exception!
                 $links[] = $modelLink;
-                $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/new/';
-                if ($item) {
-                    $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/' . $item->ID . '/edit/';
+                if($singleton->canCreate(null)) {
+                    $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/new/';
                 }
+                if ($item) {
+                    if($item->canEdit()) {
+                        $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/' . $item->ID . '/edit/';
+                    }
+                }
+            }
+        }
+        return $links;
+    }
+
+    protected function runReplacements(array $links) : array
+    {
+        foreach($this->Config()->get('replacers') as $search => $replace) {
+            foreach($links as $key => $link) {
+                $links[$key] = str_replace($search, $replace, $link);
             }
         }
 
         return $links;
     }
+
 }
