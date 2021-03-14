@@ -156,7 +156,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                         $otherURL = $comparisonBaseURL . $testURL;
                         $testContent = str_replace(Director::absoluteBaseURL(), $comparisonBaseURL, $this->rawResponse);
                         $rawResponseOtherSite = @file_get_contents($otherURL);
-                        if (class_exists(Differ)) {
+                        if (class_exists(Differ::class)) {
                             $diff = (new Differ())->diff(
                                 $testContent,
                                 $rawResponseOtherSite
