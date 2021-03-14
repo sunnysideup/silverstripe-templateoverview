@@ -21,13 +21,14 @@ class AllLinksModelAdmin extends AllLinksProviderBase
      * @var array
      */
     private static $model_admin_alternatives = [];
+
     /**
      * e.g. Search => Replace
      * @var array
      */
     private static $replacers = [
         '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor' =>
-            '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/QueuedJobDescriptor/'
+            '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/QueuedJobDescriptor/',
     ];
 
     public function getAllLinksInner(): array
@@ -60,9 +61,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                 }
             }
         }
-        $links = $this->runReplacements($links);
-
-        return $links;
+        return $this->runReplacements($links);
     }
 
     protected function workOutLinksForModel($modelAdminSingleton, string $model, string $modelAdminLink, string $modelAdmin)
@@ -95,11 +94,11 @@ class AllLinksModelAdmin extends AllLinksProviderBase
             } else {
                 //needs to stay here for exception!
                 $links[] = $modelLink;
-                if($singleton->canCreate(null)) {
+                if ($singleton->canCreate(null)) {
                     $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/new/';
                 }
                 if ($item) {
-                    if($item->canEdit()) {
+                    if ($item->canEdit()) {
                         $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/' . $item->ID . '/edit/';
                     }
                 }
@@ -108,15 +107,14 @@ class AllLinksModelAdmin extends AllLinksProviderBase
         return $links;
     }
 
-    protected function runReplacements(array $links) : array
+    protected function runReplacements(array $links): array
     {
-        foreach($this->Config()->get('replacers') as $search => $replace) {
-            foreach($links as $key => $link) {
+        foreach ($this->Config()->get('replacers') as $search => $replace) {
+            foreach ($links as $key => $link) {
                 $links[$key] = str_replace($search, $replace, $link);
             }
         }
 
         return $links;
     }
-
 }
