@@ -10,23 +10,22 @@ use GuzzleHttp\Psr7;
 
 
 use Psr\SimpleCache\CacheInterface;
+use SebastianBergmann\Diff\Differ;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Flushable;
-use SilverStripe\Core\Injector\Injector;
 
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Security\DefaultAdminService;
 use SilverStripe\Security\Member;
-use SilverStripe\Security\MemberAuthenticator\MemberAuthenticator;
 
+use SilverStripe\Security\MemberAuthenticator\MemberAuthenticator;
 use SilverStripe\Security\Permission;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
-use Sunnysideup\TemplateOverview\Api\DiffMachine;
 use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
-use SebastianBergmann\Diff\Differ;
 
 /**
  * @description (see $this->description)
@@ -156,8 +155,8 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                         $otherURL = $comparisonBaseURL . $testURL;
                         $testContent = str_replace(Director::absoluteBaseURL(), $comparisonBaseURL, $this->rawResponse);
                         $rawResponseOtherSite = @file_get_contents($otherURL);
-                        if(class_exists(Differ)) {
-                            $diff = (new Differ)->diff(
+                        if (class_exists(Differ)) {
+                            $diff = (new Differ())->diff(
                                 $testContent,
                                 $rawResponseOtherSite
                             );
