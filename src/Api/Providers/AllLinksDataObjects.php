@@ -15,8 +15,6 @@ use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 class AllLinksDataObjects extends AllLinksProviderBase
 {
     /**
-     * @param bool $inCMS
-     *
      * @return array
      */
     public function getAllLinksInner(bool $inCMS)

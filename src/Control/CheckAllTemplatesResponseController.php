@@ -127,8 +127,6 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
      * has two streams:
      * 1. check on url specified in GET variable.
      * 2. create a list of urls to check
-     *
-     * @param HTTPRequest $request
      */
     public function testone(HTTPRequest $request)
     {
@@ -194,7 +192,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         }
         //Make temporary admin member
         $filter = ['Email' => self::get_user_email()];
-        /** @var Member|null */
+        /** @var Member|null $this */
         $this->member = Member::get()
             ->filter($filter)
             ->first();
@@ -224,8 +222,6 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     }
 
     /**
-     * @param string $url
-     *
      * @return mixed
      */
     protected function guzzleSendRequest(string $url)

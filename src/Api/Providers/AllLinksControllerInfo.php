@@ -68,9 +68,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         return $this;
     }
 
-    /**
-     * @return array
-     */
+
     public function getAllLinksInner(): array
     {
         $finalFinalArray = [];
@@ -122,7 +120,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     /**
      * returns Array with Links and Actions
-     * @return array
      */
     public function getLinksAndActions(): array
     {
@@ -163,7 +160,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     /**
      * can it be used?
      * @param  string $className
-     * @return bool
      */
     protected function isValidController($className): bool
     {
@@ -264,7 +260,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     /**
      * @param  string $className
-     * @return array
      */
     protected function findCustomLinks($className): array
     {
@@ -287,7 +282,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     /**
      * @param  string $className
-     * @return array
      */
     protected function findAllowedActions($className): array
     {
@@ -298,7 +292,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     /**
      * @param  string $className
-     * @return array
      */
     protected function findURLHandlers($className): array
     {
@@ -322,7 +315,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     /**
      * @param  string $className
-     * @return string
      */
     protected function findLink($className): string
     {
@@ -342,7 +334,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     /**
      * @param  string $className
-     * @return string
      */
     protected function findControllerLink($className): string
     {
@@ -358,7 +349,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     /**
      * @param  string $className
-     * @return string
      */
     protected function findRouteLink($className): string
     {
@@ -376,7 +366,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     /**
      * @param  string $className
-     * @return string
      */
     protected function findSegmentLink($className): string
     {
@@ -392,7 +381,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     /**
      * @param  string $className
-     * @return string
      */
     protected function findMethodLink($className): string
     {

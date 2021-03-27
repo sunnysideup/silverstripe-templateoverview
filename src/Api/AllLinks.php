@@ -111,7 +111,6 @@ class AllLinks extends AllLinksProviderBase
 
     /**
      * @param  string  $link
-     * @return bool
      */
     public static function is_admin_link($link): bool
     {
@@ -131,7 +130,6 @@ class AllLinks extends AllLinksProviderBase
 
     /**
      * returns an array of allNonCMSLinks => [] , allCMSLinks => [], otherControllerMethods => []
-     * @return array
      */
     public function getAllLinks(): array
     {
@@ -200,9 +198,7 @@ class AllLinks extends AllLinksProviderBase
         return $obj->getAllLinksInner();
     }
 
-    /**
-     * @return array
-     */
+
     public function ListOfAllControllerMethods(): array
     {
         $obj = Injector::inst()->get(AllLinksControllerInfo::class);
@@ -211,9 +207,7 @@ class AllLinks extends AllLinksProviderBase
         return $obj->getAllLinksInner();
     }
 
-    /**
-     * @return array
-     */
+
     public function ListOfDataObjectsLinks(bool $inCMS): array
     {
         $obj = Injector::inst()->get(AllLinksDataObjects::class);
@@ -303,8 +297,6 @@ class AllLinks extends AllLinksProviderBase
      * Pushes an array of items to an array
      * @param array $array Array to push items to (will overwrite)
      * @param array $pushArray Array of items to push to $array.
-     *
-     * @return array
      */
     protected function addToArrayOfLinks($array, $pushArray): array
     {

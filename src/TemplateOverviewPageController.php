@@ -2,7 +2,7 @@
 
 namespace Sunnysideup\TemplateOverview;
 
-use \PageController;
+use PageController;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
@@ -65,7 +65,7 @@ class TemplateOverviewPageController extends PageController
     public function showmore($request)
     {
         $id = $request->param('ID');
-        /** @var SiteTree|null */
+        /** @var SiteTree|null $obj */
         $obj = SiteTree::get()->byID(intval($id));
         if ($obj) {
             $className = $obj->ClassName;
@@ -123,7 +123,7 @@ class TemplateOverviewPageController extends PageController
             foreach ($list as $item) {
                 $config = Config::inst();
 
-                /** @var array */
+                /** @var array $listOfImages */
                 $listOfImages = $config->get($item->ClassName, 'has_one')
                     + $config->get($item->ClassName, 'has_many')
                     + $config->get($item->ClassName, 'many_many');
