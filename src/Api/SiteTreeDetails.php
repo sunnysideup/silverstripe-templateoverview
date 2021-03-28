@@ -58,11 +58,9 @@ class SiteTreeDetails
                     }
                 }
             }
-            if (count($this->arrayOfAllClasses) > 0) {
-                foreach ($this->arrayOfAllClasses as $item) {
-                    $item->LinkingMode = $item->ClassName === $currentClassname ? 'current' : 'link';
-                    self::$list_of_all_classes->push($item);
-                }
+            foreach ($this->arrayOfAllClasses as $item) {
+                $item->LinkingMode = $item->ClassName === $currentClassname ? 'current' : 'link';
+                self::$list_of_all_classes->push($item);
             }
         }
         return self::$list_of_all_classes;
