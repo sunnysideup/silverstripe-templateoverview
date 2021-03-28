@@ -58,13 +58,9 @@ class SiteTreeDetails
                     }
                 }
             }
-            if (count($this->arrayOfAllClasses)) {
+            if (count($this->arrayOfAllClasses) > 0) {
                 foreach ($this->arrayOfAllClasses as $item) {
-                    if ($item->ClassName === $currentClassname) {
-                        $item->LinkingMode = 'current';
-                    } else {
-                        $item->LinkingMode = 'link';
-                    }
+                    $item->LinkingMode = $item->ClassName === $currentClassname ? 'current' : 'link';
                     self::$list_of_all_classes->push($item);
                 }
             }
@@ -152,7 +148,7 @@ class SiteTreeDetails
      */
     protected function createPageObject($obj, $count)
     {
-        $this->counter++;
+        ++$this->counter;
         $listArray = [];
         $indexNumber = (10000 * $count) + $this->counter;
         $listArray['indexNumber'] = $indexNumber;
@@ -165,11 +161,7 @@ class SiteTreeDetails
         $listArray['PreviewLink'] = $obj->PreviewLink();
         $listArray['CMSEditLink'] = $obj->CMSEditLink();
         $staticIcon = Config::inst()->get($obj->ClassName, 'icon');
-        if (is_array($staticIcon)) {
-            $icon = $staticIcon[0];
-        } else {
-            $icon = $staticIcon;
-        }
+        $icon = is_array($staticIcon) ? $staticIcon[0] : $staticIcon;
         $iconFile = Director::baseFolder() . '/' . $icon;
         if (! file_exists($iconFile)) {
             $icon .= '-file.gif';

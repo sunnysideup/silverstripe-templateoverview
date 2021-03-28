@@ -48,7 +48,7 @@ class W3cValidateApi
         if ($this->errorCount) {
             $errorDescription = ' - ' . $this->errorCount . 'errors: ';
             if ($this->showErrors) {
-                if (count($this->errorList)) {
+                if (count($this->errorList) > 0) {
                     $errorDescription .= '<ul style="display: none;"><li>' . implode('</li><li>', $this->errorList) . '</li></ul>';
                 }
             } else {
@@ -76,7 +76,7 @@ class W3cValidateApi
 
     private function setFragment($fragment)
     {
-        $fragment = preg_replace('/\s+/', ' ', $fragment);
+        $fragment = preg_replace('#\s+#', ' ', $fragment);
         $this->fragment = $fragment;
     }
 
@@ -123,7 +123,7 @@ class W3cValidateApi
 
                 //valid ??
                 $nodes = $doc->xpath('//m:markupvalidationresponse/m:validity');
-                $this->validResult = strval($nodes[0]) === 'true' ? true : false;
+                $this->validResult = strval($nodes[0]) === 'true';
 
                 //error count ??
                 $nodes = $doc->xpath('//m:markupvalidationresponse/m:errors/m:errorcount');
@@ -140,7 +140,7 @@ class W3cValidateApi
                     //message
                     $nodes = $node->xpath('m:message');
                     $message = strval($nodes[0]);
-                    $this->errorList[] = $message . "(${line},${col})";
+                    $this->errorList[] = $message . "({$line},{$col})";
                 }
             }
         }

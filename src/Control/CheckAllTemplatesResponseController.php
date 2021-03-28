@@ -57,9 +57,9 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
     private static $create_diff = false;
 
-    private $guzzleCookieJar = null;
+    private $guzzleCookieJar;
 
-    private $guzzleClient = null;
+    private $guzzleClient;
 
     private $guzzleHasError = false;
 
@@ -69,7 +69,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
      * temporary Admin used to log in.
      * @var Member
      */
-    private $member = null;
+    private $member;
 
     private $rawResponse = '';
 
@@ -130,7 +130,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
      */
     public function testone(HTTPRequest $request)
     {
-        $isCMSLink = $request->getVar('iscmslink') ? true : false;
+        $isCMSLink = (bool) $request->getVar('iscmslink');
         $testURL = $request->getVar('test') ?: null;
 
         // 1. actually test a URL and return the data
@@ -139,7 +139,6 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $this->getTestUser();
             $content = $this->testURL($testURL);
             $this->deleteUser();
-            $this->cleanup();
             $diff = 'Please install https://github.com/Kevin-Kip/meru/ to see diff.';
             //these echo is required!
             echo $content;
@@ -159,7 +158,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                                 $testContent,
                                 $rawResponseOtherSite
                             );
-                            $rawResponseOtherSite = Convert::raw2htmlatt(str_replace('\'', '\\\'', $rawResponseOtherSite));
+                            $rawResponseOtherSite = Convert::raw2htmlatt(str_replace("'", '\\\'', $rawResponseOtherSite));
                             $diff = '
                             <iframe id="iframe2" width="' . $width . '%" height="7000" srcdoc=\'' . $rawResponseOtherSite . '\' style="float: right;"></iframe>
 
@@ -170,7 +169,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                         }
                     }
                 }
-                $rawResponse = Convert::raw2htmlatt(str_replace('\'', '\\\'', $this->rawResponse));
+                $rawResponse = Convert::raw2htmlatt(str_replace("'", '\\\'', $this->rawResponse));
                 echo '
                     <h1>Response</h1>
                 ';
@@ -245,13 +244,13 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                     'Authorization' => ['Basic ' . $credentials],
                 ]
             );
-        } catch (RequestException $exception) {
-            $this->rawResponse = $exception->getResponse();
+        } catch (RequestException $requestException) {
+            $this->rawResponse = $requestException->getResponse();
             $this->guzzleHasError = true;
             //echo Psr7\str($exception->getRequest());
-            if ($exception->hasResponse()) {
-                $response = $exception->getResponse();
-                $this->rawResponse = $exception->getResponseBodySummary($response);
+            if ($requestException->hasResponse()) {
+                $response = $requestException->getResponse();
+                $this->rawResponse = $requestException->getResponseBodySummary($response);
             } else {
                 $response = null;
             }
@@ -390,18 +389,9 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     {
         if (Config::inst()->get(self::class, 'use_default_admin')) {
             //do nothing;
-        } else {
-            if ($this->member) {
-                $this->member->delete();
-            }
+        } elseif ($this->member) {
+            $this->member->delete();
         }
-    }
-
-    /**
-     * cleans up the curl connection.
-     */
-    private function cleanup()
-    {
     }
 
     // private function debugme($lineNumber, $variable = "")

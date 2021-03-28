@@ -59,7 +59,7 @@ class CheckAllTemplates extends BuildTask
 
         foreach ($sections as $isCMSLink => $sectionVariable) {
             foreach ($allLinks[$sectionVariable] as $link) {
-                $count++;
+                ++$count;
 
                 $links->push(ArrayData::create([
                     'IsCMSLink' => $isCMSLink,
@@ -92,7 +92,7 @@ class CheckAllTemplates extends BuildTask
                 'Links' => $links,
                 'OtherLinks' => $otherLinks,
                 'AbsoluteBaseURLMinusSlash' => $this->baseURL(),
-                'HasEnvironmentVariable' => (Environment::getEnv('SS_ALLOW_SMOKE_TEST') ? true : false),
+                'HasEnvironmentVariable' => ((bool) Environment::getEnv('SS_ALLOW_SMOKE_TEST')),
             ]
         );
     }
@@ -118,7 +118,7 @@ class CheckAllTemplates extends BuildTask
                 $array[$link] = '<a href="' . $link . '">' . $title . '</a>';
             }
         }
-        if (count($array)) {
+        if (count($array) > 0) {
             ksort($array);
             echo '<ol><li>' . implode('</li><li>', $array) . '</li></ol>';
         } else {

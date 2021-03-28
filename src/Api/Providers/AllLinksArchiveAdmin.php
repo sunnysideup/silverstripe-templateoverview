@@ -25,28 +25,26 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
     {
         $links = [];
         $modelAdmins = CMSMenu::get_cms_classes(ArchiveAdmin::class);
-        if (! empty($modelAdmins)) {
-            foreach ($modelAdmins as $modelAdmin) {
-                $obj = Injector::inst()->get($modelAdmin);
-                $modelAdminLink = '/' . $obj->Link();
-                $modelAdminLinkArray = explode('?', $modelAdminLink);
-                $modelAdminLink = $modelAdminLinkArray[0];
-                //$extraVariablesLink = $modelAdminLinkArray[1];
-                $links[] = $modelAdminLink;
-                $modelsToAdd = $obj->getManagedModels();
-                if ($modelsToAdd && count($modelsToAdd)) {
-                    foreach ($modelsToAdd as $key => $model) {
-                        if (is_array($model) || ! is_subclass_of($model, DataObject::class)) {
-                            $model = $key;
-                        }
-                        if (! is_subclass_of($model, DataObject::class)) {
-                            continue;
-                        }
-                        $links = array_merge(
-                            $links,
-                            $this->workOutLinksForModel($obj, $model, $modelAdminLink, $modelAdmin)
-                        );
+        foreach ($modelAdmins as $modelAdmin) {
+            $obj = Injector::inst()->get($modelAdmin);
+            $modelAdminLink = '/' . $obj->Link();
+            $modelAdminLinkArray = explode('?', $modelAdminLink);
+            $modelAdminLink = $modelAdminLinkArray[0];
+            //$extraVariablesLink = $modelAdminLinkArray[1];
+            $links[] = $modelAdminLink;
+            $modelsToAdd = $obj->getManagedModels();
+            if ($modelsToAdd && count($modelsToAdd)) {
+                foreach ($modelsToAdd as $key => $model) {
+                    if (is_array($model) || ! is_subclass_of($model, DataObject::class)) {
+                        $model = $key;
                     }
+                    if (! is_subclass_of($model, DataObject::class)) {
+                        continue;
+                    }
+                    $links = array_merge(
+                        $links,
+                        $this->workOutLinksForModel($obj, $model, $modelAdminLink, $modelAdmin)
+                    );
                 }
             }
         }
@@ -59,7 +57,7 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
         $links = [];
         $sanitizedModel = AllLinks::sanitise_class_name($model);
         $modelLink = $modelAdminLink . $sanitizedModel . '/';
-        for ($i = 0; $i < $this->numberOfExamples; $i++) {
+        for ($i = 0; $i < $this->numberOfExamples; ++$i) {
             $item = $this->getRandomArchivedItem($model);
             $exceptionMethod = '';
             foreach ($this->Config()->get('model_admin_alternatives') as $test => $method) {
@@ -92,8 +90,8 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
 
     protected function getRandomArchivedItem($class)
     {
-        $list = singleton($class)->get();
-        $baseTable = singleton($list->dataClass())->baseTable();
+        $list = \Singleton($class)->get();
+        $baseTable = \Singleton($list->dataClass())->baseTable();
         $liveTable = $baseTable . '_Live';
 
         $list = $list

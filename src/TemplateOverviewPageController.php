@@ -35,7 +35,7 @@ class TemplateOverviewPageController extends PageController
         'listofobjectsused' => true,
     ];
 
-    public function init()
+    protected function init()
     {
         parent::init();
         if (Director::is_cli() || Director::isDev() || Permission::check('ADMIN')) {
@@ -66,8 +66,8 @@ class TemplateOverviewPageController extends PageController
     {
         $id = $request->param('ID');
         /** @var SiteTree|null $obj */
-        $obj = SiteTree::get()->byID(intval($id));
-        if ($obj) {
+        $obj = SiteTree::get()->byID((int) $id);
+        if ($obj !== null) {
             $className = $obj->ClassName;
             $data = $className::get()
                 ->filter(['ClassName' => $obj->ClassName])
@@ -128,7 +128,7 @@ class TemplateOverviewPageController extends PageController
                     + $config->get($item->ClassName, 'has_many')
                     + $config->get($item->ClassName, 'many_many');
                 foreach ($listOfImages as $fieldName => $potentialImage) {
-                    $innerSingleton = singleton($potentialImage);
+                    $innerSingleton = \Singleton($potentialImage);
                     if ($innerSingleton instanceof $classWeAreLookingFor) {
                         DB::alteration_message($item->ClassName . '.' . $fieldName);
                     }

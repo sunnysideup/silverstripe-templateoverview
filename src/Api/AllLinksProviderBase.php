@@ -57,10 +57,7 @@ abstract class AllLinksProviderBase
     protected function isValidClass($class)
     {
         $obj = new ReflectionClass($class);
-        if ($obj->isAbstract()) {
-            return false;
-        }
-        return true;
+        return !$obj->isAbstract();
     }
 
     /**
@@ -75,7 +72,7 @@ abstract class AllLinksProviderBase
     {
         $newArray = $array;
         $count = count($newArray);
-        for ($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < $count; ++$i) {
             if ($newArray[$i] === $exclusion) {
                 unset($newArray[$i]);
             }

@@ -26,14 +26,14 @@ class AllLinksDataObjects extends AllLinksProviderBase
         foreach ($list as $class) {
             if (! in_array($class, $exceptForArray, true)) {
                 if ($this->isValidClass($class)) {
-                    for ($i = 0; $i < $this->getNumberOfExamples(); $i++) {
+                    for ($i = 0; $i < $this->getNumberOfExamples(); ++$i) {
                         $obj = DataObject::get_one(
                             $class,
                             ['ClassName' => $class],
                             null,
                             DB::get_conn()->random() . ' ASC'
                         );
-                        if ($obj) {
+                        if ($obj !== null) {
                             if ($inCMS) {
                                 if ($obj->hasMethod('CMSEditLink')) {
                                     $return[] = $obj->CMSEditLink();
@@ -48,7 +48,7 @@ class AllLinksDataObjects extends AllLinksProviderBase
                                     $return[] = $obj->PreviewLink();
                                 }
                             } else {
-                                if ($obj->hasMethod('Link') && ! isset($obj->LinkID)) {
+                                if ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && $obj->LinkID !== null)) {
                                     $return[] = $obj->Link();
                                 }
                                 if ($obj->hasMethod('getLink')) {

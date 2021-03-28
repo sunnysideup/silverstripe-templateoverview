@@ -22,6 +22,10 @@ use Sunnysideup\TemplateOverview\Api\Providers\AllLinksReports;
 class AllLinks extends AllLinksProviderBase
 {
     /**
+     * @var mixed[]|mixed
+     */
+    public $archiveCMSLinks;
+    /**
      * @var array
      */
     protected $allNonCMSLinks = [];
@@ -114,7 +118,7 @@ class AllLinks extends AllLinksProviderBase
      */
     public static function is_admin_link($link): bool
     {
-        return substr(ltrim($link, '/'), 0, 5) === 'admin' ? true : false;
+        return substr(ltrim($link, '/'), 0, 5) === 'admin';
     }
 
     /**
@@ -141,7 +145,7 @@ class AllLinks extends AllLinksProviderBase
                 $this->customNonCMSLinks[] = $link;
             }
         }
-        $this->pagesOnFrontEnd = $this->ListOfPagesLinks(false);
+        $this->pagesOnFrontEnd = $this->ListOfPagesLinks();
         $this->dataObjectsOnFrontEnd = $this->ListOfDataObjectsLinks(false);
 
         $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->pagesOnFrontEnd);
@@ -231,19 +235,19 @@ class AllLinks extends AllLinksProviderBase
         $return = [];
         $siteTreeClassNames = $this->getListOfAllSiteTreeClasses();
         foreach ($siteTreeClassNames as $class) {
-            for ($i = 0; $i < $this->Config()->number_of_examples; $i++) {
+            for ($i = 0; $i < $this->Config()->number_of_examples; ++$i) {
                 $excludedClasses = $this->arrayExcept($siteTreeClassNames, $class);
                 $page = Versioned::get_by_stage($class, Versioned::LIVE)
                     ->exclude(['ClassName' => $excludedClasses])
                     ->sort(DB::get_conn()->random() . ' ASC')
                     ->first();
-                if (! $page) {
+                if ($page === null) {
                     $page = Versioned::get_by_stage($class, Versioned::DRAFT)
                         ->exclude(['ClassName' => $excludedClasses])
                         ->sort(DB::get_conn()->random() . ' ASC')
                         ->first();
                 }
-                if ($page) {
+                if ($page !== null) {
                     if ($pageInCMS) {
                         $url = $page->CMSEditLink();
                         $return[] = $url;
@@ -312,7 +316,7 @@ class AllLinks extends AllLinksProviderBase
             if (strpos($pushItem, '.') > (strlen($pushItem) - 6)) {
                 $pushItem = rtrim($pushItem, '/');
             }
-            if ($pushItem) {
+            if ($pushItem !== '') {
                 if (! empty($excludeList)) {
                     foreach ($excludeList as $excludeItem) {
                         if (stripos($pushItem, $excludeItem) !== false) {
@@ -321,7 +325,7 @@ class AllLinks extends AllLinksProviderBase
                     }
                 }
                 if (! in_array($pushItem, $array, true)) {
-                    array_push($array, $pushItem);
+                    $array[] = $pushItem;
                 }
             }
         }
