@@ -66,7 +66,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         return $this;
     }
 
-
     public function getAllLinksInner(): array
     {
         $finalFinalArray = [];
@@ -185,13 +184,13 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             }
 
             //match to filter
-            $filterMatch = !(bool) count($this->nameSpaces);
+            $filterMatch = ! (bool) count($this->nameSpaces);
             foreach ($this->nameSpaces as $filter) {
                 if (strpos($className, $filter) !== false) {
                     $filterMatch = true;
                 }
             }
-            if (!$filterMatch) {
+            if (! $filterMatch) {
                 return null;
             }
 

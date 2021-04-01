@@ -35,22 +35,6 @@ class TemplateOverviewPageController extends PageController
         'listofobjectsused' => true,
     ];
 
-    protected function init()
-    {
-        parent::init();
-        if (Director::is_cli() || Director::isDev() || Permission::check('ADMIN')) {
-            Requirements::javascript('//code.jquery.com/jquery-1.7.2.min.js');
-            Requirements::javascript('sunnysideup/templateoverview: client/javascript/TemplateOverviewPage.js');
-            Requirements::themedCSS('client/css/TemplateOverviewPage');
-            if (class_exists(PrettyPhoto::class)) {
-                PrettyPhoto::include_code();
-            }
-            //user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
-        } else {
-            return Security::permissionFailure();
-        }
-    }
-
     public function index(HTTPRequest $request = null)
     {
         // $this->renderWith(['Sunnysideup\\TemplateOverview\\TemplateOverviewPageController']);
@@ -153,5 +137,21 @@ class TemplateOverviewPageController extends PageController
     public function TotalCount()
     {
         return count(ClassInfo::subclassesFor(SiteTree::class)) - 1;
+    }
+
+    protected function init()
+    {
+        parent::init();
+        if (Director::is_cli() || Director::isDev() || Permission::check('ADMIN')) {
+            Requirements::javascript('//code.jquery.com/jquery-1.7.2.min.js');
+            Requirements::javascript('sunnysideup/templateoverview: client/javascript/TemplateOverviewPage.js');
+            Requirements::themedCSS('client/css/TemplateOverviewPage');
+            if (class_exists(PrettyPhoto::class)) {
+                PrettyPhoto::include_code();
+            }
+            //user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
+        } else {
+            return Security::permissionFailure();
+        }
     }
 }

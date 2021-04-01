@@ -25,6 +25,7 @@ class AllLinks extends AllLinksProviderBase
      * @var mixed[]|mixed
      */
     public $archiveCMSLinks;
+
     /**
      * @var array
      */
@@ -202,7 +203,6 @@ class AllLinks extends AllLinksProviderBase
         return $obj->getAllLinksInner();
     }
 
-
     public function ListOfAllControllerMethods(): array
     {
         $obj = Injector::inst()->get(AllLinksControllerInfo::class);
@@ -210,7 +210,6 @@ class AllLinks extends AllLinksProviderBase
 
         return $obj->getAllLinksInner();
     }
-
 
     public function ListOfDataObjectsLinks(bool $inCMS): array
     {

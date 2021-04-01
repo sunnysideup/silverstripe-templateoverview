@@ -57,7 +57,7 @@ abstract class AllLinksProviderBase
     protected function isValidClass($class)
     {
         $obj = new ReflectionClass($class);
-        return !$obj->isAbstract();
+        return ! $obj->isAbstract();
     }
 
     /**
