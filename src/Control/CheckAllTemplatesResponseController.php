@@ -3,12 +3,9 @@
 namespace Sunnysideup\TemplateOverview\Control;
 
 use GuzzleHttp\Client;
-
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7;
-
-
 use Psr\SimpleCache\CacheInterface;
 use SebastianBergmann\Diff\Differ;
 use SilverStripe\Control\Controller;
@@ -17,11 +14,9 @@ use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Flushable;
-
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Security\DefaultAdminService;
 use SilverStripe\Security\Member;
-
 use SilverStripe\Security\MemberAuthenticator\MemberAuthenticator;
 use SilverStripe\Security\Permission;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
@@ -33,12 +28,12 @@ use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
  * @authors: Andrew Pett [at] sunny side up .co.nz, Nicolaas [at] Sunny Side Up .co.nz
  * @package: templateoverview
  * @sub-package: tasks
- **/
-
+ */
 class CheckAllTemplatesResponseController extends Controller implements Flushable
 {
     /**
-     * Defines methods that can be called directly
+     * Defines methods that can be called directly.
+     *
      * @var array
      */
     private static $allowed_actions = [
@@ -67,6 +62,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
     /**
      * temporary Admin used to log in.
+     *
      * @var Member
      */
     private $member;
@@ -74,7 +70,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     private $rawResponse = '';
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $debug = false;
 
@@ -126,7 +122,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
      * Main function
      * has two streams:
      * 1. check on url specified in GET variable.
-     * 2. create a list of urls to check
+     * 2. create a list of urls to check.
      */
     public function testone(HTTPRequest $request)
     {
@@ -178,6 +174,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                     <iframe id="iframe" width="' . $width . '" height="700" srcdoc=\'' . $rawResponse . '\' style="' . $style . '"></iframe>
                 ';
             }
+
             return;
         }
         user_error('no test url provided.');
@@ -187,14 +184,16 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     {
         if (Config::inst()->get(self::class, 'use_default_admin')) {
             $this->member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
+
             return $this->member;
         }
         //Make temporary admin member
         $filter = ['Email' => self::get_user_email()];
-        /** @var Member|null $this */
+        // @var Member|null $this
         $this->member = Member::get()
             ->filter($filter)
-            ->first();
+            ->first()
+        ;
         if (empty($this->member)) {
             $this->member = Member::create($filter);
         }
@@ -207,6 +206,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         $result = $auth->checkPassword($this->member, self::get_password());
         if (! $result->isValid()) {
             user_error('Error in creating test user.', E_USER_ERROR);
+
             return;
         }
         $service = Injector::inst()->get(DefaultAdminService::class);
@@ -214,6 +214,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         $this->member->Groups()->add($adminGroup);
         if (Permission::checkMember($this->member, 'ADMIN')) {
             user_error('No admin group exists', E_USER_ERROR);
+
             return;
         }
 
@@ -227,6 +228,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     {
         $this->guzzleHasError = false;
         $credentials = base64_encode(self::get_user_email() . ':' . self::get_password());
+
         try {
             $response = $this->guzzleClient->request(
                 'GET',
@@ -255,11 +257,13 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                 $response = null;
             }
         }
+
         return $response;
     }
 
     /**
      * ECHOES the result of testing the URL....
+     *
      * @param string $url
      */
     private function testURL($url)
@@ -300,7 +304,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
         $data['httpResponse'] = $httpResponse;
 
-        if ($httpResponse === 401) {
+        if (401 === $httpResponse) {
             $data['status'] = 'error';
             $data['content'] = 'Could not access: ' . $url;
 
@@ -308,17 +312,17 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         }
 
         //uncaught errors ...
-        if ($this->rawResponse && substr($this->rawResponse, 0, 12) === 'Fatal error') {
+        if ($this->rawResponse && 'Fatal error' === substr($this->rawResponse, 0, 12)) {
             $data['status'] = 'error';
             $data['content'] = $this->rawResponse;
-        } elseif ($httpResponse === 200 && $this->rawResponse && strlen($this->rawResponse) < 200) {
+        } elseif (200 === $httpResponse && $this->rawResponse && strlen($this->rawResponse) < 200) {
             $data['status'] = 'error - no response';
             $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
         }
 
         $data['w3Content'] = 'n/a';
 
-        if ($httpResponse !== 200) {
+        if (200 !== $httpResponse) {
             $data['status'] = 'error';
             $data['content'] .= 'unexpected response: ' . $error . $this->rawResponse;
         } else {
@@ -347,7 +351,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     }
 
     /**
-     * creates the basic curl
+     * creates the basic curl.
      */
     private function guzzleSetup()
     {

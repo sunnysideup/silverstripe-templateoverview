@@ -3,12 +3,7 @@
 namespace Sunnysideup\TemplateOverview\Api\Providers;
 
 use SilverStripe\Core\ClassInfo;
-
-
-
-
 use SilverStripe\ORM\DataObject;
-
 use SilverStripe\ORM\DB;
 use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 
@@ -33,7 +28,7 @@ class AllLinksDataObjects extends AllLinksProviderBase
                             null,
                             DB::get_conn()->random() . ' ASC'
                         );
-                        if ($obj !== null) {
+                        if (null !== $obj) {
                             if ($inCMS) {
                                 if ($obj->hasMethod('CMSEditLink')) {
                                     $return[] = $obj->CMSEditLink();
@@ -48,7 +43,7 @@ class AllLinksDataObjects extends AllLinksProviderBase
                                     $return[] = $obj->PreviewLink();
                                 }
                             } else {
-                                if ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && $obj->LinkID !== null)) {
+                                if ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && null !== $obj->LinkID)) {
                                     $return[] = $obj->Link();
                                 }
                                 if ($obj->hasMethod('getLink')) {

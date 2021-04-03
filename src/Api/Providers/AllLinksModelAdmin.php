@@ -6,7 +6,6 @@ use SilverStripe\Admin\CMSMenu;
 use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
-
 use SilverStripe\ORM\DB;
 use SilverStripe\VersionedAdmin\ArchiveAdmin;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
@@ -16,19 +15,19 @@ class AllLinksModelAdmin extends AllLinksProviderBase
 {
     /**
      * List of alternative links for modeladmins
-     * e.g. 'admin/archive' => 'CMSEditLinkForTestPurposesNOTINUSE'
+     * e.g. 'admin/archive' => 'CMSEditLinkForTestPurposesNOTINUSE'.
      *
      * @var array
      */
     private static $model_admin_alternatives = [];
 
     /**
-     * e.g. Search => Replace
+     * e.g. Search => Replace.
+     *
      * @var array
      */
     private static $replacers = [
-        '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor' =>
-            '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/QueuedJobDescriptor/',
+        '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor' => '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/QueuedJobDescriptor/',
     ];
 
     public function getAllLinksInner(): array
@@ -59,6 +58,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                 }
             }
         }
+
         return $this->runReplacements($links);
     }
 
@@ -70,14 +70,15 @@ class AllLinksModelAdmin extends AllLinksProviderBase
         for ($i = 0; $i < $this->numberOfExamples; ++$i) {
             $item = $model::get()
                 ->sort(DB::get_conn()->random() . ' ASC')
-                ->First();
+                ->First()
+            ;
             $singleton = $item ? $item : Injector::inst()->get($modelAdmin);
             $exceptionMethod = '';
             foreach ($this->Config()->get('model_admin_alternatives') as $test => $method) {
                 if (! $method) {
                     $method = 'do-not-use';
                 }
-                if (strpos($modelAdminLink, $test) !== false) {
+                if (false !== strpos($modelAdminLink, $test)) {
                     $exceptionMethod = $method;
                 }
             }
@@ -98,6 +99,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                 }
             }
         }
+
         return $links;
     }
 

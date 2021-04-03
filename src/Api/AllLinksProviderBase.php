@@ -5,11 +5,6 @@ namespace Sunnysideup\TemplateOverview\Api;
 namespace Sunnysideup\TemplateOverview\Api;
 
 use ReflectionClass;
-
-
-
-
-
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
@@ -39,7 +34,8 @@ abstract class AllLinksProviderBase
     }
 
     /**
-     * returns a list of all SiteTree Classes
+     * returns a list of all SiteTree Classes.
+     *
      * @return array
      */
     public function getListOfAllSiteTreeClasses()
@@ -51,22 +47,24 @@ abstract class AllLinksProviderBase
                 $this->listOfAllSiteTreeClassesCache[] = $page->ClassName;
             }
         }
+
         return $this->listOfAllSiteTreeClassesCache;
     }
 
     protected function isValidClass($class)
     {
         $obj = new ReflectionClass($class);
+
         return ! $obj->isAbstract();
     }
 
     /**
-     * Takes an array, takes one item out, and returns new array
+     * Takes an array, takes one item out, and returns new array.
      *
-     * @param array $array Array which will have an item taken out of it.
+     * @param array  $array     array which will have an item taken out of it
      * @param string $exclusion Item to be taken out of $array
      *
-     * @return array New array.
+     * @return array new array
      */
     protected function arrayExcept($array, $exclusion)
     {
@@ -77,6 +75,7 @@ abstract class AllLinksProviderBase
                 unset($newArray[$i]);
             }
         }
+
         return $newArray;
     }
 }

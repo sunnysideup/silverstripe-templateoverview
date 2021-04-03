@@ -3,11 +3,8 @@
 namespace Sunnysideup\TemplateOverview\Api\Providers;
 
 use ReflectionClass;
-
 use ReflectionMethod;
 use SilverStripe\Admin\LeftAndMain;
-
-
 use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
@@ -15,7 +12,6 @@ use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
-
 use SilverStripe\ORM\DB;
 use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 
@@ -47,7 +43,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     protected $dataRecordClassObjects = [];
 
     /**
-     * @var array|null
+     * @var null|array
      */
     protected $routes;
 
@@ -57,7 +53,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     protected $nameSpaces = [];
 
     /**
-     * @param  array $nameSpaces
+     * @param array $nameSpaces
      */
     public function setValidNameSpaces($nameSpaces): self
     {
@@ -84,10 +80,10 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             } else {
                 $link = '???';
             }
-            if (substr($link, -1) !== '/') {
+            if ('/' !== substr($link, -1)) {
                 $link .= '/';
             }
-            if (substr($link, 0, 1) !== '/') {
+            if ('/' !== substr($link, 0, 1)) {
                 $link = '/' . $link;
             }
             if (is_array($methods)) {
@@ -116,11 +112,11 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     }
 
     /**
-     * returns Array with Links and Actions
+     * returns Array with Links and Actions.
      */
     public function getLinksAndActions(): array
     {
-        if (count($this->linksAndActions) === 0) {
+        if (0 === count($this->linksAndActions)) {
             $this->linksAndActions['Links'] = [];
             $this->linksAndActions['Actions'] = [];
             $this->linksAndActions['CustomLinks'] = [];
@@ -140,7 +136,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                     $this->linksAndActions['CustomLinks'][$customLink] = $className;
                 }
                 $link = $this->findLink($className);
-                if ($link !== '') {
+                if ('' !== $link) {
                     $this->linksAndActions['Links'][$className] = $link;
                 }
                 $array = array_merge(
@@ -156,7 +152,8 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     /**
      * can it be used?
-     * @param  string $className
+     *
+     * @param string $className
      */
     protected function isValidController($className): bool
     {
@@ -164,15 +161,16 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     }
 
     /**
-     * @param  string $className
-     * @return ReflectionClass|null
+     * @param string $className
+     *
+     * @return null|ReflectionClass
      */
     protected function controllerReflectionClass($className)
     {
         if (! isset($this->reflectionClasses[$className])) {
             $this->reflectionClasses[$className] = null;
             //skip base class
-            if ($className === Controller::class) {
+            if (Controller::class === $className) {
                 return null;
             }
 
@@ -186,7 +184,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             //match to filter
             $filterMatch = ! (bool) count($this->nameSpaces);
             foreach ($this->nameSpaces as $filter) {
-                if (strpos($className, $filter) !== false) {
+                if (false !== strpos($className, $filter)) {
                     $filterMatch = true;
                 }
             }
@@ -209,16 +207,18 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
             return $this->reflectionClasses[$className];
         }
+
         return $this->reflectionClasses[$className];
     }
 
     /**
-     * @param  string $className
+     * @param string $className
+     *
      * @return DataObject
      */
     protected function findSingleton($className)
     {
-        if ($this->controllerReflectionClass($className) !== null) {
+        if (null !== $this->controllerReflectionClass($className)) {
             $this->classObjects[$className] = null;
             if (! isset($this->classObjects[$className])) {
                 try {
@@ -233,8 +233,9 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     }
 
     /**
-     * @param  string $className
-     * @return DataObject|null
+     * @param string $className
+     *
+     * @return null|DataObject
      */
     protected function findDataRecord($className)
     {
@@ -256,7 +257,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     }
 
     /**
-     * @param  string $className
+     * @param string $className
      */
     protected function findCustomLinks($className): array
     {
@@ -269,16 +270,17 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             }
         }
         $object = $this->findDataRecord($className);
-        if ($object !== null) {
+        if (null !== $object) {
             if ($object->hasMethod('templateOverviewTests')) {
                 $array2 = $object->templateOverviewTests();
             }
         }
+
         return $array1 + $array2;
     }
 
     /**
-     * @param  string $className
+     * @param string $className
      */
     protected function findAllowedActions($className): array
     {
@@ -288,7 +290,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     }
 
     /**
-     * @param  string $className
+     * @param string $className
      */
     protected function findURLHandlers($className): array
     {
@@ -311,26 +313,27 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     }
 
     /**
-     * @param  string $className
+     * @param string $className
      */
     protected function findLink($className): string
     {
         $link = $this->findControllerLink($className);
-        if ($link === '') {
+        if ('' === $link) {
             $link = $this->findRouteLink($className);
-            if ($link === '') {
+            if ('' === $link) {
                 $link = $this->findSegmentLink($className);
-                if ($link === '') {
+                if ('' === $link) {
                     $link = $this->findMethodLink($className);
                 }
             }
         }
         $link = '/' . $link . '/';
+
         return str_replace('//', '/', $link);
     }
 
     /**
-     * @param  string $className
+     * @param string $className
      */
     protected function findControllerLink($className): string
     {
@@ -338,6 +341,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         if ($object && $object->hasMethod('Link')) {
             $tmp = $object->Link();
             $tmpArray = explode('?', $tmp);
+
             return $tmpArray[0];
         }
 
@@ -345,16 +349,17 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     }
 
     /**
-     * @param  string $className
+     * @param string $className
      */
     protected function findRouteLink($className): string
     {
-        if ($this->routes === null) {
+        if (null === $this->routes) {
             $this->routes = Config::inst()->get(Director::class, 'rules');
         }
         $route = array_search($className, $this->routes, true);
         if ($route) {
             $routeArray = explode('//', $route);
+
             return $routeArray[0];
         }
 
@@ -362,7 +367,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     }
 
     /**
-     * @param  string $className
+     * @param string $className
      */
     protected function findSegmentLink($className): string
     {
@@ -373,19 +378,20 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         } else {
             $urlSegment = '';
         }
+
         return $urlSegment;
     }
 
     /**
-     * @param  string $className
+     * @param string $className
      */
     protected function findMethodLink($className): string
     {
         $controllerReflectionClass = $this->controllerReflectionClass($className);
-        if ($controllerReflectionClass !== null) {
+        if (null !== $controllerReflectionClass) {
             foreach ($controllerReflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
                 if ($method->class === $className) {
-                    if ($method->name === 'Link') {
+                    if ('Link' === $method->name) {
                         $classObject = $this->findSingleton($className);
                         if ($classObject) {
                             return $classObject->Link();
@@ -400,7 +406,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     private function isAssociativeArray(array $arr): bool
     {
-        if ($arr === []) {
+        if ([] === $arr) {
             return false;
         }
 

@@ -29,7 +29,8 @@ class LoginAndRedirect extends Controller
         Security::setCurrentUser($member);
         // Injector::inst()->get(IdentityStore::class)->logIn($member, true);
         Injector::inst()->get(CookieAuthenticationHandler::class)
-            ->logIn($member, $persist = true);
+            ->logIn($member, $persist = true)
+        ;
         // die($url);
         return $this->redirect($url);
     }
@@ -47,6 +48,7 @@ class LoginAndRedirect extends Controller
                     Currently set are: ' . implode(', ', $allowedIPs),
                 E_USER_ERROR
             );
+
             return;
         }
         user_error(

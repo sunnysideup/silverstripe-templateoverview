@@ -15,7 +15,7 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
 {
     /**
      * List of alternative links for modeladmins
-     * e.g. 'admin/archive' => 'CMSEditLinkForTestPurposesNOTINUSE'
+     * e.g. 'admin/archive' => 'CMSEditLinkForTestPurposesNOTINUSE'.
      *
      * @var array
      */
@@ -64,7 +64,7 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
                 if (! $method) {
                     $method = 'do-not-use';
                 }
-                if (strpos($modelAdminLink, $test) !== false) {
+                if (false !== strpos($modelAdminLink, $test)) {
                     $exceptionMethod = $method;
                 }
             }
@@ -76,7 +76,7 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
                 //needs to stay here for exception!
                 $links[] = $modelLink;
                 if ($item) {
-                    if (is_subclass_of($model, SiteTree::class) || $model === SiteTree::class) {
+                    if (is_subclass_of($model, SiteTree::class) || SiteTree::class === $model) {
                         $links[] = $modelLink . 'EditForm/field/Pages/item/' . $item->ID . '/view/';
                     } else {
                         $links[] = $modelLink . 'EditForm/field/Others/item/' . $item->ID . '/view/';
@@ -95,7 +95,8 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
         $liveTable = $baseTable . '_Live';
 
         $list = $list
-            ->setDataQueryParam('Versioned.mode', 'latest_versions');
+            ->setDataQueryParam('Versioned.mode', 'latest_versions')
+        ;
         // Join a temporary alias BaseTable_Draft, renaming this on execution to BaseTable
         // See Versioned::augmentSQL() For reference on this alias
         $draftTable = $baseTable . '_Draft';
@@ -103,7 +104,8 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
             ->leftJoin(
                 $draftTable,
                 "\"{$baseTable}\".\"ID\" = \"{$draftTable}\".\"ID\""
-            );
+            )
+        ;
 
         $list = $list->leftJoin(
             $liveTable,
@@ -112,6 +114,7 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
 
         $list = $list->where("\"{$draftTable}\".\"ID\" IS NULL");
         $list = $list->sort(DB::get_conn()->random() . ' ASC');
+
         return $list->First();
     }
 }

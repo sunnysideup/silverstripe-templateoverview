@@ -117,13 +117,13 @@ class W3cValidateApi
             //$errmsg            = curl_error( $ch );
             //$header            = curl_getinfo( $ch );
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            if ($httpCode === 200) {
+            if (200 === $httpCode) {
                 $doc = simplexml_load_string($out);
                 $doc->registerXPathNamespace('m', 'http://www.w3.org/2005/10/markup-validator');
 
                 //valid ??
                 $nodes = $doc->xpath('//m:markupvalidationresponse/m:validity');
-                $this->validResult = strval($nodes[0]) === 'true';
+                $this->validResult = 'true' === strval($nodes[0]);
 
                 //error count ??
                 $nodes = $doc->xpath('//m:markupvalidationresponse/m:errors/m:errorcount');

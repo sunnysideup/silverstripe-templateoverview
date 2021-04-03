@@ -9,15 +9,11 @@ use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
-
 use SilverStripe\ORM\DataObject;
-
 use SilverStripe\ORM\DB;
 use SilverStripe\Security\Permission;
-
 use SilverStripe\Security\Security;
 use SilverStripe\View\Requirements;
-
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 
@@ -49,19 +45,21 @@ class TemplateOverviewPageController extends PageController
     public function showmore($request)
     {
         $id = $request->param('ID');
-        /** @var SiteTree|null $obj */
+        /** @var null|SiteTree $obj */
         $obj = SiteTree::get()->byID((int) $id);
-        if ($obj !== null) {
+        if (null !== $obj) {
             $className = $obj->ClassName;
             $data = $className::get()
                 ->filter(['ClassName' => $obj->ClassName])
-                ->limit(200);
+                ->limit(200)
+            ;
             $array = [
                 'Results' => $data,
             ];
         } else {
             $array = [];
         }
+
         return $this->customise($array)->renderWith('Sunnysideup\\TemplateOverview\\TemplateOverviewPageShowMoreList');
     }
 
@@ -124,7 +122,8 @@ class TemplateOverviewPageController extends PageController
     }
 
     /**
-     * returns a list of all SiteTree Classes
+     * returns a list of all SiteTree Classes.
+     *
      * @return Array(String)
      */
     public function ListOfAllSiteTreeClasses()

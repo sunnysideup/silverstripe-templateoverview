@@ -6,15 +6,9 @@ use SilverStripe\Admin\CMSMenu;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DB;
-
-
-
-
 use SilverStripe\Versioned\Versioned;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksArchiveAdmin;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksControllerInfo;
-
-
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksDataObjects;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksModelAdmin;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksReports;
@@ -22,7 +16,7 @@ use Sunnysideup\TemplateOverview\Api\Providers\AllLinksReports;
 class AllLinks extends AllLinksProviderBase
 {
     /**
-     * @var mixed[]|mixed
+     * @var mixed|mixed[]
      */
     public $archiveCMSLinks;
 
@@ -88,7 +82,7 @@ class AllLinks extends AllLinksProviderBase
 
     /**
      * url snippets that if found in links should exclude the link altogether.
-     * e.g. 'admin/registry'
+     * e.g. 'admin/registry'.
      *
      * @var array
      */
@@ -115,17 +109,18 @@ class AllLinks extends AllLinksProviderBase
     private static $controller_name_space_filter = [];
 
     /**
-     * @param  string  $link
+     * @param string $link
      */
     public static function is_admin_link($link): bool
     {
-        return substr(ltrim($link, '/'), 0, 5) === 'admin';
+        return 'admin' === substr(ltrim($link, '/'), 0, 5);
     }
 
     /**
-     * Sanitise a model class' name for inclusion in a link
+     * Sanitise a model class' name for inclusion in a link.
      *
      * @param string $class
+     *
      * @return string
      */
     public static function sanitise_class_name($class)
@@ -134,7 +129,7 @@ class AllLinks extends AllLinksProviderBase
     }
 
     /**
-     * returns an array of allNonCMSLinks => [] , allCMSLinks => [], otherControllerMethods => []
+     * returns an array of allNonCMSLinks => [] , allCMSLinks => [], otherControllerMethods => [].
      */
     public function getAllLinks(): array
     {
@@ -180,7 +175,8 @@ class AllLinks extends AllLinksProviderBase
     }
 
     /**
-     * returns a list of all model admin links
+     * returns a list of all model admin links.
+     *
      * @return array
      */
     public function ListOfAllModelAdmins()
@@ -192,7 +188,8 @@ class AllLinks extends AllLinksProviderBase
     }
 
     /**
-     * returns a list of all archive links
+     * returns a list of all archive links.
+     *
      * @return array
      */
     public function ListOfAllArchiveCMSLinks()
@@ -222,7 +219,7 @@ class AllLinks extends AllLinksProviderBase
     /**
      * Takes {@link #$classNames}, gets the URL of the first instance of it
      * (will exclude extensions of the class) and
-     * appends to the {@link #$urls} list to be checked
+     * appends to the {@link #$urls} list to be checked.
      *
      * @param bool $pageInCMS
      *
@@ -239,14 +236,16 @@ class AllLinks extends AllLinksProviderBase
                 $page = Versioned::get_by_stage($class, Versioned::LIVE)
                     ->exclude(['ClassName' => $excludedClasses])
                     ->sort(DB::get_conn()->random() . ' ASC')
-                    ->first();
-                if ($page === null) {
+                    ->first()
+                ;
+                if (null === $page) {
                     $page = Versioned::get_by_stage($class, Versioned::DRAFT)
                         ->exclude(['ClassName' => $excludedClasses])
                         ->sort(DB::get_conn()->random() . ' ASC')
-                        ->first();
+                        ->first()
+                    ;
                 }
-                if ($page !== null) {
+                if (null !== $page) {
                     if ($pageInCMS) {
                         $url = $page->CMSEditLink();
                         $return[] = $url;
@@ -287,19 +286,22 @@ class AllLinks extends AllLinksProviderBase
     }
 
     /**
-     * returns a list of all reports
+     * returns a list of all reports.
+     *
      * @return array
      */
     public function ListOfAllReports()
     {
         $reportsLinks = Injector::inst()->get(AllLinksReports::class);
+
         return $reportsLinks->getAllLinksInner();
     }
 
     /**
-     * Pushes an array of items to an array
-     * @param array $array Array to push items to (will overwrite)
-     * @param array $pushArray Array of items to push to $array.
+     * Pushes an array of items to an array.
+     *
+     * @param array $array     Array to push items to (will overwrite)
+     * @param array $pushArray array of items to push to $array
      */
     protected function addToArrayOfLinks($array, $pushArray): array
     {
@@ -315,10 +317,10 @@ class AllLinks extends AllLinksProviderBase
             if (strpos($pushItem, '.') > (strlen($pushItem) - 6)) {
                 $pushItem = rtrim($pushItem, '/');
             }
-            if ($pushItem !== '') {
+            if ('' !== $pushItem) {
                 if (! empty($excludeList)) {
                     foreach ($excludeList as $excludeItem) {
-                        if (stripos($pushItem, $excludeItem) !== false) {
+                        if (false !== stripos($pushItem, $excludeItem)) {
                             continue 2;
                         }
                     }
@@ -328,6 +330,7 @@ class AllLinks extends AllLinksProviderBase
                 }
             }
         }
+
         return $array;
     }
 }

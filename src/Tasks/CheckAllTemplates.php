@@ -13,7 +13,6 @@ use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
 use SilverStripe\View\SSViewer;
 use SilverStripe\View\ViewableData;
-
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 
 class CheckAllTemplates extends BuildTask
@@ -28,7 +27,7 @@ class CheckAllTemplates extends BuildTask
      * Main function
      * has two streams:
      * 1. check on url specified in GET variable.
-     * 2. create a list of urls to check
+     * 2. create a list of urls to check.
      *
      * @param \SilverStripe\Control\HTTPRequest $request
      */
@@ -107,7 +106,7 @@ class CheckAllTemplates extends BuildTask
         $array = [];
         foreach ($allLinks as $key => $list) {
             foreach ($list as $item) {
-                if ($key === 'otherLinks') {
+                if ('otherLinks' === $key) {
                     $link = $base . $item['Link'];
                     $title = $base . $item['Link'];
                 } else {

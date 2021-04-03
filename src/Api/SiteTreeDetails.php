@@ -46,7 +46,7 @@ class SiteTreeDetails
 
     public function ListOfAllSiteTreeClasses($checkCurrentClass = true)
     {
-        if (count(self::$list_of_all_classes) === 0) {
+        if (0 === count(self::$list_of_all_classes)) {
             $this->getArrayOfAllClasses();
 
             self::$list_of_all_classes = new ArrayList();
@@ -63,12 +63,14 @@ class SiteTreeDetails
                 self::$list_of_all_classes->push($item);
             }
         }
+
         return self::$list_of_all_classes;
     }
 
     public function ShowAll()
     {
         $this->showAll = true;
+
         return [];
     }
 
@@ -82,7 +84,8 @@ class SiteTreeDetails
                     $objects = $className::get()
                         ->filter(['ClassName' => $className])
                         ->sort(DB::get_conn()->random() . ' ASC')
-                        ->limit(25);
+                        ->limit(25)
+                    ;
                     $count = 0;
                     if ($objects->count()) {
                         foreach ($objects as $obj) {
@@ -95,7 +98,8 @@ class SiteTreeDetails
                         ->filter(['ClassName' => $className])
                         ->sort('RAND() ASC')
                         ->limit(1)
-                        ->first();
+                        ->first()
+                    ;
                     if ($obj) {
                         $count = SiteTree::get()->filter(['ClassName' => $obj->ClassName])->count();
                     } else {
@@ -140,7 +144,7 @@ class SiteTreeDetails
 
     /**
      * @param SiteTree $obj
-     * @param int $count
+     * @param int      $count
      *
      * @return ArrayData
      */
@@ -165,6 +169,7 @@ class SiteTreeDetails
             $icon .= '-file.gif';
         }
         $listArray['Icon'] = $icon;
+
         return new ArrayData($listArray);
     }
 }
