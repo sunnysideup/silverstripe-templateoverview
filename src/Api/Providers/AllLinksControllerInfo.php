@@ -43,7 +43,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     protected $dataRecordClassObjects = [];
 
     /**
-     * @var null|array
+     * @var array
      */
     protected $routes;
 
