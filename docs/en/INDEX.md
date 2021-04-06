@@ -5,7 +5,7 @@ Provides the developer with a bunch of tools to
 review the page types used on a website.
 
 Make sure to check out the
-/dev/tasks/smoketest
+`/dev/tasks/smoketest`
 task as this will provide you with a very useful
 implementation of the poorman's template checker.
 
