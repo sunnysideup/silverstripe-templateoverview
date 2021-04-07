@@ -22,7 +22,7 @@
     "require": {
         "silverstripe/cms": "^4.0",
         "sunnysideup/prettyphoto": "*",
-        "guzzlehttp/guzzle": "^7",
+        "guzzlehttp/guzzle": "^6.0 || ^7.0",
         "sebastian/diff": "*"
     },
     "suggest": {
