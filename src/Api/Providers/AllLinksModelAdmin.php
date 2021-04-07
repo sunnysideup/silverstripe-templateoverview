@@ -72,7 +72,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                 ->sort(DB::get_conn()->random() . ' ASC')
                 ->First()
             ;
-            $singleton = $item ? $item : Injector::inst()->get($modelAdmin);
+            $singleton = $item ? $item : Injector::inst()->get($model);
             $exceptionMethod = '';
             foreach ($this->Config()->get('model_admin_alternatives') as $test => $method) {
                 if (! $method) {
