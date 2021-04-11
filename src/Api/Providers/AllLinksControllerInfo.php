@@ -45,7 +45,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     /**
      * @var array
      */
-    protected $routes;
+    protected $routes = [];
 
     /**
      * @var array
@@ -353,7 +353,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
      */
     protected function findRouteLink($className): string
     {
-        if (null === $this->routes) {
+        if ([] === $this->routes) {
             $this->routes = Config::inst()->get(Director::class, 'rules');
         }
         $route = array_search($className, $this->routes, true);
