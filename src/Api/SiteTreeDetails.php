@@ -87,7 +87,7 @@ class SiteTreeDetails
                         ->limit(25)
                     ;
                     $count = 0;
-                    if ($objects->count()) {
+                    if ($objects->exists()) {
                         foreach ($objects as $obj) {
                             $object = $this->createPageObject($obj, $count++);
                             $this->arrayOfAllClasses[$object->indexNumber] = clone $object;
