@@ -5,18 +5,11 @@ namespace Sunnysideup\TemplateOverview\Api;
 use SilverStripe\CMS\Model\RedirectorPage;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\CMS\Model\VirtualPage;
-use SilverStripe\Control\Controller;
-use SilverStripe\Control\Director;
-use SilverStripe\Core\ClassInfo;
-use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DB;
-use SilverStripe\View\ArrayData;
-
-use SilverStripe\Admin\LeftAndMain;
 
 class SiteTreeDetails
 {
@@ -46,14 +39,14 @@ class SiteTreeDetails
         VirtualPage::class,
     ];
 
-
-    public function CountsPerClass() : array
+    public function CountsPerClass(): array
     {
         $this->ListOfAllClasses();
+
         return self::$list_of_all_classes_counter;
     }
 
-    public function ListOfAllClasses() : ArrayList
+    public function ListOfAllClasses(): ArrayList
     {
         if (0 === count(self::$list_of_all_classes)) {
             $this->getArrayOfAllClasses();
@@ -80,8 +73,6 @@ class SiteTreeDetails
         return SiteTree::page_type_classes();
     }
 
-
-
     protected function getArrayOfAllClasses()
     {
         $classes = $this->getClassList();
@@ -96,7 +87,7 @@ class SiteTreeDetails
                     $count = 0;
                     if ($objects->exists()) {
                         foreach ($objects as $obj) {
-                            $count++;
+                            ++$count;
                             $this->arrayOfAllClasses[$this->getIndexNumber($count)] = $obj;
                         }
                     }
@@ -127,17 +118,15 @@ class SiteTreeDetails
         return $this->arrayOfAllClasses;
     }
 
-
     /**
-     * @param int      $count
+     * @param int $count
      *
      * @return int
      */
     protected function getIndexNumber($count)
     {
         ++$this->counter;
+
         return (100000 * $count) + $this->counter;
     }
-
-
 }
