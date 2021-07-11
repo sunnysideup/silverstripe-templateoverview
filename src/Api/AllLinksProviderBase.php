@@ -38,11 +38,11 @@ abstract class AllLinksProviderBase
      *
      * @return array
      */
-    public function getListOfAllSiteTreeClasses()
+    public function getListOfAllClasses()
     {
         if (empty($this->listOfAllSiteTreeClassesCache)) {
             $siteTreeDetails = Injector::inst()->get(SiteTreeDetails::class);
-            $list = $siteTreeDetails->ListOfAllSiteTreeClasses();
+            $list = $siteTreeDetails->ListOfAllClasses();
             foreach ($list as $page) {
                 $this->listOfAllSiteTreeClassesCache[] = $page->ClassName;
             }

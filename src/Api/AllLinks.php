@@ -229,7 +229,7 @@ class AllLinks extends AllLinksProviderBase
     {
         //first() will return null or the object
         $return = [];
-        $siteTreeClassNames = $this->getListOfAllSiteTreeClasses();
+        $siteTreeClassNames = $this->getListOfAllClasses();
         foreach ($siteTreeClassNames as $class) {
             for ($i = 0; $i < $this->Config()->number_of_examples; ++$i) {
                 $excludedClasses = $this->arrayExcept($siteTreeClassNames, $class);

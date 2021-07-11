@@ -16,6 +16,8 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DB;
 use SilverStripe\View\ArrayData;
 
+use SilverStripe\Admin\LeftAndMain;
+
 class SiteTreeDetails
 {
     use Extensible;
@@ -32,11 +34,11 @@ class SiteTreeDetails
      */
     protected $counter = 0;
 
-    protected $classesToRemove = [];
-
     protected $arrayOfAllClasses = [];
 
     private static $list_of_all_classes = [];
+
+    private static $list_of_all_classes_counter = [];
 
     private static $classes_to_exclude = [
         SiteTree::class,
@@ -44,22 +46,21 @@ class SiteTreeDetails
         VirtualPage::class,
     ];
 
-    public function ListOfAllSiteTreeClasses($checkCurrentClass = true)
+
+    public function CountsPerClass() : array
+    {
+        $this->ListOfAllClasses();
+        return self::$list_of_all_classes_counter;
+    }
+
+    public function ListOfAllClasses() : ArrayList
     {
         if (0 === count(self::$list_of_all_classes)) {
             $this->getArrayOfAllClasses();
 
             self::$list_of_all_classes = new ArrayList();
-            $currentClassname = '';
-            if ($checkCurrentClass) {
-                if ($c = Controller::curr()) {
-                    if ($d = $c->dataRecord) {
-                        $currentClassname = $d->ClassName;
-                    }
-                }
-            }
+
             foreach ($this->arrayOfAllClasses as $item) {
-                $item->LinkingMode = $item->ClassName === $currentClassname ? 'current' : 'link';
                 self::$list_of_all_classes->push($item);
             }
         }
@@ -74,10 +75,16 @@ class SiteTreeDetails
         return [];
     }
 
+    protected function getClassList()
+    {
+        return SiteTree::page_type_classes();
+    }
+
+
+
     protected function getArrayOfAllClasses()
     {
-        //$classes = ClassInfo::subclassesFor("SiteTree");
-        $classes = SiteTree::page_type_classes();
+        $classes = $this->getClassList();
         foreach ($classes as $className) {
             if (! in_array($className, $this->config()->get('classes_to_exclude'), true)) {
                 if ($this->showAll) {
@@ -89,30 +96,29 @@ class SiteTreeDetails
                     $count = 0;
                     if ($objects->exists()) {
                         foreach ($objects as $obj) {
-                            $object = $this->createPageObject($obj, $count++);
-                            $this->arrayOfAllClasses[$object->indexNumber] = clone $object;
+                            $count++;
+                            $this->arrayOfAllClasses[$this->getIndexNumber($count)] = $obj;
                         }
                     }
+                    self::$list_of_all_classes_counter[$className] = $count;
                 } else {
                     $obj = $className::get()
                         ->filter(['ClassName' => $className])
-                        ->sort('RAND() ASC')
+                        ->sort(DB::get_conn()->random() . ' ASC')
                         ->limit(1)
                         ->first()
                     ;
                     if ($obj) {
-                        $count = SiteTree::get()->filter(['ClassName' => $obj->ClassName])->count();
+                        $count = $className::get()->filter(['ClassName' => $obj->ClassName])->count();
                     } else {
                         $obj = $className::create();
                         $count = 0;
                     }
-                    $object = $this->createPageObject($obj, $count);
-                    $this->arrayOfAllClasses[$object->indexNumber] = clone $object;
+                    self::$list_of_all_classes_counter[$className] = $count;
+                    $this->arrayOfAllClasses[$this->getIndexNumber($count)] = $obj;
                 }
-                $this->removeHideAncestorBasedOnObject($className);
             }
         }
-        $this->removeHideAncestors();
 
         //remove the hidden ancestors...
 
@@ -121,55 +127,17 @@ class SiteTreeDetails
         return $this->arrayOfAllClasses;
     }
 
-    protected function removeHideAncestorBasedOnObject($className)
-    {
-        $ancestorToHide = Config::inst()->get($className, 'hide_ancestor');
-        if ($ancestorToHide) {
-            $this->classesToRemove[$ancestorToHide] = $ancestorToHide;
-        }
-    }
-
-    protected function removeHideAncestors()
-    {
-        if (! empty($this->classesToRemove)) {
-            $this->classesToRemove = array_unique($this->classesToRemove);
-            // unset from $classes
-            foreach ($this->arrayOfAllClasses as $tempKey => $tempClass) {
-                if (in_array($tempClass->ClassName, $this->classesToRemove, true)) {
-                    unset($this->arrayOfAllClasses[$tempKey]);
-                }
-            }
-        }
-    }
 
     /**
-     * @param SiteTree $obj
      * @param int      $count
      *
-     * @return ArrayData
+     * @return int
      */
-    protected function createPageObject($obj, $count)
+    protected function getIndexNumber($count)
     {
         ++$this->counter;
-        $listArray = [];
-        $indexNumber = (10000 * $count) + $this->counter;
-        $listArray['indexNumber'] = $indexNumber;
-        $listArray['ClassName'] = $obj->ClassName;
-        $listArray['Count'] = $count;
-        $listArray['ID'] = $obj->ID;
-        $listArray['URLSegment'] = $obj->URLSegment;
-        $listArray['ControllerLink'] = '/templateoverviewtemplates/';
-        $listArray['Title'] = $obj->MenuTitle;
-        $listArray['PreviewLink'] = $obj->PreviewLink();
-        $listArray['CMSEditLink'] = $obj->CMSEditLink();
-        $staticIcon = Config::inst()->get($obj->ClassName, 'icon');
-        $icon = is_array($staticIcon) ? $staticIcon[0] : $staticIcon;
-        $iconFile = Director::baseFolder() . '/' . $icon;
-        if (! file_exists($iconFile)) {
-            $icon .= '-file.gif';
-        }
-        $listArray['Icon'] = $icon;
-
-        return new ArrayData($listArray);
+        return (100000 * $count) + $this->counter;
     }
+
+
 }

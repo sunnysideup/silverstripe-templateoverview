@@ -17,7 +17,7 @@ class AllLinksDataObjects extends AllLinksProviderBase
         //first() will return null or the object
         $return = [];
         $list = ClassInfo::subclassesFor(DataObject::class);
-        $exceptForArray = array_merge($this->getListOfAllSiteTreeClasses(), [DataObject::class]);
+        $exceptForArray = array_merge($this->getListOfAllClasses(), [DataObject::class]);
         foreach ($list as $class) {
             if (! in_array($class, $exceptForArray, true)) {
                 if ($this->isValidClass($class)) {
