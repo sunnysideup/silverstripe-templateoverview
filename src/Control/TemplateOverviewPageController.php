@@ -212,7 +212,7 @@ class TemplateOverviewPageController extends PageController
         $listArray['URLSegment'] = $obj->URLSegment ?? 'n/a';
         $listArray['ControllerLink'] = '/templateoverviewtemplates/';
         $listArray['Title'] = $obj->getTitle();
-        $listArray['LiveLink'] = $obj->hasMethod('Link') ? $obj->Link() : 'please-add-Link-method';
+        $listArray['LiveLink'] = $obj->hasMethod('Link') ? str_replace('?stage=Stage', '', $obj->Link()) : 'please-add-Link-method';
         $listArray['PreviewLink'] = $obj->hasMethod('PreviewLink') ? $obj->PreviewLink() : 'please-add-PreviewLink-method';
         $listArray['CMSEditLink'] = $obj->hasMethod('CMSEditLink') ? $obj->CMSEditLink() : 'please-add-CMSEditLink-method';
         $listArray['Icon'] = $this->getIcon($obj);

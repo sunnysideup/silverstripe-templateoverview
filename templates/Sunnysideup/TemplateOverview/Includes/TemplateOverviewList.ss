@@ -13,6 +13,7 @@
         <span class="typo-fullLink">
             <em>example:</em>
             <a href="$LiveLink">$Title</a> |
+            <a href="{$LiveLink}json/?pretty=1">JSON</a> |
             <a href="$PreviewLink">Preview</a> |
             <a href="$CMSEditLink">Edit in CMS</a>
             <%-- <a href="https://developers.facebook.com/tools/debug/sharing/?q=$PreviewLink">in FB ...</a> --%>
