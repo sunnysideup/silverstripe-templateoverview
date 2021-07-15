@@ -59,6 +59,8 @@ class TemplateOverviewPageController extends PageController
         return $this->renderWith('Sunnysideup\\TemplateOverview\\Includes\\TemplateOverviewList');
     }
 
+    protected $myMoreList = null;
+
     public function showmore($request)
     {
         $id = $request->param('ID');
@@ -67,18 +69,21 @@ class TemplateOverviewPageController extends PageController
         $obj = $className::get()->byID((int) $id);
         if (null !== $obj) {
             $className = $obj->ClassName;
-            $data = $className::get()
+            $list = $className::get()
                 ->filter(['ClassName' => $obj->ClassName])
-                ->limit(200)
+                ->limit(300)
             ;
-            $array = [
-                'Results' => $data,
-            ];
-        } else {
-            $array = [];
+            $this->myMoreList = ArrayList::create();
+            foreach($list as $count => $item) {
+                $this->myMoreList->push(clone $this->createPageObject($item, $count));
+            }
         }
+        return $this->renderWith('Sunnysideup\\TemplateOverview\\TemplateOverviewPageShowMoreList');
+    }
 
-        return $this->customise($array)->renderWith('Sunnysideup\\TemplateOverview\\TemplateOverviewPageShowMoreList');
+    public function getMyMoreList()
+    {
+        return $this->myMoreList;
     }
 
     public function Link($action = null)
@@ -196,6 +201,7 @@ class TemplateOverviewPageController extends PageController
         }
     }
 
+
     /**
      * @param SiteTree $obj
      * @param int      $count
@@ -210,7 +216,7 @@ class TemplateOverviewPageController extends PageController
         $listArray['Count'] = $count;
         $listArray['ID'] = $obj->ID;
         $listArray['URLSegment'] = $obj->URLSegment ?? 'n/a';
-        $listArray['ControllerLink'] = '/templateoverviewtemplates/';
+        $listArray['ControllerLink'] = $this->Link();
         $listArray['Title'] = $obj->getTitle();
         $listArray['LiveLink'] = $obj->hasMethod('Link') ? str_replace('?stage=Stage', '', $obj->Link()) : 'please-add-Link-method';
         $listArray['PreviewLink'] = $obj->hasMethod('PreviewLink') ? $obj->PreviewLink() : 'please-add-PreviewLink-method';
