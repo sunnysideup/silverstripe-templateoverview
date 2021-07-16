@@ -316,8 +316,10 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $data['status'] = 'error';
             $data['content'] = $this->rawResponse;
         } elseif (200 === $httpResponse && $this->rawResponse && strlen($this->rawResponse) < 200) {
-            $data['status'] = 'error - no response';
-            $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
+            if (! $this->isJson($this->rawResponse)) {
+                $data['status'] = 'error - no response';
+                $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
+            }
         }
 
         $data['w3Content'] = 'n/a';
@@ -348,6 +350,11 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         $content .= '<p><strong>W3 Content:</strong> ' . $data['w3Content'] . '</p>';
 
         return $content;
+    }
+
+    protected function isJson($string) {
+        $obj = json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE && gettype($obj ) == "object";
     }
 
     /**
