@@ -261,6 +261,13 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         return $response;
     }
 
+    protected function isJson($string)
+    {
+        $obj = json_decode($string);
+
+        return JSON_ERROR_NONE === json_last_error() && 'object' === gettype($obj);
+    }
+
     /**
      * ECHOES the result of testing the URL....
      *
@@ -350,11 +357,6 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         $content .= '<p><strong>W3 Content:</strong> ' . $data['w3Content'] . '</p>';
 
         return $content;
-    }
-
-    protected function isJson($string) {
-        $obj = json_decode($string);
-        return json_last_error() === JSON_ERROR_NONE && gettype($obj ) == "object";
     }
 
     /**

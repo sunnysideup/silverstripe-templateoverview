@@ -219,6 +219,7 @@ class AllLinks extends AllLinksProviderBase
         $obj = Injector::inst()->get(AllLinksControllerInfo::class);
         $list = $obj->getAllLinksInner();
         $list = $obj->getLinksAndActions();
+
         return array_keys($list['CustomLinks'] ?? []);
     }
 

@@ -27,6 +27,7 @@ use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
  */
 class TemplateOverviewPageController extends PageController
 {
+    protected $myMoreList;
     private static $url_segment = 'templateoverviewtemplates';
 
     /**
@@ -59,8 +60,6 @@ class TemplateOverviewPageController extends PageController
         return $this->renderWith('Sunnysideup\\TemplateOverview\\Includes\\TemplateOverviewList');
     }
 
-    protected $myMoreList = null;
-
     public function showmore($request)
     {
         $id = $request->param('ID');
@@ -74,10 +73,11 @@ class TemplateOverviewPageController extends PageController
                 ->limit(300)
             ;
             $this->myMoreList = ArrayList::create();
-            foreach($list as $count => $item) {
+            foreach ($list as $count => $item) {
                 $this->myMoreList->push(clone $this->createPageObject($item, $count));
             }
         }
+
         return $this->renderWith('Sunnysideup\\TemplateOverview\\TemplateOverviewPageShowMoreList');
     }
 
@@ -200,7 +200,6 @@ class TemplateOverviewPageController extends PageController
             return Security::permissionFailure($this, 'Please login to access this list');
         }
     }
-
 
     /**
      * @param SiteTree $obj
