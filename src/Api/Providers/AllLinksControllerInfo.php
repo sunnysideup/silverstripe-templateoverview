@@ -214,9 +214,9 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     /**
      * @param string $className
      *
-     * @return DataObject
+     * @return DataObject|null
      */
-    protected function findSingleton($className)
+    protected function findSingleton(string $className)
     {
         if (null !== $this->controllerReflectionClass($className)) {
             $this->classObjects[$className] = null;

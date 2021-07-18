@@ -18,6 +18,8 @@ use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
+
+use SilverStripe\Assets\Image;
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 
@@ -63,8 +65,8 @@ class TemplateOverviewPageController extends PageController
     public function showmore($request)
     {
         $id = $request->param('ID');
-        /** @var null|DataObject $obj */
         $className = $this->getBaseClass();
+        /** @var null|DataObject $obj */
         $obj = $className::get()->byID((int) $id);
         if (null !== $obj) {
             $className = $obj->ClassName;
@@ -154,7 +156,7 @@ class TemplateOverviewPageController extends PageController
     /**
      * returns a list of all (SiteTree) Classes.
      *
-     * @return Array(String)
+     * @return ArrayList
      */
     public function ListOfAllClasses()
     {
@@ -235,7 +237,5 @@ class TemplateOverviewPageController extends PageController
         }
 
         return (string) LeftAndMain::menu_icon_for_class($obj->ClassName);
-
-        return '';
     }
 }

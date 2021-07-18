@@ -189,7 +189,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         }
         //Make temporary admin member
         $filter = ['Email' => self::get_user_email()];
-        // @var Member|null $this
+        /** @var Member|null $this->member */
         $this->member = Member::get()
             ->filter($filter)
             ->first()
@@ -400,9 +400,11 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
     private function deleteUser()
     {
-        if (Config::inst()->get(self::class, 'use_default_admin')) {
+        /** @var null|bool $isAdmin */
+        $isAdmin = Config::inst()->get(self::class, 'use_default_admin');
+        if ($isAdmin) {
             //do nothing;
-        } elseif ($this->member) {
+        } else {
             $this->member->delete();
         }
     }

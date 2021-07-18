@@ -38,12 +38,14 @@ class CheckAllTemplates extends BuildTask
         //we have this check here so that even in dev mode you have to log in.
         //because if you do not log in, the test will not work.
         if (! Permission::check('ADMIN')) {
-            return Security::permissionFailure();
+            Security::permissionFailure($this);
+            return;
         }
 
         $allLinks = Injector::inst()->get(AllLinks::class)->getAllLinks();
         if (! empty($_GET['htmllist'])) {
-            return $this->htmlListOutput($allLinks);
+            $this->htmlListOutput($allLinks);
+            return;
         }
 
         $this->defaultOutput($allLinks);
