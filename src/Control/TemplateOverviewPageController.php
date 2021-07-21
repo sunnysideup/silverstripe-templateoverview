@@ -4,6 +4,7 @@ namespace Sunnysideup\TemplateOverview\Control;
 
 use PageController;
 use SilverStripe\Admin\LeftAndMain;
+use SilverStripe\Assets\Image;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
@@ -18,8 +19,6 @@ use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
-
-use SilverStripe\Assets\Image;
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 

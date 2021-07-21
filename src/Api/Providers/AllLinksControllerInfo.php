@@ -212,9 +212,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     }
 
     /**
-     * @param string $className
-     *
-     * @return DataObject|null
+     * @return null|DataObject
      */
     protected function findSingleton(string $className)
     {
