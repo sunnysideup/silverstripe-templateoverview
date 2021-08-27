@@ -1,9 +1,11 @@
 ---
 Name: 'TemplateoverviewRoutes'
+Before:
+  - '#adminroutes'
 ---
 SilverStripe\Control\Director:
   rules:
-    'templateoverviewtemplates//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\TemplateOverviewPageController'
-    'templateoverviewtemplates-elemental//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\TemplateOverviewForElementalPageController'
-    'templateoverviewloginandredirect//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\LoginAndRedirect'
-    'templateoverviewsmoketestresponse//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\CheckAllTemplatesResponseController'
+    'admin/templateoverviewtemplates//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\TemplateOverviewPageController'
+    'admin/templateoverviewtemplates-elemental//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\TemplateOverviewForElementalPageController'
+    'admin/templateoverviewloginandredirect//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\LoginAndRedirect'
+    'admin/templateoverviewsmoketestresponse//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\CheckAllTemplatesResponseController'

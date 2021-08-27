@@ -46,7 +46,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
     private static $password = '';
 
-    private static $url_segment = 'templateoverviewsmoketestresponse';
+    private static $url_segment = 'admin/templateoverviewsmoketestresponse';
 
     private static $use_w3_validation = false;
 
@@ -283,7 +283,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         } else {
             $validate = Config::inst()->get(self::class, 'use_w3_validation');
         }
-        $testURL = Director::absoluteURL('/templateoverviewloginandredirect/login/?BackURL=');
+        $testURL = Director::absoluteURL('/admin/templateoverviewloginandredirect/login/?BackURL=');
         $testURL .= urlencode($url);
         $this->guzzleSetup();
 
