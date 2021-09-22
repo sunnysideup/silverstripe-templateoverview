@@ -252,7 +252,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             //echo Psr7\str($exception->getRequest());
             if ($requestException->hasResponse()) {
                 $response = $requestException->getResponse();
-                $this->rawResponse = $requestException->getResponseBodySummary($response);
+                $this->rawResponse = $response->getStatusCode() . '|' . $response->getReasonPhrase() ;
             } else {
                 $response = null;
             }

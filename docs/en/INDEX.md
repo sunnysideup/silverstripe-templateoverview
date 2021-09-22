@@ -10,6 +10,11 @@ task as this will provide you with a very useful
 implementation of the poorman's template checker.
 
 
+Other useful links
+----------------------------------------------
+ - /admin/templateoverviewtemplates - list of all page types with examples
+ - .admin/templateoverviewtemplates-elemental - elementals
+
 
 
 Developer
