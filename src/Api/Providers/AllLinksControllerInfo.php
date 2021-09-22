@@ -273,7 +273,8 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                 $array2 = $object->templateOverviewTests();
             }
         }
-
+        print_r($array1);
+        print_r($array2);
         return $array1 + $array2;
     }
 
