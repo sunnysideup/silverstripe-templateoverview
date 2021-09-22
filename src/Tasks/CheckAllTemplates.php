@@ -37,7 +37,7 @@ class CheckAllTemplates extends BuildTask
         //we have this check here so that even in dev mode you have to log in.
         //because if you do not log in, the test will not work.
         if (! Permission::check('ADMIN')) {
-            die('You need to be logged in to see this.');
+            die('Please <a href="/Security/login/?BackURL=/dev/tasks/smoketest/">log in</a> first.');
 
             return;
         }
