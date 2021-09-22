@@ -137,7 +137,10 @@ class AllLinks extends AllLinksProviderBase
      */
     public function getAllLinks(): array
     {
-        foreach ($this->Config()->get('custom_links') as $link) {
+        $array1 = $this->Config()->get('custom_links');
+        $array2 = [];
+        $array2 = $this->getCustomisedLinks();
+        foreach (array_merge($array1, $array2) as $link) {
             $link = '/' . ltrim($link, '/') . '/';
             if (self::is_admin_link($link)) {
                 $this->customCMSLinks[] = $link;
@@ -204,6 +207,13 @@ class AllLinks extends AllLinksProviderBase
         $obj->setNumberOfExamples($this->Config()->number_of_examples);
 
         return $obj->getAllLinksInner();
+    }
+
+    public function getCustomisedLinks(): array
+    {
+        $obj = Injector::inst()->get(AllLinksControllerInfo::class);
+
+        return $obj->getCustomisedLinks();
     }
 
     public function ListOfAllControllerMethods(): array
