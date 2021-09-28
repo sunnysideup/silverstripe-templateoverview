@@ -8,7 +8,9 @@
         <span class="typo-fullLink"><a href="$PreviewLink">$Title</a></span> | <a href="$CMSEditLink">CMS view</a>
         <% else %>
         <span class="typo-fullLink">
-        <em>class:</em> $ClassName
+        <em>class:</em> $ClassName<br />
+        <em>can create more:</em> $MoreCanBeCreated<br />
+        <em>allowed children:</em> $AllowedChildren<br />
         </span>
         <span class="typo-fullLink">
             <em>example:</em>
