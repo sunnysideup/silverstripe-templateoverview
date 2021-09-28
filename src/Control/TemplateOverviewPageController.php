@@ -222,8 +222,8 @@ class TemplateOverviewPageController extends PageController
         $listArray['PreviewLink'] = $obj->hasMethod('PreviewLink') ? $obj->PreviewLink() : 'please-add-PreviewLink-method';
         $listArray['CMSEditLink'] = $obj->hasMethod('CMSEditLink') ? $obj->CMSEditLink() : 'please-add-CMSEditLink-method';
         $listArray['MoreCanBeCreated'] = $obj->canCreate() ? 'Yes' : 'No';
-        $listArray['AllowedChildren'] = implode(', ', $obj->allowedChildren());
-
+        $children = $this->listOfTitles($obj->allowedChildren());
+        $listArray['AllowedChildren'] = implode(', ', $children);
         $listArray['Icon'] = $this->getIcon($obj);
 
         return new ArrayData($listArray);
@@ -241,9 +241,18 @@ class TemplateOverviewPageController extends PageController
         return (string) LeftAndMain::menu_icon_for_class($obj->ClassName);
     }
 
-    protected function listOfTitles()
+    protected function listOfTitles($array)
     {
-
+        if(is_array($array) && count($array)) {
+            $newArray = [];
+            foreach($array as $item) {
+                $obj = Injector::inst()->get($item);
+                $newArray[] = $obj->i18n_singular_name();
+            }
+            return $newArray;
+        } else {
+            return ['none'];
+        }
     }
 
 }
