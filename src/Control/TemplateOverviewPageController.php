@@ -223,7 +223,7 @@ class TemplateOverviewPageController extends PageController
         $listArray['CMSEditLink'] = $obj->hasMethod('CMSEditLink') ? $obj->CMSEditLink() : 'please-add-CMSEditLink-method';
         $listArray['MoreCanBeCreated'] = $obj->canCreate() ? 'Yes' : 'No';
         $listArray['AllowedChildren'] = implode(', ', $obj->allowedChildren());
-        $listArray['CanBeRoot'] = implode(', ', $obj->allowedChildren());
+
         $listArray['Icon'] = $this->getIcon($obj);
 
         return new ArrayData($listArray);
@@ -240,4 +240,10 @@ class TemplateOverviewPageController extends PageController
 
         return (string) LeftAndMain::menu_icon_for_class($obj->ClassName);
     }
+
+    protected function listOfTitles()
+    {
+
+    }
+
 }
