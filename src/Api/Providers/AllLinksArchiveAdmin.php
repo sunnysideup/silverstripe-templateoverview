@@ -93,28 +93,31 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
         $list = \Singleton($class)->get();
         $baseTable = \Singleton($list->dataClass())->baseTable();
         $liveTable = $baseTable . '_Live';
-
-        $list = $list
-            ->setDataQueryParam('Versioned.mode', 'latest_versions')
-        ;
-        // Join a temporary alias BaseTable_Draft, renaming this on execution to BaseTable
-        // See Versioned::augmentSQL() For reference on this alias
         $draftTable = $baseTable . '_Draft';
-        $list = $list
-            ->leftJoin(
-                $draftTable,
-                "\"{$baseTable}\".\"ID\" = \"{$draftTable}\".\"ID\""
-            )
-        ;
+        if($this->tableExists($liveTable) && $this->tableExists($draftTable)) {
 
-        $list = $list->leftJoin(
-            $liveTable,
-            "\"{$baseTable}\".\"ID\" = \"{$liveTable}\".\"ID\""
-        );
+            $list = $list
+                ->setDataQueryParam('Versioned.mode', 'latest_versions')
+            ;
+            // Join a temporary alias BaseTable_Draft, renaming this on execution to BaseTable
+            // See Versioned::augmentSQL() For reference on this alias
+            $list = $list
+                ->leftJoin(
+                    $draftTable,
+                    "\"{$baseTable}\".\"ID\" = \"{$draftTable}\".\"ID\""
+                )
+            ;
 
-        $list = $list->where("\"{$draftTable}\".\"ID\" IS NULL");
-        $list = $list->sort(DB::get_conn()->random() . ' ASC');
+            $list = $list->leftJoin(
+                $liveTable,
+                "\"{$baseTable}\".\"ID\" = \"{$liveTable}\".\"ID\""
+            );
 
-        return $list->First();
+            $list = $list->where("\"{$draftTable}\".\"ID\" IS NULL");
+            $list = $list->sort(DB::get_conn()->random() . ' ASC');
+
+            return $list->First();
+        }
     }
+
 }

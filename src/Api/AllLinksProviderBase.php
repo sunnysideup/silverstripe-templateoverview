@@ -10,6 +10,7 @@ use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\DB;
 
 abstract class AllLinksProviderBase
 {
@@ -78,4 +79,11 @@ abstract class AllLinksProviderBase
 
         return $newArray;
     }
+
+    protected function tableExists(string $table) : bool
+    {
+        $tables = DB::tableList();
+        return array_key_exists(strtolower($table), $tables);
+    }
+
 }
