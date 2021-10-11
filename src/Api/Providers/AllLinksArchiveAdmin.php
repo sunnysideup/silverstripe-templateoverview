@@ -76,7 +76,9 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
                 //needs to stay here for exception!
                 $links[] = $modelLink;
                 if ($item) {
-                    if (is_subclass_of($model, SiteTree::class) || SiteTree::class === $model) {
+                    $test1 = is_subclass_of($model, SiteTree::class);
+                    $test2 = SiteTree::class === (string) $model;
+                    if ($test1 || $test2) {
                         $links[] = $modelLink . 'EditForm/field/Pages/item/' . $item->ID . '/view/';
                     } else {
                         $links[] = $modelLink . 'EditForm/field/Others/item/' . $item->ID . '/view/';

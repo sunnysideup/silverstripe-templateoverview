@@ -40,7 +40,7 @@
             <tr id="link-{$ItemCount}" class="link-item <% if $IsCMSLink %>isCMSLink<% else %>isNonCMSLink<% end_if %>" data-is-cms-link="$IsCMSLink" data-link="$Link.XML">
                     <td class="test">
                         <span>$Pos</span>
-                        <a href="{$AbsoluteBaseURL}templateoverviewsmoketestresponse/testone/?test={$Link.XML}&amp;iscmslink={$IsCMSLink}" target='_blank'><% if $IsCMSLink %>✎<% else %>🌐<% end_if %></a>
+                    <a href="{$AbsoluteBaseURL}admin/templateoverviewsmoketestresponse/testone/?test={$Link.XML}&amp;iscmslink={$IsCMSLink}" target='_blank'><% if $IsCMSLink %>✎<% else %>🌐<% end_if %></a>
                     </td>
                     <td class="link">
                         <a href="{$AbsoluteBaseURLMinusSlash}$Link" target="_blank">$Link</a>

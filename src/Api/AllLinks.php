@@ -44,6 +44,10 @@ class AllLinks extends AllLinksProviderBase
      * @var array
      */
     protected $customNonCMSLinks = [];
+    /**
+     * @var array
+     */
+    protected $templateoverviewtestsLinks = [];
 
     /**
      * @var array
@@ -133,7 +137,10 @@ class AllLinks extends AllLinksProviderBase
      */
     public function getAllLinks(): array
     {
-        foreach ($this->Config()->get('custom_links') as $link) {
+        $array1 = $this->Config()->get('custom_links');
+        $array2 = [];
+        $array2 = $this->getCustomisedLinks();
+        foreach (array_merge($array1, $array2) as $link) {
             $link = '/' . ltrim($link, '/') . '/';
             if (self::is_admin_link($link)) {
                 $this->customCMSLinks[] = $link;
@@ -143,10 +150,12 @@ class AllLinks extends AllLinksProviderBase
         }
         $this->pagesOnFrontEnd = $this->ListOfPagesLinks();
         $this->dataObjectsOnFrontEnd = $this->ListOfDataObjectsLinks(false);
+        $this->templateoverviewtestsLinks = $this->ListOfAllTemplateoverviewtestsLinks();
 
         $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->pagesOnFrontEnd);
         $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->dataObjectsOnFrontEnd);
         $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->customNonCMSLinks);
+        $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->templateoverviewtestsLinks);
         sort($this->allNonCMSLinks);
 
         $this->pagesInCMS = $this->ListOfPagesLinks(true);
@@ -200,12 +209,28 @@ class AllLinks extends AllLinksProviderBase
         return $obj->getAllLinksInner();
     }
 
+    public function getCustomisedLinks(): array
+    {
+        $obj = Injector::inst()->get(AllLinksControllerInfo::class);
+
+        return $obj->getCustomisedLinks();
+    }
+
     public function ListOfAllControllerMethods(): array
     {
         $obj = Injector::inst()->get(AllLinksControllerInfo::class);
         $obj->setValidNameSpaces($this->Config()->controller_name_space_filter);
 
         return $obj->getAllLinksInner();
+    }
+
+    public function ListOfAllTemplateoverviewtestsLinks(): array
+    {
+        $obj = Injector::inst()->get(AllLinksControllerInfo::class);
+        $list = $obj->getAllLinksInner();
+        $list = $obj->getLinksAndActions();
+
+        return array_keys($list['CustomLinks'] ?? []);
     }
 
     public function ListOfDataObjectsLinks(bool $inCMS): array
@@ -229,7 +254,7 @@ class AllLinks extends AllLinksProviderBase
     {
         //first() will return null or the object
         $return = [];
-        $siteTreeClassNames = $this->getListOfAllSiteTreeClasses();
+        $siteTreeClassNames = $this->getListOfAllClasses();
         foreach ($siteTreeClassNames as $class) {
             for ($i = 0; $i < $this->Config()->number_of_examples; ++$i) {
                 $excludedClasses = $this->arrayExcept($siteTreeClassNames, $class);

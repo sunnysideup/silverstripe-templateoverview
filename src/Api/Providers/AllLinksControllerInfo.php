@@ -62,6 +62,27 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         return $this;
     }
 
+    public function getCustomisedLinks() : array
+    {
+        $finalArray = [];
+        $classes = ClassInfo::subclassesFor(DataObject::class, false);
+        foreach ($classes as $className) {
+            if ($className !== 'Page' ) {
+                $classObject = $className::get()->first();
+                if ($classObject && $classObject->hasMethod('templateOverviewTests')) {
+                    $array = $classObject->templateOverviewTests();
+                    if(is_array($array) && count($array)) {
+                        foreach ($array as $customLink) {
+                            $finalArray[$customLink] = $customLink;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $finalArray;
+    }
+
     public function getAllLinksInner(): array
     {
         $finalFinalArray = [];
@@ -122,32 +143,36 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             $this->linksAndActions['CustomLinks'] = [];
             $classes = ClassInfo::subclassesFor(Controller::class);
             foreach ($classes as $className) {
-                $isValid = $this->isValidController($className);
-                if (! $isValid) {
-                    continue;
-                }
-                $this->linksAndActions['Links'][$className] = '';
-
-                //main links
-
-                //custom links
-                $customLinks = $this->findCustomLinks($className);
-                foreach ($customLinks as $customLink) {
-                    $this->linksAndActions['CustomLinks'][$customLink] = $className;
-                }
-                $link = $this->findLink($className);
-                if ('' !== $link) {
-                    $this->linksAndActions['Links'][$className] = $link;
-                }
-                $array = array_merge(
-                    $this->findAllowedActions($className),
-                    $this->findURLHandlers($className)
-                );
-                $this->linksAndActions['Actions'][$className] = $array;
+                $this->getLinksAndActionsInner($className);
             }
         }
 
         return $this->linksAndActions;
+    }
+
+    protected function getLinksAndActionsInner($className)
+    {
+        $isValidController = $this->isValidController($className);
+        if ($isValidController) {
+            $this->linksAndActions['Links'][$className] = '';
+
+            //main links
+
+            //custom links
+            $customLinks = $this->findCustomLinks($className);
+            foreach ($customLinks as $customLink) {
+                $this->linksAndActions['CustomLinks'][$customLink] = $className;
+            }
+            $link = $this->findLink($className);
+            if ('' !== $link) {
+                $this->linksAndActions['Links'][$className] = $link;
+            }
+            $array = array_merge(
+                $this->findAllowedActions($className),
+                $this->findURLHandlers($className)
+            );
+            $this->linksAndActions['Actions'][$className] = $array;
+        }
     }
 
     /**
@@ -212,12 +237,11 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     }
 
     /**
-     * @param string $className
-     *
-     * @return DataObject
+     * @return null|DataObject
      */
-    protected function findSingleton($className)
+    protected function findSingleton(string $className)
     {
+        $this->classObjects[$className] = null;
         if (null !== $this->controllerReflectionClass($className)) {
             $this->classObjects[$className] = null;
             if (! isset($this->classObjects[$className])) {
@@ -275,7 +299,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                 $array2 = $object->templateOverviewTests();
             }
         }
-
         return $array1 + $array2;
     }
 

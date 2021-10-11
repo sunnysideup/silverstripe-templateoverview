@@ -8,7 +8,6 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\Security\Permission;
-use SilverStripe\Security\Security;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
 use SilverStripe\View\SSViewer;
@@ -38,12 +37,16 @@ class CheckAllTemplates extends BuildTask
         //we have this check here so that even in dev mode you have to log in.
         //because if you do not log in, the test will not work.
         if (! Permission::check('ADMIN')) {
-            return Security::permissionFailure();
+            die('Please <a href="/Security/login/?BackURL=/dev/tasks/smoketest/">log in</a> first.');
+
+            return;
         }
 
         $allLinks = Injector::inst()->get(AllLinks::class)->getAllLinks();
         if (! empty($_GET['htmllist'])) {
-            return $this->htmlListOutput($allLinks);
+            $this->htmlListOutput($allLinks);
+
+            return;
         }
 
         $this->defaultOutput($allLinks);

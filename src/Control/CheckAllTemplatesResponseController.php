@@ -46,7 +46,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
     private static $password = '';
 
-    private static $url_segment = 'templateoverviewsmoketestresponse';
+    private static $url_segment = 'admin/templateoverviewsmoketestresponse';
 
     private static $use_w3_validation = false;
 
@@ -189,7 +189,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         }
         //Make temporary admin member
         $filter = ['Email' => self::get_user_email()];
-        // @var Member|null $this
+        // @var Member|null $this->member
         $this->member = Member::get()
             ->filter($filter)
             ->first()
@@ -252,13 +252,20 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             //echo Psr7\str($exception->getRequest());
             if ($requestException->hasResponse()) {
                 $response = $requestException->getResponse();
-                $this->rawResponse = $requestException->getResponseBodySummary($response);
+                $this->rawResponse = $response->getStatusCode() . '|' . $response->getReasonPhrase() ;
             } else {
                 $response = null;
             }
         }
 
         return $response;
+    }
+
+    protected function isJson($string)
+    {
+        $obj = json_decode($string);
+
+        return JSON_ERROR_NONE === json_last_error() && 'object' === gettype($obj);
     }
 
     /**
@@ -276,7 +283,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         } else {
             $validate = Config::inst()->get(self::class, 'use_w3_validation');
         }
-        $testURL = Director::absoluteURL('/templateoverviewloginandredirect/login/?BackURL=');
+        $testURL = Director::absoluteURL('/admin/templateoverviewloginandredirect/login/?BackURL=');
         $testURL .= urlencode($url);
         $this->guzzleSetup();
 
@@ -316,8 +323,10 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $data['status'] = 'error';
             $data['content'] = $this->rawResponse;
         } elseif (200 === $httpResponse && $this->rawResponse && strlen($this->rawResponse) < 200) {
-            $data['status'] = 'error - no response';
-            $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
+            if (! $this->isJson($this->rawResponse)) {
+                $data['status'] = 'error - no response';
+                $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
+            }
         }
 
         $data['w3Content'] = 'n/a';
@@ -391,9 +400,11 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
     private function deleteUser()
     {
-        if (Config::inst()->get(self::class, 'use_default_admin')) {
+        /** @var null|bool $isAdmin */
+        $isAdmin = Config::inst()->get(self::class, 'use_default_admin');
+        if ($isAdmin) {
             //do nothing;
-        } elseif ($this->member) {
+        } else {
             $this->member->delete();
         }
     }
