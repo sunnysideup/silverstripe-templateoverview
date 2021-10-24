@@ -62,16 +62,16 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         return $this;
     }
 
-    public function getCustomisedLinks() : array
+    public function getCustomisedLinks(): array
     {
         $finalArray = [];
         $classes = ClassInfo::subclassesFor(DataObject::class, false);
         foreach ($classes as $className) {
-            if ($className !== 'Page' ) {
+            if ('Page' !== $className) {
                 $classObject = $className::get()->first();
                 if ($classObject && $classObject->hasMethod('templateOverviewTests')) {
                     $array = $classObject->templateOverviewTests();
-                    if(is_array($array) && count($array)) {
+                    if (is_array($array) && count($array)) {
                         foreach ($array as $customLink) {
                             $finalArray[$customLink] = $customLink;
                         }
@@ -299,6 +299,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                 $array2 = $object->templateOverviewTests();
             }
         }
+
         return $array1 + $array2;
     }
 

@@ -96,8 +96,7 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
         $baseTable = \Singleton($list->dataClass())->baseTable();
         $liveTable = $baseTable . '_Live';
         $draftTable = $baseTable . '_Draft';
-        if($this->tableExists($liveTable) && $this->tableExists($draftTable)) {
-
+        if ($this->tableExists($liveTable) && $this->tableExists($draftTable)) {
             $list = $list
                 ->setDataQueryParam('Versioned.mode', 'latest_versions')
             ;
@@ -121,5 +120,4 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
             return $list->First();
         }
     }
-
 }

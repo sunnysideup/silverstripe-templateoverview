@@ -80,10 +80,10 @@ abstract class AllLinksProviderBase
         return $newArray;
     }
 
-    protected function tableExists(string $table) : bool
+    protected function tableExists(string $table): bool
     {
         $tables = DB::table_list();
+
         return array_key_exists(strtolower($table), $tables);
     }
-
 }

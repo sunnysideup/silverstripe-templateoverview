@@ -243,16 +243,16 @@ class TemplateOverviewPageController extends PageController
 
     protected function listOfTitles($array)
     {
-        if(is_array($array) && count($array)) {
+        if (is_array($array) && count($array)) {
             $newArray = [];
-            foreach($array as $item) {
+            foreach ($array as $item) {
                 $obj = Injector::inst()->get($item);
                 $newArray[] = $obj->i18n_singular_name();
             }
-            return $newArray;
-        } else {
-            return ['none'];
-        }
-    }
 
+            return $newArray;
+        }
+
+        return ['none'];
+    }
 }
