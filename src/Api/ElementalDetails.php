@@ -2,13 +2,16 @@
 
 namespace Sunnysideup\TemplateOverview\Api;
 
-use DNADesign\Elemental\Models\BaseElement;
 use SilverStripe\Core\ClassInfo;
 
 class ElementalDetails extends SiteTreeDetails
 {
-    protected function getClassList()
+    protected function getClassList(): array
     {
-        return ClassInfo::subclassesFor(BaseElement::class, false);
+        if (class_exists('DNADesign\\Elemental\\Models\\BaseElement')) {
+            return ClassInfo::subclassesFor('DNADesign\\Elemental\\Models\\BaseElement', false);
+        }
+
+        return [];
     }
 }

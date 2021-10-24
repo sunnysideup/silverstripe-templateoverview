@@ -2,7 +2,6 @@
 
 namespace Sunnysideup\TemplateOverview\Control;
 
-use DNADesign\Elemental\Models\BaseElement;
 use Sunnysideup\TemplateOverview\Api\ElementalDetails;
 
 /**
@@ -13,7 +12,7 @@ class TemplateOverviewForElementalPageController extends TemplateOverviewPageCon
 {
     private static $url_segment = 'admin/templateoverviewtemplates-elemental';
 
-    private static $base_class = BaseElement::class;
+    private static $base_class = 'DNADesign\\Elemental\\Models\\BaseElement';
 
     private static $base_class_provider = ElementalDetails::class;
 }
