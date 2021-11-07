@@ -4,6 +4,7 @@
     <li style="margin-top: 45px; padding-top: 0; background-image: url({$Icon}); background-repeat: no-repeat!important; background-position: top left; text-indent: 20px;" id="sectionFor-$ClassName">
     <% if Count %>
     <span class="typo-heading">$Count x $Name - template</span>
+        <span>$Desciption</span>
         <% if ShowAll %>
         <span class="typo-fullLink"><a href="$PreviewLink">$Title</a></span> | <a href="$CMSEditLink">CMS view</a>
         <% else %>

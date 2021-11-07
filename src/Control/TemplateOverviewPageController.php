@@ -212,6 +212,7 @@ class TemplateOverviewPageController extends PageController
     {
         $listArray = [];
         $listArray['Name'] = 1 === $count ? $obj->i18n_singular_name() : $obj->i18n_plural_name();
+        $listArray['Description'] = $obj->i18n_classDescription();
         $listArray['ClassName'] = $obj->ClassName;
         $listArray['Count'] = $count;
         $listArray['ID'] = $obj->ID;
