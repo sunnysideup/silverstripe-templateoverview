@@ -14,6 +14,8 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
@@ -212,7 +214,7 @@ class TemplateOverviewPageController extends PageController
     {
         $listArray = [];
         $listArray['Name'] = 1 === $count ? $obj->i18n_singular_name() : $obj->i18n_plural_name();
-        $listArray['Description'] = $obj->i18n_classDescription();
+        $listArray['Description'] = DBField::create_field('HTMLText', $obj->i18n_classDescription());
         $listArray['ClassName'] = $obj->ClassName;
         $listArray['Count'] = $count;
         $listArray['ID'] = $obj->ID;

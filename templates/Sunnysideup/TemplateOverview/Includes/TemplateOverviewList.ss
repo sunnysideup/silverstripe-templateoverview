@@ -1,9 +1,12 @@
 <h1 id="allclasses">Templates used on this website ($TotalCount): </h1>
 <ul id="ClassList">
 <% loop $ListOfAllClasses %>
-    <li style="background-image: url({$Icon}); background-repeat: no-repeat!important; background-position: top left;" id="sectionFor-$ClassName">
+    <li id="sectionFor-$ClassName">
+        <div style="background-image: url({$Icon}); background-repeat: no-repeat!important; background-position: top left; height: 32px; width: 32px; float: right; ">
+
+        </div>
         <% if Count %>
-        <h3 class="typo-heading">$Count x $Name - template</h3>
+        <strong>$Count x $Name - template</strong>
         <ul>
             <li>
                 $Description
@@ -36,9 +39,6 @@
                                 <a href="$LiveLink">$Title</a>
                             </li>
                             <li>
-                                <a href="{$LiveLink}json/?pretty=1">JSON</a>
-                            </li>
-                            <li>
                                 <a href="$PreviewLink">Preview</a>
                             </li>
                             <li>
@@ -66,10 +66,10 @@
                 </ul>
             </li>
             <% end_if %>
-        <% else %>
-            There are no instances of $ClassName templates.</li>
-        <% end_if %>
         </ul>
+        <% else %>
+        There are no instances of $ClassName templates.
+        <% end_if %>
     </li>
 <% end_loop %>
 </ul>

@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <% base_tag %>
-    <meta charset="utf-8">
-    <title>$Title</title>
+    <meta charset="utf-8" />
+    <title>$Title - templates</title>
     <link href="/resources/vendor/sunnysideup/templateoverview/client/css/TemplateOverviewPage.css" rel="stylesheet" type="text/css"  />
 </head>
 <body>

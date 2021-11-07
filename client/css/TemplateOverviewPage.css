@@ -1,0 +1,9 @@
+body {
+    max-width: 700px;
+    margin: 40px auto 40px auto;
+}
+
+li { padding-top: 2rem;}
+li li { padding-top: 1rem;}
+li li li { padding-top: 0.5rem;}
+li li li li { padding-top: 0.2rem;}
