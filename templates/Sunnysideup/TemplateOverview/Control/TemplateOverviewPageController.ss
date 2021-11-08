@@ -3,8 +3,7 @@
 <head>
     <% base_tag %>
     <meta charset="utf-8">
-    <title>$Title</title>
-    <link href="/resources/vendor/sunnysideup/templateoverview/client/css/TemplateOverviewPage.css" rel="stylesheet" type="text/css"  />
+    <title>$Title TEMPLATES</title>
 </head>
 <body>
     $Content

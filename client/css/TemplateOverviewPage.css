@@ -1,6 +1,8 @@
 body {
-    max-width: 700px;
-    margin: 40px auto 40px auto;
+    max-width: 1200px;
+    margin: 40px auto 400px auto!important;
+    display: block!important;
+    overflow: visible!important;
 }
 
 li { padding-top: 2rem;}

@@ -192,9 +192,10 @@ class TemplateOverviewPageController extends PageController
         //important
         Versioned::set_stage(Versioned::DRAFT);
         if (Director::is_cli() || Director::isDev() || Permission::check('ADMIN')) {
-            Requirements::javascript('//code.jquery.com/jquery-1.7.2.min.js');
+            Requirements::css('sunnysideup/templateoverview: client/css/TemplateOverviewPage.css');
+            Requirements::css('silverstripe/admin: client/dist/styles/bundle.css');
+            Requirements::javascript('https://code.jquery.com/jquery-1.7.2.min.js');
             Requirements::javascript('sunnysideup/templateoverview: client/javascript/TemplateOverviewPage.js');
-            Requirements::themedCSS('client/css/TemplateOverviewPage');
             if (class_exists(PrettyPhoto::class)) {
                 PrettyPhoto::include_code();
             }
@@ -251,7 +252,7 @@ class TemplateOverviewPageController extends PageController
             $icon = 'font-page';
         }
         if (strpos('.', $icon) === false) {
-            $icon = str_replace('font-icon-', 'fa-', $icon);
+            // $icon = str_replace('font-icon-', 'fa-', $icon);
         }
         return $icon;
     }
