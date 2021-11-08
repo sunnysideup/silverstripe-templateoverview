@@ -19,6 +19,7 @@ use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
+use SilverStripe\View\SSViewer;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
@@ -192,6 +193,7 @@ class TemplateOverviewPageController extends PageController
         //important
         Versioned::set_stage(Versioned::DRAFT);
         if (Director::is_cli() || Director::isDev() || Permission::check('ADMIN')) {
+            Config::modify()->set(SSViewer::class, 'theme_enabled', false);
             Requirements::css('sunnysideup/templateoverview: client/css/TemplateOverviewPage.css');
             Requirements::css('silverstripe/admin: client/dist/styles/bundle.css');
             Requirements::javascript('https://code.jquery.com/jquery-1.7.2.min.js');

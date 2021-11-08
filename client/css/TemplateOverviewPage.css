@@ -5,7 +5,7 @@ body {
     overflow: visible!important;
 }
 
-li { padding-top: 2rem;}
-li li { padding-top: 1rem;}
-li li li { padding-top: 0.5rem;}
-li li li li { padding-top: 0.2rem;}
+li { padding-top: 2rem!important; margin-left: 1rem!important; border-top: 1px solid #555!important;}
+li li { padding-top: 1rem!important;list-style: circle!important; border-top: none!important;}
+li li li { padding-top: 0.5rem!important;}
+li li li li { padding-top: 0.2rem!important;}
