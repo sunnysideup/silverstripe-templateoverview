@@ -212,6 +212,8 @@ class TemplateOverviewPageController extends PageController
      */
     protected function createPageObject($obj, $count)
     {
+        $canCreateString = ($obj->canCreate() ? 'Yes' : 'No');
+        $isAdmin = Permission::check('ADMIN');
         $listArray = [];
         $listArray['Name'] = 1 === $count ? $obj->i18n_singular_name() : $obj->i18n_plural_name();
         $listArray['Description'] = DBField::create_field('HTMLText', $obj->i18n_classDescription());
@@ -224,7 +226,7 @@ class TemplateOverviewPageController extends PageController
         $listArray['LiveLink'] = $obj->hasMethod('Link') ? str_replace('?stage=Stage', '', $obj->Link()) : 'please-add-Link-method';
         $listArray['PreviewLink'] = $obj->hasMethod('PreviewLink') ? $obj->PreviewLink() : 'please-add-PreviewLink-method';
         $listArray['CMSEditLink'] = $obj->hasMethod('CMSEditLink') ? $obj->CMSEditLink() : 'please-add-CMSEditLink-method';
-        $listArray['MoreCanBeCreated'] = $obj->canCreate() ? 'Yes' : 'No';
+        $listArray['MoreCanBeCreated'] = $isAdmin ? $canCreateString : 'Please login as ADMIN to see this value';
         $children = $this->listOfTitles($obj->allowedChildren());
         $listArray['AllowedChildren'] = implode(', ', $children);
         $listArray['Icon'] = $this->getIcon($obj);
