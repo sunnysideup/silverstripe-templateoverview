@@ -236,14 +236,36 @@ class TemplateOverviewPageController extends PageController
 
     protected function getIcon($obj): string
     {
-        if ($obj->hasMethod('getPageIconURL')) {
-            return (string) $obj->getPageIconURL();
+        $icon = '';
+        $icon = $this->getIconInner($obj, 'getPageIconURL');
+        if(!$icon) {
+            $icon = $this->getIconInner($obj,'getIconClass');
+            if(!$icon) {
+                $icon = $this->getIconInner($obj,'getIcon');
+                if(!$icon) {
+                    return (string) LeftAndMain::menu_icon_for_class($obj->ClassName);
+                }
+            }
         }
-        if ($obj->hasMethod('getIcon')) {
-            return (string) $obj->getIcon();
+        if(!$icon) {
+            $icon = 'font-page';
         }
+        if (strpos('.', $icon) === false) {
+            $icon = str_replace('font-icon-', 'fa-', $icon);
+        }
+        return $icon;
+    }
 
-        return (string) LeftAndMain::menu_icon_for_class($obj->ClassName);
+    protected function getIconInner($obj, $method) : ?string
+    {
+        if ($obj->hasMethod($method)) {
+            $icon = (string) $obj->{$method}();
+            if($icon) {
+                return $icon;
+            }
+
+        }
+        return null;
     }
 
     protected function listOfTitles($array)

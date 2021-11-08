@@ -2,9 +2,11 @@
 <ul id="ClassList">
 <% loop $ListOfAllClasses %>
     <li id="sectionFor-$ClassName">
+        <% if $Icon %>
         <div style="background-image: url({$Icon}); background-repeat: no-repeat!important; background-position: top left; height: 32px; width: 32px; float: right; ">
-
+            <i class="fas $Icon"></i>
         </div>
+        <% end_if %>
         <% if Count %>
         <strong>$Count x $Name - template</strong>
         <ul>
