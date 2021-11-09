@@ -14,14 +14,13 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
-
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
-use SilverStripe\View\SSViewer;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
+use SilverStripe\View\SSViewer;
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 
@@ -241,33 +240,34 @@ class TemplateOverviewPageController extends PageController
     {
         $icon = '';
         $icon = $this->getIconInner($obj, 'getPageIconURL');
-        if(!$icon) {
-            $icon = $this->getIconInner($obj,'getIconClass');
-            if(!$icon) {
-                $icon = $this->getIconInner($obj,'getIcon');
-                if(!$icon) {
+        if (! $icon) {
+            $icon = $this->getIconInner($obj, 'getIconClass');
+            if (! $icon) {
+                $icon = $this->getIconInner($obj, 'getIcon');
+                if (! $icon) {
                     return (string) LeftAndMain::menu_icon_for_class($obj->ClassName);
                 }
             }
         }
-        if(!$icon) {
+        if (! $icon) {
             $icon = 'font-page';
         }
-        if (strpos('.', $icon) === false) {
+        if (false === strpos('.', $icon)) {
             // $icon = str_replace('font-icon-', 'fa-', $icon);
         }
+
         return $icon;
     }
 
-    protected function getIconInner($obj, $method) : ?string
+    protected function getIconInner($obj, $method): ?string
     {
         if ($obj->hasMethod($method)) {
             $icon = (string) $obj->{$method}();
-            if($icon) {
+            if ($icon) {
                 return $icon;
             }
-
         }
+
         return null;
     }
 
