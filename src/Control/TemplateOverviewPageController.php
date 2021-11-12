@@ -14,13 +14,13 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
-
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
+use SilverStripe\View\SSViewer;
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 
@@ -192,9 +192,11 @@ class TemplateOverviewPageController extends PageController
         //important
         Versioned::set_stage(Versioned::DRAFT);
         if (Director::is_cli() || Director::isDev() || Permission::check('ADMIN')) {
-            Requirements::javascript('//code.jquery.com/jquery-1.7.2.min.js');
+            Config::modify()->set(SSViewer::class, 'theme_enabled', false);
+            Requirements::css('sunnysideup/templateoverview: client/css/TemplateOverviewPage.css');
+            Requirements::css('silverstripe/admin: client/dist/styles/bundle.css');
+            Requirements::javascript('https://code.jquery.com/jquery-1.7.2.min.js');
             Requirements::javascript('sunnysideup/templateoverview: client/javascript/TemplateOverviewPage.js');
-            Requirements::themedCSS('client/css/TemplateOverviewPage');
             if (class_exists(PrettyPhoto::class)) {
                 PrettyPhoto::include_code();
             }
@@ -238,33 +240,34 @@ class TemplateOverviewPageController extends PageController
     {
         $icon = '';
         $icon = $this->getIconInner($obj, 'getPageIconURL');
-        if(!$icon) {
-            $icon = $this->getIconInner($obj,'getIconClass');
-            if(!$icon) {
-                $icon = $this->getIconInner($obj,'getIcon');
-                if(!$icon) {
+        if (! $icon) {
+            $icon = $this->getIconInner($obj, 'getIconClass');
+            if (! $icon) {
+                $icon = $this->getIconInner($obj, 'getIcon');
+                if (! $icon) {
                     return (string) LeftAndMain::menu_icon_for_class($obj->ClassName);
                 }
             }
         }
-        if(!$icon) {
+        if (! $icon) {
             $icon = 'font-page';
         }
-        if (strpos('.', $icon) === false) {
-            $icon = str_replace('font-icon-', 'fa-', $icon);
+        if (false === strpos('.', $icon)) {
+            // $icon = str_replace('font-icon-', 'fa-', $icon);
         }
+
         return $icon;
     }
 
-    protected function getIconInner($obj, $method) : ?string
+    protected function getIconInner($obj, $method): ?string
     {
         if ($obj->hasMethod($method)) {
             $icon = (string) $obj->{$method}();
-            if($icon) {
+            if ($icon) {
                 return $icon;
             }
-
         }
+
         return null;
     }
 
