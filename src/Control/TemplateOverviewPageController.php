@@ -68,7 +68,7 @@ class TemplateOverviewPageController extends PageController
         $id = $request->param('ID');
         $className = $this->getBaseClass();
         /** @var null|DataObject $obj */
-        $obj = $className::get()->byID((int) $id);
+        $obj = $className::get_by_id((int) $id);
         if (null !== $obj) {
             $className = $obj->ClassName;
             $list = $className::get()
