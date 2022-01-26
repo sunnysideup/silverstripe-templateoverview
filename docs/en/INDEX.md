@@ -12,8 +12,8 @@ implementation of the poorman's template checker.
 
 Other useful links
 ----------------------------------------------
- - /admin/templateoverviewtemplates - list of all page types with examples
- - .admin/templateoverviewtemplates-elemental - elementals
+ - /admin/templates - list of all page types with examples
+ - .admin/templates-elemental - elementals
 
 
 

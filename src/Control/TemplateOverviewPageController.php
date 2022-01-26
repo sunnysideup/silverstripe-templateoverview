@@ -31,7 +31,7 @@ use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 class TemplateOverviewPageController extends PageController
 {
     protected $myMoreList;
-    private static $url_segment = 'admin/templateoverviewtemplates';
+    private static $url_segment = 'admin/templates';
 
     /**
      *  folder for example images from root dir

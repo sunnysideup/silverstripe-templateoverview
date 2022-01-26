@@ -5,7 +5,7 @@ Before:
 ---
 SilverStripe\Control\Director:
   rules:
-    'admin/templateoverviewtemplates//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\TemplateOverviewPageController'
-    'admin/templateoverviewtemplates-elemental//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\TemplateOverviewForElementalPageController'
+    'admin/templates//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\TemplateOverviewPageController'
+    'admin/templates-elemental//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\TemplateOverviewForElementalPageController'
     'admin/templateoverviewloginandredirect//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\LoginAndRedirect'
     'admin/templateoverviewsmoketestresponse//$Action/$ID/$OtherID/$Version': 'Sunnysideup\TemplateOverview\Control\CheckAllTemplatesResponseController'
