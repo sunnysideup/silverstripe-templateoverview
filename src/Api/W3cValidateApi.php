@@ -3,7 +3,7 @@
 namespace Sunnysideup\TemplateOverview\Api;
 
 /*
-   Author:	Jamie Telin (jamie.telin@gmail.com), currently at employed Zebramedia.se
+   Author:    Jamie Telin (jamie.telin@gmail.com), currently at employed Zebramedia.se
 
    Scriptname: W3C Validation Api v1.0 (W3C Markup Validation Service)
 
