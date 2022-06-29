@@ -67,7 +67,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         $finalArray = [];
         $classes = ClassInfo::subclassesFor(DataObject::class, false);
         foreach ($classes as $className) {
-            if ('Page' !== $className) {
+            if (\Page::class !== $className) {
                 $classObject = $className::get()->first();
                 if ($classObject && $classObject->hasMethod('templateOverviewTests')) {
                     $array = $classObject->templateOverviewTests();
@@ -101,12 +101,15 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             } else {
                 $link = '???';
             }
+
             if ('/' !== substr($link, -1)) {
                 $link .= '/';
             }
+
             if ('/' !== substr($link, 0, 1)) {
                 $link = '/' . $link;
             }
+
             if (is_array($methods)) {
                 foreach ($methods as $method) {
                     unset($allowedActions[$className][$method]);
@@ -121,6 +124,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                 'Link' => $link,
             ];
         }
+
         usort($finalFinalArray, function ($a, $b) {
             if ($a['ClassName'] !== $b['ClassName']) {
                 return $a['ClassName'] <=> $b['ClassName'];
@@ -137,7 +141,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
      */
     public function getLinksAndActions(): array
     {
-        if (0 === count($this->linksAndActions)) {
+        if ([] === $this->linksAndActions) {
             $this->linksAndActions['Links'] = [];
             $this->linksAndActions['Actions'] = [];
             $this->linksAndActions['CustomLinks'] = [];
@@ -163,10 +167,12 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             foreach ($customLinks as $customLink) {
                 $this->linksAndActions['CustomLinks'][$customLink] = $className;
             }
+
             $link = $this->findLink($className);
             if ('' !== $link) {
                 $this->linksAndActions['Links'][$className] = $link;
             }
+
             $array = array_merge(
                 $this->findAllowedActions($className),
                 $this->findURLHandlers($className)
@@ -213,6 +219,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                     $filterMatch = true;
                 }
             }
+
             if (! $filterMatch) {
                 return null;
             }
@@ -221,10 +228,11 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             if ($controllerReflectionClass->isSubclassOf(LeftAndMain::class)) {
                 return null;
             }
+
             $params = $controllerReflectionClass->getConstructor()->getParameters();
             if ($controllerReflectionClass->isSubclassOf(ContentController::class)) {
                 //do nothing
-            } elseif (count($params) > 0) {
+            } elseif ([] !== $params) {
                 return null;
             }
 
@@ -293,6 +301,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                 $array1 = $classObject->templateOverviewTests();
             }
         }
+
         $object = $this->findDataRecord($className);
         if (null !== $object) {
             if ($object->hasMethod('templateOverviewTests')) {
@@ -351,6 +360,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                 }
             }
         }
+
         $link = '/' . $link . '/';
 
         return str_replace('//', '/', $link);
@@ -380,6 +390,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         if ([] === $this->routes) {
             $this->routes = Config::inst()->get(Director::class, 'rules');
         }
+
         $route = array_search($className, $this->routes, true);
         if ($route) {
             $routeArray = explode('//', $route);

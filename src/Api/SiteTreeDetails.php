@@ -91,6 +91,7 @@ class SiteTreeDetails
                             $this->arrayOfAllClasses[$this->getIndexNumber($count)] = $obj;
                         }
                     }
+
                     self::$list_of_all_classes_counter[$className] = $count;
                 } else {
                     $obj = $className::get()
@@ -105,6 +106,7 @@ class SiteTreeDetails
                         $obj = $className::create();
                         $count = 0;
                     }
+
                     self::$list_of_all_classes_counter[$className] = $count;
                     $this->arrayOfAllClasses[$this->getIndexNumber($count)] = $obj;
                 }

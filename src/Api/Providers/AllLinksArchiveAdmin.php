@@ -38,9 +38,11 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
                     if (is_array($model) || ! is_subclass_of($model, DataObject::class)) {
                         $model = $key;
                     }
+
                     if (! is_subclass_of($model, DataObject::class)) {
                         continue;
                     }
+
                     $links = array_merge(
                         $links,
                         $this->workOutLinksForModel($obj, $model, $modelAdminLink, $modelAdmin)
@@ -64,10 +66,12 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
                 if (! $method) {
                     $method = 'do-not-use';
                 }
+
                 if (false !== strpos($modelAdminLink, $test)) {
                     $exceptionMethod = $method;
                 }
             }
+
             if ($exceptionMethod) {
                 if ($item && $item->hasMethod($exceptionMethod)) {
                     $links = array_merge($links, $item->{$exceptionMethod}($modelAdminLink));

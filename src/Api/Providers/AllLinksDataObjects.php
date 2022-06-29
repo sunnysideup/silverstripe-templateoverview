@@ -33,12 +33,15 @@ class AllLinksDataObjects extends AllLinksProviderBase
                                 if ($obj->hasMethod('CMSEditLink')) {
                                     $return[] = $obj->CMSEditLink();
                                 }
+
                                 if ($obj->hasMethod('CMSAddLink')) {
                                     $return[] = $obj->CMSAddLink();
                                 }
+
                                 if ($obj->hasMethod('CMSListLink')) {
                                     $return[] = $obj->CMSListLink();
                                 }
+
                                 if ($obj->hasMethod('PreviewLink')) {
                                     $return[] = $obj->PreviewLink();
                                 }
@@ -46,6 +49,7 @@ class AllLinksDataObjects extends AllLinksProviderBase
                                 if ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && null !== $obj->LinkID)) {
                                     $return[] = $obj->Link();
                                 }
+
                                 if ($obj->hasMethod('getLink')) {
                                     $return[] = $obj->getLink();
                                 }

@@ -42,6 +42,7 @@ class LoginAndRedirect extends Controller
             if (IPUtils::checkIP($this->request->getIP(), $allowedIPs)) {
                 return Director::isDev();
             }
+
             user_error(
                 'Please include your ip address in LoginAndRedirect.allowed_ips: ' .
                     $this->request->getIP() . '.
@@ -51,6 +52,7 @@ class LoginAndRedirect extends Controller
 
             return;
         }
+
         user_error(
             'Please set SS_ALLOW_SMOKE_TEST in your environment variables to use this service.',
             E_USER_ERROR

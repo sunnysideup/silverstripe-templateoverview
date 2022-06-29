@@ -48,9 +48,11 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                     if (is_array($model) || ! is_subclass_of($model, DataObject::class)) {
                         $model = $key;
                     }
+
                     if (! is_subclass_of($model, DataObject::class)) {
                         continue;
                     }
+
                     $links = array_merge(
                         $links,
                         $this->workOutLinksForModel($modelAdminSingleton, $model, $modelAdminLink, $modelAdmin)
@@ -78,10 +80,12 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                 if (! $method) {
                     $method = 'do-not-use';
                 }
+
                 if (false !== strpos($modelAdminLink, $test)) {
                     $exceptionMethod = $method;
                 }
             }
+
             if ($exceptionMethod) {
                 if ($item && $item->hasMethod($exceptionMethod)) {
                     $links = array_merge($links, $item->{$exceptionMethod}($modelAdminLink));
@@ -92,6 +96,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                 if ($singleton->canCreate(null)) {
                     $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/new/';
                 }
+
                 if ($item) {
                     if ($item->canEdit()) {
                         $links[] = $modelLink . 'EditForm/field/' . $sanitizedModel . '/item/' . $item->ID . '/edit/';

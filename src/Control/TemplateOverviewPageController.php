@@ -31,6 +31,7 @@ use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 class TemplateOverviewPageController extends PageController
 {
     protected $myMoreList;
+
     private static $url_segment = 'admin/templates';
 
     /**
@@ -140,6 +141,7 @@ class TemplateOverviewPageController extends PageController
                     if (is_array($potentialImage)) {
                         $potentialImage = $potentialImage['to'] ?? '';
                     }
+
                     $potentialImage = (explode('.', $potentialImage))[0];
                     if (class_exists($potentialImage)) {
                         $innerSingleton = Injector::inst()->get($potentialImage);
@@ -200,6 +202,7 @@ class TemplateOverviewPageController extends PageController
             if (class_exists(PrettyPhoto::class)) {
                 PrettyPhoto::include_code();
             }
+
             //user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
         } else {
             return Security::permissionFailure($this, 'Please login to access this list');
@@ -249,9 +252,11 @@ class TemplateOverviewPageController extends PageController
                 }
             }
         }
+
         if (! $icon) {
             $icon = 'font-page';
         }
+
         if (false === strpos('.', $icon)) {
             // $icon = str_replace('font-icon-', 'fa-', $icon);
         }

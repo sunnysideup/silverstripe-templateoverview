@@ -12,7 +12,7 @@ class TemplateOverviewForElementalPageController extends TemplateOverviewPageCon
 {
     private static $url_segment = 'admin/templates-elemental';
 
-    private static $base_class = 'DNADesign\\Elemental\\Models\\BaseElement';
+    private static $base_class = \DNADesign\Elemental\Models\BaseElement::class;
 
     private static $base_class_provider = ElementalDetails::class;
 }

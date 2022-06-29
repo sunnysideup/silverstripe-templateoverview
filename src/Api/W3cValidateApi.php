@@ -36,6 +36,7 @@ class W3cValidateApi
         } elseif ($fragment) {
             $this->setFragment($fragment);
         }
+
         $this->validate();
         if ($this->validResult) {
             $type = 'PASS';
@@ -44,6 +45,7 @@ class W3cValidateApi
             $type = 'FAIL';
             $color1 = '#FF3300';
         }
+
         $errorDescription = '';
         if ($this->errorCount) {
             $errorDescription = ' - ' . $this->errorCount . 'errors: ';

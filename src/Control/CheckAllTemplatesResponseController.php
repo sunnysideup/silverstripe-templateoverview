@@ -106,6 +106,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                     $password = strtolower('aa' . substr(uniqid(), 0, 8)) . '_.,' . strtoupper('BB' . substr(uniqid(), 0, 8));
                     $cache->set('password', $password);
                 }
+
                 $password = $cache->get('password');
             }
         }
@@ -165,6 +166,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                         }
                     }
                 }
+
                 $rawResponse = Convert::raw2htmlatt(str_replace("'", '\\\'', $this->rawResponse));
                 echo '
                     <h1>Response</h1>
@@ -177,6 +179,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
             return;
         }
+
         user_error('no test url provided.');
     }
 
@@ -187,6 +190,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
             return $this->member;
         }
+
         //Make temporary admin member
         $filter = ['Email' => self::get_user_email()];
         // @var Member|null $this->member
@@ -197,6 +201,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         if (empty($this->member)) {
             $this->member = Member::create($filter);
         }
+
         $this->member->Password = self::get_password();
         $this->member->LockedOutUntil = null;
         $this->member->FirstName = 'Test';
@@ -209,6 +214,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
             return;
         }
+
         $service = Injector::inst()->get(DefaultAdminService::class);
         $adminGroup = $service->findOrCreateAdminGroup();
         $this->member->Groups()->add($adminGroup);
@@ -278,11 +284,13 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         if (strlen(trim($url)) < 1) {
             user_error('empty url'); //Checks for empty strings.
         }
+
         if (AllLinks::is_admin_link($url)) {
             $validate = false;
         } else {
             $validate = Config::inst()->get(self::class, 'use_w3_validation');
         }
+
         $testURL = Director::absoluteURL('/admin/templateoverviewloginandredirect/login/?BackURL=');
         $testURL .= urlencode($url);
         $this->guzzleSetup();
@@ -347,6 +355,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         if (Director::is_ajax()) {
             return json_encode($data);
         }
+
         $content = '';
         $content .= '<p><strong>URL:</strong> ' . $url . '</p>';
         $content .= '<p><strong>Status:</strong> ' . $data['status'] . '</p>';
@@ -354,9 +363,8 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         $content .= '<p><strong>Content:</strong> ' . htmlspecialchars($data['content']) . '</p>';
         $content .= '<p><strong>Response time:</strong> ' . $data['responseTime'] . '</p>';
         $content .= '<p><strong>Type:</strong> ' . $data['type'] . '</p>';
-        $content .= '<p><strong>W3 Content:</strong> ' . $data['w3Content'] . '</p>';
 
-        return $content;
+        return $content . ('<p><strong>W3 Content:</strong> ' . $data['w3Content'] . '</p>');
     }
 
     /**

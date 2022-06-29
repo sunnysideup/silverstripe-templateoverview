@@ -77,6 +77,7 @@ class CheckAllTemplates extends BuildTask
                 $className = $linkArray['ClassName'];
                 $otherLinks .= '</ul><h2>' . $className . '</h2><ul>';
             }
+
             $otherLinks .= '<li><a href="' . $linkArray['Link'] . '">' . $linkArray['Link'] . '</a></li>';
         }
 
@@ -116,10 +117,12 @@ class CheckAllTemplates extends BuildTask
                     $link = $base . $item;
                     $title = $base . $item;
                 }
+
                 $array[$link] = '<a href="' . $link . '">' . $title . '</a>';
             }
         }
-        if (count($array) > 0) {
+
+        if ([] !== $array) {
             ksort($array);
             echo '<ol><li>' . implode('</li><li>', $array) . '</li></ol>';
         } else {

@@ -44,6 +44,7 @@ class AllLinks extends AllLinksProviderBase
      * @var array
      */
     protected $customNonCMSLinks = [];
+
     /**
      * @var array
      */
@@ -148,6 +149,7 @@ class AllLinks extends AllLinksProviderBase
                 $this->customNonCMSLinks[] = $link;
             }
         }
+
         $this->pagesOnFrontEnd = $this->ListOfPagesLinks();
         $this->dataObjectsOnFrontEnd = $this->ListOfDataObjectsLinks(false);
         $this->templateoverviewtestsLinks = $this->ListOfAllTemplateoverviewtestsLinks();
@@ -263,13 +265,14 @@ class AllLinks extends AllLinksProviderBase
                     ->sort(DB::get_conn()->random() . ' ASC')
                     ->first()
                 ;
-                if (null === $page) {
+                if (! $page instanceof \SilverStripe\ORM\DataObject) {
                     $page = Versioned::get_by_stage($class, Versioned::DRAFT)
                         ->exclude(['ClassName' => $excludedClasses])
                         ->sort(DB::get_conn()->random() . ' ASC')
                         ->first()
                     ;
                 }
+
                 if (null !== $page) {
                     if ($pageInCMS) {
                         $url = $page->CMSEditLink();
@@ -336,12 +339,14 @@ class AllLinks extends AllLinksProviderBase
             if (self::is_admin_link($pushItem)) {
                 $pushItem = str_replace('?stage=Stage', '', $pushItem);
             }
+
             $pushItem = self::sanitise_class_name($pushItem);
             $pushItem = '/' . Director::makeRelative($pushItem);
             //is it a file?
             if (strpos($pushItem, '.') > (strlen($pushItem) - 6)) {
                 $pushItem = rtrim($pushItem, '/');
             }
+
             if ('' !== $pushItem) {
                 if (! empty($excludeList)) {
                     foreach ($excludeList as $excludeItem) {
@@ -350,6 +355,7 @@ class AllLinks extends AllLinksProviderBase
                         }
                     }
                 }
+
                 if (! in_array($pushItem, $array, true)) {
                     $array[] = $pushItem;
                 }
