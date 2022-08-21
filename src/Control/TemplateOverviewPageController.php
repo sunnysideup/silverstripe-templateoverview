@@ -221,7 +221,7 @@ class TemplateOverviewPageController extends PageController
         $isAdmin = Permission::check('ADMIN');
         $listArray = [];
         $listArray['Name'] = 1 === $count ? $obj->i18n_singular_name() : $obj->i18n_plural_name();
-        $listArray['Description'] = DBField::create_field('HTMLText', $obj->i18n_classDescription());
+        $listArray['Description'] = DBField::create_field('HTMLText', $obj->hasMethod('i18n_classDescription') ? $obj->i18n_classDescription() : Config::inst()->get($obj->ClassName, 'description'));
         $listArray['ClassName'] = $obj->ClassName;
         $listArray['Count'] = $count;
         $listArray['ID'] = $obj->ID;
@@ -232,9 +232,13 @@ class TemplateOverviewPageController extends PageController
         $listArray['PreviewLink'] = $obj->hasMethod('PreviewLink') ? $obj->PreviewLink() : 'please-add-PreviewLink-method';
         $listArray['CMSEditLink'] = $obj->hasMethod('CMSEditLink') ? $obj->CMSEditLink() : 'please-add-CMSEditLink-method';
         $listArray['MoreCanBeCreated'] = $isAdmin ? $canCreateString : 'Please login as ADMIN to see this value';
-        $children = $this->listOfTitles($obj->allowedChildren());
-        $listArray['AllowedChildren'] = implode(', ', $children);
+        $listArray['AllowedChildren'] = '';
+        $listArray['Icon'] = '';
         $listArray['Icon'] = $this->getIcon($obj);
+        if($obj instanceof SiteTree) {
+            $children = $this->listOfTitles($obj->allowedChildren());
+            $listArray['AllowedChildren'] = implode(', ', $children);
+        }
 
         return new ArrayData($listArray);
     }
