@@ -102,11 +102,11 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                 $link = '???';
             }
 
-            if ('/' !== substr($link, -1)) {
+            if ('/' !== substr((string) $link, -1)) {
                 $link .= '/';
             }
 
-            if ('/' !== substr($link, 0, 1)) {
+            if ('/' !== substr((string) $link, 0, 1)) {
                 $link = '/' . $link;
             }
 
@@ -273,7 +273,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     {
         if (! isset($this->dataRecordClassObjects[$className])) {
             $this->dataRecordClassObjects[$className] = null;
-            $dataRecordClassName = substr($className, 0, -1 * strlen('Controller'));
+            $dataRecordClassName = substr((string) $className, 0, -1 * strlen('Controller'));
             if (class_exists($dataRecordClassName) && is_subclass_of($dataRecordClassName, DataObject::class)) {
                 $this->dataRecordClassNames[$className] = $dataRecordClassName;
                 $this->dataRecordClassObjects[$className] = DataObject::get_one(
