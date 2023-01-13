@@ -337,7 +337,7 @@ class AllLinks extends AllLinksProviderBase
         foreach ($pushArray as $pushItem) {
             //clean
             if (self::is_admin_link($pushItem)) {
-                $pushItem = str_replace('?stage=Stage', '', $pushItem);
+                $pushItem = str_replace('?stage=Stage', '', (string) $pushItem);
             }
 
             $pushItem = self::sanitise_class_name($pushItem);
