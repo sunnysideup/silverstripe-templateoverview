@@ -235,7 +235,7 @@ class TemplateOverviewPageController extends PageController
         $listArray['AllowedChildren'] = '';
         $listArray['Icon'] = '';
         $listArray['Icon'] = $this->getIcon($obj);
-        if($obj instanceof SiteTree) {
+        if ($obj instanceof SiteTree) {
             $children = $this->listOfTitles($obj->allowedChildren());
             $listArray['AllowedChildren'] = implode(', ', $children);
         }
