@@ -333,29 +333,31 @@ class AllLinks extends AllLinksProviderBase
     {
         $excludeList = $this->Config()->exclude_list;
         foreach ($pushArray as $pushItem) {
-            //clean
-            if (self::is_admin_link($pushItem)) {
-                $pushItem = str_replace('?stage=Stage', '', (string) $pushItem);
-            }
-
-            $pushItem = self::sanitise_class_name($pushItem);
-            $pushItem = '/' . Director::makeRelative($pushItem);
-            //is it a file?
-            if (strpos($pushItem, '.') > (strlen($pushItem) - 6)) {
-                $pushItem = rtrim($pushItem, '/');
-            }
-
-            if ('' !== $pushItem) {
-                if (!empty($excludeList)) {
-                    foreach ($excludeList as $excludeItem) {
-                        if (false !== stripos($pushItem, $excludeItem)) {
-                            continue 2;
-                        }
-                    }
+            if ($pushItem) {
+                //clean
+                if (self::is_admin_link($pushItem)) {
+                    $pushItem = str_replace('?stage=Stage', '', (string) $pushItem);
                 }
 
-                if (!in_array($pushItem, $array, true)) {
-                    $array[] = $pushItem;
+                $pushItem = self::sanitise_class_name($pushItem);
+                $pushItem = '/' . Director::makeRelative($pushItem);
+                //is it a file?
+                if (strpos($pushItem, '.') > (strlen($pushItem) - 6)) {
+                    $pushItem = rtrim($pushItem, '/');
+                }
+
+                if ('' !== $pushItem) {
+                    if (!empty($excludeList)) {
+                        foreach ($excludeList as $excludeItem) {
+                            if (false !== stripos($pushItem, $excludeItem)) {
+                                continue 2;
+                            }
+                        }
+                    }
+
+                    if (!in_array($pushItem, $array, true)) {
+                        $array[] = $pushItem;
+                    }
                 }
             }
         }
