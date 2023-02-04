@@ -116,9 +116,9 @@ class AllLinks extends AllLinksProviderBase
     /**
      * @param string $link
      */
-    public static function is_admin_link($link): bool
+    public static function is_admin_link(string $link): bool
     {
-        return 'admin' === substr(ltrim($link, '/'), 0, 5);
+        return 'admin' === substr(ltrim((string) $link, '/'), 0, 5);
     }
 
     /**
@@ -263,14 +263,12 @@ class AllLinks extends AllLinksProviderBase
                 $page = Versioned::get_by_stage($class, Versioned::LIVE)
                     ->exclude(['ClassName' => $excludedClasses])
                     ->sort(DB::get_conn()->random() . ' ASC')
-                    ->first()
-                ;
-                if (! $page instanceof \SilverStripe\ORM\DataObject) {
+                    ->first();
+                if (!$page instanceof \SilverStripe\ORM\DataObject) {
                     $page = Versioned::get_by_stage($class, Versioned::DRAFT)
                         ->exclude(['ClassName' => $excludedClasses])
                         ->sort(DB::get_conn()->random() . ' ASC')
-                        ->first()
-                    ;
+                        ->first();
                 }
 
                 if (null !== $page) {
@@ -348,7 +346,7 @@ class AllLinks extends AllLinksProviderBase
             }
 
             if ('' !== $pushItem) {
-                if (! empty($excludeList)) {
+                if (!empty($excludeList)) {
                     foreach ($excludeList as $excludeItem) {
                         if (false !== stripos($pushItem, $excludeItem)) {
                             continue 2;
@@ -356,7 +354,7 @@ class AllLinks extends AllLinksProviderBase
                     }
                 }
 
-                if (! in_array($pushItem, $array, true)) {
+                if (!in_array($pushItem, $array, true)) {
                     $array[] = $pushItem;
                 }
             }
