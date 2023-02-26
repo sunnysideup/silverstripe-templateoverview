@@ -74,8 +74,7 @@ class TemplateOverviewPageController extends PageController
             $className = $obj->ClassName;
             $list = $className::get()
                 ->filter(['ClassName' => $obj->ClassName])
-                ->limit(300)
-            ;
+                ->limit(300);
             $this->myMoreList = ArrayList::create();
             foreach ($list as $count => $item) {
                 $this->myMoreList->push(clone $this->createPageObject($item, $count));
@@ -197,7 +196,7 @@ class TemplateOverviewPageController extends PageController
             Config::modify()->set(SSViewer::class, 'theme_enabled', false);
             Requirements::css('sunnysideup/templateoverview: client/css/TemplateOverviewPage.css');
             Requirements::css('silverstripe/admin: client/dist/styles/bundle.css');
-            Requirements::javascript('https://code.jquery.com/jquery-1.7.2.min.js');
+            Requirements::javascript('https://code.jquery.com/jquery-3.6.3.min.js');
             Requirements::javascript('sunnysideup/templateoverview: client/javascript/TemplateOverviewPage.js');
             if (class_exists(PrettyPhoto::class)) {
                 PrettyPhoto::include_code();
@@ -247,17 +246,17 @@ class TemplateOverviewPageController extends PageController
     {
         $icon = '';
         $icon = $this->getIconInner($obj, 'getPageIconURL');
-        if (! $icon) {
+        if (!$icon) {
             $icon = $this->getIconInner($obj, 'getIconClass');
-            if (! $icon) {
+            if (!$icon) {
                 $icon = $this->getIconInner($obj, 'getIcon');
-                if (! $icon) {
+                if (!$icon) {
                     return (string) LeftAndMain::menu_icon_for_class($obj->ClassName);
                 }
             }
         }
 
-        if (! $icon) {
+        if (!$icon) {
             $icon = 'font-page';
         }
 
