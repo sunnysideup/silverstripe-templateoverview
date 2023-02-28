@@ -342,7 +342,7 @@ class AllLinks extends AllLinksProviderBase
                 $pushItem = self::sanitise_class_name($pushItem);
                 $pushItem = '/' . Director::makeRelative($pushItem);
                 //is it a file?
-                if (strpos($pushItem, '.') > (strlen($pushItem) - 6)) {
+                if (strpos($pushItem, '.') > (strlen( (string) $pushItem) - 6)) {
                     $pushItem = rtrim($pushItem, '/');
                 }
 

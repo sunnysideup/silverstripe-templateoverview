@@ -330,7 +330,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         if ($this->rawResponse && 'Fatal error' === substr((string) $this->rawResponse, 0, 12)) {
             $data['status'] = 'error';
             $data['content'] = $this->rawResponse;
-        } elseif (200 === $httpResponse && $this->rawResponse && strlen($this->rawResponse) < 200) {
+        } elseif (200 === $httpResponse && $this->rawResponse && strlen( (string) $this->rawResponse) < 200) {
             if (! $this->isJson($this->rawResponse)) {
                 $data['status'] = 'error - no response';
                 $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
