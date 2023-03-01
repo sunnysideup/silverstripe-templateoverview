@@ -349,7 +349,7 @@ class AllLinks extends AllLinksProviderBase
                 if ('' !== $pushItem) {
                     if (!empty($excludeList)) {
                         foreach ($excludeList as $excludeItem) {
-                            if (false !== stripos($pushItem, $excludeItem)) {
+                            if (false !== stripos((string) $pushItem, $excludeItem)) {
                                 continue 2;
                             }
                         }
