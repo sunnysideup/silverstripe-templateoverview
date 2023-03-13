@@ -31,6 +31,7 @@ use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 class TemplateOverviewPageController extends PageController
 {
     protected $myMoreList;
+    protected $totalPageCount = 0;
 
     private static $url_segment = 'admin/templates';
 
@@ -165,21 +166,28 @@ class TemplateOverviewPageController extends PageController
         $providerClass = Injector::inst()->get($this->Config()->get('base_class_provider'));
 
         $originalList = $providerClass->ListOfAllClasses();
-        $countsPerClass = $providerClass->CountsPerClass();
+        $listOfAllClasses = $providerClass->CountsPerClass();
         $newList = ArrayList::create();
         foreach ($originalList as $obj) {
-            $count = (int) ($countsPerClass[$obj->ClassName] ?? 0);
+            $count = (int) ($listOfAllClasses[$obj->ClassName] ?? 0);
             $newList->push($this->createPageObject($obj, $count));
+            $this->totalPageCount += $count;
         }
 
         return $newList;
     }
 
-    public function TotalCount()
+    public function TotalTemplateCount(): int
     {
         $className = $this->getBaseClass();
 
         return count(ClassInfo::subclassesFor($className)) - 1;
+    }
+
+    public function TotalPageCount(): int
+    {
+        $this->ListOfAllClasses();
+        return $this->totalPageCount;
     }
 
     protected function getBaseClass(): string
@@ -216,6 +224,7 @@ class TemplateOverviewPageController extends PageController
      */
     protected function createPageObject($obj, $count)
     {
+        $parent = $obj->Parent();
         $canCreateString = ($obj->canCreate() ? 'Yes' : 'No');
         $isAdmin = Permission::check('ADMIN');
         $listArray = [];
@@ -232,7 +241,7 @@ class TemplateOverviewPageController extends PageController
         $listArray['CMSEditLink'] = $obj->hasMethod('CMSEditLink') ? $obj->CMSEditLink() : 'please-add-CMSEditLink-method';
         $listArray['MoreCanBeCreated'] = $isAdmin ? $canCreateString : 'Please login as ADMIN to see this value';
         $listArray['AllowedChildren'] = '';
-        $listArray['Icon'] = '';
+        $listArray['Breadcrumbs'] = $parent ? $parent->Breadcrumbs() : '';
         $listArray['Icon'] = $this->getIcon($obj);
         if ($obj instanceof SiteTree) {
             $children = $this->listOfTitles($obj->allowedChildren());

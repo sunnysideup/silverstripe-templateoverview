@@ -1,4 +1,4 @@
-<h1 id="allclasses">Templates used on this website ($TotalCount): </h1>
+<h1 id="allclasses">Templates used on this website ($TotalTemplateCount templates in $TotalPageCount pages): </h1>
 <ul id="ClassList">
 <% loop $ListOfAllClasses %>
     <li id="sectionFor-$ClassName">
