@@ -12,6 +12,10 @@ use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\MemberAuthenticator\CookieAuthenticationHandler;
 use SilverStripe\Security\Security;
 
+/**
+ * Class \Sunnysideup\TemplateOverview\Control\LoginAndRedirect
+ *
+ */
 class LoginAndRedirect extends Controller
 {
     private static $allowed_actions = [

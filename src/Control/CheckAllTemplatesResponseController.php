@@ -23,11 +23,8 @@ use Sunnysideup\TemplateOverview\Api\AllLinks;
 use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
 
 /**
- * @description (see $this->description)
+ * Class \Sunnysideup\TemplateOverview\Control\CheckAllTemplatesResponseController
  *
- * @authors: Andrew Pett [at] sunny side up .co.nz, Nicolaas [at] Sunny Side Up .co.nz
- * @package: templateoverview
- * @sub-package: tasks
  */
 class CheckAllTemplatesResponseController extends Controller implements Flushable
 {
