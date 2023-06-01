@@ -78,7 +78,7 @@ class W3cValidateApi
 
     private function setFragment($fragment)
     {
-        $fragment = preg_replace('#\s+#', ' ', $fragment);
+        $fragment = preg_replace('#\s+#', ' ', (string) $fragment);
         $this->fragment = $fragment;
     }
 
