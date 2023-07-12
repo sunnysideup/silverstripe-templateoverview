@@ -262,12 +262,12 @@ class AllLinks extends AllLinksProviderBase
                 $excludedClasses = $this->arrayExcept($siteTreeClassNames, $class);
                 $page = Versioned::get_by_stage($class, Versioned::LIVE)
                     ->exclude(['ClassName' => $excludedClasses])
-                    ->sort(DB::get_conn()->random() . ' ASC')
+                    ->shuffle()
                     ->first();
                 if (!$page instanceof \SilverStripe\ORM\DataObject) {
                     $page = Versioned::get_by_stage($class, Versioned::DRAFT)
                         ->exclude(['ClassName' => $excludedClasses])
-                        ->sort(DB::get_conn()->random() . ' ASC')
+                        ->shuffle()
                         ->first();
                 }
 
@@ -342,7 +342,7 @@ class AllLinks extends AllLinksProviderBase
                 $pushItem = self::sanitise_class_name($pushItem);
                 $pushItem = '/' . Director::makeRelative($pushItem);
                 //is it a file?
-                if (strpos($pushItem, '.') > (strlen( (string) $pushItem) - 6)) {
+                if (strpos($pushItem, '.') > (strlen((string) $pushItem) - 6)) {
                     $pushItem = rtrim($pushItem, '/');
                 }
 

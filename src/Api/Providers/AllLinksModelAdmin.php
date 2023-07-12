@@ -71,7 +71,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
         $modelLink = $modelAdminLink . $sanitizedModel . '/';
         for ($i = 0; $i < $this->numberOfExamples; ++$i) {
             $item = $model::get()
-                ->sort(DB::get_conn()->random() . ' ASC')
+                ->shuffle()
                 ->First()
             ;
             $singleton = $item ?: Injector::inst()->get($model);

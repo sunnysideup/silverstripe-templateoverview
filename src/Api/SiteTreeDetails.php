@@ -81,7 +81,7 @@ class SiteTreeDetails
                 if ($this->showAll) {
                     $objects = $className::get()
                         ->filter(['ClassName' => $className])
-                        ->sort(DB::get_conn()->random() . ' ASC')
+                        ->shuffle()
                         ->limit(25)
                     ;
                     $count = 0;
@@ -96,7 +96,7 @@ class SiteTreeDetails
                 } else {
                     $obj = $className::get()
                         ->filter(['ClassName' => $className])
-                        ->sort(DB::get_conn()->random() . ' ASC')
+                        ->shuffle()
                         ->limit(1)
                         ->first()
                     ;

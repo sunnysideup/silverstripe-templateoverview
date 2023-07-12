@@ -119,7 +119,7 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
             );
 
             $list = $list->where("\"{$draftTable}\".\"ID\" IS NULL");
-            $list = $list->sort(DB::get_conn()->random() . ' ASC');
+            $list = $list->shuffle();
 
             return $list->First();
         }
