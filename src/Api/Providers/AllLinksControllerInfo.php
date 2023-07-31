@@ -276,12 +276,11 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             $dataRecordClassName = substr((string) $className, 0, -1 * strlen('Controller'));
             if (class_exists($dataRecordClassName) && is_subclass_of($dataRecordClassName, DataObject::class)) {
                 $this->dataRecordClassNames[$className] = $dataRecordClassName;
-                $this->dataRecordClassObjects[$className] = DataObject::get_one(
-                    $dataRecordClassName,
-                    null,
-                    null,
-                    DB::get_conn()->random() . ' ASC'
-                );
+                $this->dataRecordClassObjects[$className] = $dataRecordClassName::get()
+                    // ->filter(['ClassName' => $dataRecordClassName])
+                    ->orderBy(DB::get_conn()->random() . ' ASC')
+                    ->first();
+
             }
         }
 

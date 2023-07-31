@@ -22,12 +22,10 @@ class AllLinksDataObjects extends AllLinksProviderBase
             if (! in_array($class, $exceptForArray, true)) {
                 if ($this->isValidClass($class)) {
                     for ($i = 0; $i < $this->getNumberOfExamples(); ++$i) {
-                        $obj = DataObject::get_one(
-                            $class,
-                            ['ClassName' => $class],
-                            null,
-                            DB::get_conn()->random() . ' ASC'
-                        );
+                        $obj = $class::get()
+                            ->filter(['ClassName' => $class])
+                            ->orderBy(DB::get_conn()->random() . ' ASC')
+                            ->first();
                         if (null !== $obj) {
                             if ($inCMS) {
                                 if ($obj->hasMethod('CMSEditLink')) {
