@@ -196,6 +196,11 @@ class TemplateOverviewPageController extends PageController
         return $this->totalPageCount;
     }
 
+    public function IsElemental(): bool
+    {
+        return false;
+    }
+
     protected function getBaseClass(): string
     {
         return $this->Config()->get('base_class');
@@ -231,6 +236,11 @@ class TemplateOverviewPageController extends PageController
     protected function createPageObject($obj, $count)
     {
         $parent = $obj->Parent();
+        if($parent instanceof SiteTree) {
+            $breadCrumbs = $parent ? $parent->Breadcrumbs() : '';
+        } else {
+            $breadCrumbs = '';
+        }
         $canCreateString = ($obj->canCreate() ? 'Yes' : 'No');
         $isAdmin = Permission::check('ADMIN');
         $listArray = [];
@@ -248,7 +258,7 @@ class TemplateOverviewPageController extends PageController
         $listArray['MoreCanBeCreated'] = $isAdmin ? $canCreateString : 'Please login as ADMIN to see this value';
         $listArray['AllowedChildren'] = 'none';
         $listArray['AllowedActions'] = 'none';
-        $listArray['Breadcrumbs'] = $parent ? $parent->Breadcrumbs() : '';
+        $listArray['Breadcrumbs'] = $breadCrumbs;
         $listArray['Icon'] = $this->getIcon($obj);
         if ($obj instanceof SiteTree) {
             $children = $this->listOfTitles($obj->allowedChildren());

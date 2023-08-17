@@ -15,4 +15,9 @@ class TemplateOverviewForElementalPageController extends TemplateOverviewPageCon
     private static $base_class = '\\DNADesign\\Elemental\\Models\\BaseElement';
 
     private static $base_class_provider = ElementalDetails::class;
+
+    public function IsElemental(): bool
+    {
+        return true;
+    }
 }

@@ -1,5 +1,15 @@
 <h1 id="allclasses">Templates used on this website ($TotalTemplateCount templates in $TotalPageCount pages): </h1>
-<% if $HasElemental %><a href="">Also see <a href="/admin/templates-elemental">elemental</a></p><% end_if %>
+<% if $HasElemental %>
+    <p>Also see
+    <% if $IsElemental %>
+        <a href="/admin/templates">pages</a>
+    <% else %>
+        <a href="/admin/templates-elemental">elemental</a>
+    <% end_if %>
+    </p>
+    <p>There is also a smoke test system that allows you to <a href="/dev/tasks/smoketest">check all links available</a>.
+<% end_if %>
+
 <ul id="ClassList">
 <% loop $ListOfAllClasses %>
     <li id="sectionFor-$ClassName">

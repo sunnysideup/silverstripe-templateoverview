@@ -15,10 +15,16 @@
         <% if $HasEnvironmentVariable %><a href="#" class="start btn">Start</a><% else %>
             <span style="color: red">You must set the <strong>SS_ALLOW_SMOKE_TEST</strong> environment variable to <strong>TRUE</strong> to run the tests below!</span>
         <% end_if %>
-        or open <a href="/dev/tasks/smoketest/?htmllist=1" target="_blank">basic list</a>,
-        or open <a href="/dev/tasks/smoketest/?htmllist=1&limit=999999&nobackend=true" target="_blank">all front-end pages</a>,
-        or open <a href="/dev/tasks/smoketest/?sitemaperrors=1&limit=999999&nobackend=true" target="_blank">sitemap errors</a>,
-        GET variable options are: limit, nofrontend, nobackend, htmllist
+        <h3>Alternative Views</h3>
+        <p>
+        <a href="/dev/tasks/smoketest/?htmllist=1" target="_blank">basic list</a>,
+        <a href="/dev/tasks/smoketest/?htmllist=1&limit=999999&nobackend=true" target="_blank">all front-end pages</a>,
+        <a href="/dev/tasks/smoketest/?sitemaperrors=1&limit=999999&nobackend=true" target="_blank">sitemap errors</a>.
+        GET variable options are: limit, nofrontend, nobackend, htmllist, sitemaperrors
+        </p>
+        <p>
+            There is alos a list of <a href="/admin/templates">templates</a> available.
+        </p>
     </div>
     <p class="stats">
         <strong>Tests Done:</strong> <span id="NumberOfTests">0</span>,
