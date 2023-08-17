@@ -141,7 +141,11 @@ class AllLinks extends AllLinksProviderBase
         if(! $this->numberOfExamples) {
             $this->numberOfExamples = $this->Config()->number_of_examples;
         }
-        if($this->includeBackEnd === true) {
+        if($this->includeFrontEnd === true) {
+
+        }
+
+        if($this->includeFrontEnd === true) {
             $array1 = $this->Config()->get('custom_links');
             $array2 = [];
             $array2 = $this->getCustomisedLinks();
@@ -153,20 +157,17 @@ class AllLinks extends AllLinksProviderBase
                     $this->customNonCMSLinks[] = $link;
                 }
             }
-        }
-
-        if($this->includeFrontEnd === true) {
+            $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->customNonCMSLinks);
             $this->pagesOnFrontEnd = $this->ListOfPagesLinks();
             $this->dataObjectsOnFrontEnd = $this->ListOfDataObjectsLinks(false);
-            $this->templateoverviewtestsLinks = $this->ListOfAllTemplateoverviewtestsLinks();
 
             $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->pagesOnFrontEnd);
             $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->dataObjectsOnFrontEnd);
         }
         sort($this->allNonCMSLinks);
+
         if($this->includeBackEnd === true) {
-            $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->customNonCMSLinks);
-            $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->templateoverviewtestsLinks);
+            $this->templateoverviewtestsLinks = $this->ListOfAllTemplateoverviewtestsLinks();
             $this->pagesInCMS = $this->ListOfPagesLinks(true);
             $this->dataObjectsInCMS = $this->ListOfDataObjectsLinks(true);
             $this->modelAdmins = $this->ListOfAllModelAdmins();
@@ -174,6 +175,7 @@ class AllLinks extends AllLinksProviderBase
             $this->leftAndMainLnks = $this->ListOfAllLeftAndMains();
             $this->reportLinks = $this->listOfAllReports();
 
+            $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->templateoverviewtestsLinks);
             $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->pagesInCMS);
             $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->dataObjectsInCMS);
             $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->modelAdmins);
@@ -182,8 +184,8 @@ class AllLinks extends AllLinksProviderBase
             $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->reportLinks);
             $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->customCMSLinks);
             sort($this->allCMSLinks);
+            $this->otherControllerMethods = $this->ListOfAllControllerMethods();
         }
-        $this->otherControllerMethods = $this->ListOfAllControllerMethods();
 
         return [
             'allNonCMSLinks' => $this->allNonCMSLinks,
@@ -337,9 +339,7 @@ class AllLinks extends AllLinksProviderBase
         foreach ($pushArray as $pushItem) {
             if ($pushItem) {
                 //clean
-                if (self::is_admin_link($pushItem)) {
-                    $pushItem = str_replace('?stage=Stage', '', (string) $pushItem);
-                }
+                $pushItem = str_replace('?stage=Stage', '', (string) $pushItem);
 
                 $pushItem = self::sanitise_class_name($pushItem);
                 $pushItem = '/' . Director::makeRelative($pushItem);
