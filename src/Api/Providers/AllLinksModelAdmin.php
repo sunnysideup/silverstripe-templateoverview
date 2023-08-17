@@ -69,11 +69,11 @@ class AllLinksModelAdmin extends AllLinksProviderBase
         $links = [];
         $sanitizedModel = AllLinks::sanitise_class_name($model);
         $modelLink = $modelAdminLink . $sanitizedModel . '/';
-        for ($i = 0; $i < $this->numberOfExamples; ++$i) {
-            $item = $model::get()
-                ->shuffle()
-                ->First()
-            ;
+        $items = $model::get()
+            ->shuffle()
+            ->limit($this->getNumberOfExamples())
+        ;
+        foreach($items as $item) {
             $singleton = $item ?: Injector::inst()->get($model);
             $exceptionMethod = '';
             foreach ($this->Config()->get('model_admin_alternatives') as $test => $method) {

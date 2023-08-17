@@ -138,44 +138,51 @@ class AllLinks extends AllLinksProviderBase
      */
     public function getAllLinks(): array
     {
-        $array1 = $this->Config()->get('custom_links');
-        $array2 = [];
-        $array2 = $this->getCustomisedLinks();
-        foreach (array_merge($array1, $array2) as $link) {
-            $link = '/' . ltrim($link, '/') . '/';
-            if (self::is_admin_link($link)) {
-                $this->customCMSLinks[] = $link;
-            } else {
-                $this->customNonCMSLinks[] = $link;
+        if(! $this->numberOfExamples) {
+            $this->numberOfExamples = $this->Config()->number_of_examples;
+        }
+        if($this->includeBackEnd === true) {
+            $array1 = $this->Config()->get('custom_links');
+            $array2 = [];
+            $array2 = $this->getCustomisedLinks();
+            foreach (array_merge($array1, $array2) as $link) {
+                $link = '/' . ltrim($link, '/') . '/';
+                if (self::is_admin_link($link)) {
+                    $this->customCMSLinks[] = $link;
+                } else {
+                    $this->customNonCMSLinks[] = $link;
+                }
             }
         }
 
-        $this->pagesOnFrontEnd = $this->ListOfPagesLinks();
-        $this->dataObjectsOnFrontEnd = $this->ListOfDataObjectsLinks(false);
-        $this->templateoverviewtestsLinks = $this->ListOfAllTemplateoverviewtestsLinks();
+        if($this->includeFrontEnd === true) {
+            $this->pagesOnFrontEnd = $this->ListOfPagesLinks();
+            $this->dataObjectsOnFrontEnd = $this->ListOfDataObjectsLinks(false);
+            $this->templateoverviewtestsLinks = $this->ListOfAllTemplateoverviewtestsLinks();
 
-        $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->pagesOnFrontEnd);
-        $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->dataObjectsOnFrontEnd);
-        $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->customNonCMSLinks);
-        $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->templateoverviewtestsLinks);
+            $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->pagesOnFrontEnd);
+            $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->dataObjectsOnFrontEnd);
+        }
         sort($this->allNonCMSLinks);
+        if($this->includeBackEnd === true) {
+            $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->customNonCMSLinks);
+            $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->templateoverviewtestsLinks);
+            $this->pagesInCMS = $this->ListOfPagesLinks(true);
+            $this->dataObjectsInCMS = $this->ListOfDataObjectsLinks(true);
+            $this->modelAdmins = $this->ListOfAllModelAdmins();
+            $this->archiveCMSLinks = $this->ListOfAllArchiveCMSLinks();
+            $this->leftAndMainLnks = $this->ListOfAllLeftAndMains();
+            $this->reportLinks = $this->listOfAllReports();
 
-        $this->pagesInCMS = $this->ListOfPagesLinks(true);
-        $this->dataObjectsInCMS = $this->ListOfDataObjectsLinks(true);
-        $this->modelAdmins = $this->ListOfAllModelAdmins();
-        $this->archiveCMSLinks = $this->ListOfAllArchiveCMSLinks();
-        $this->leftAndMainLnks = $this->ListOfAllLeftAndMains();
-        $this->reportLinks = $this->listOfAllReports();
-
-        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->pagesInCMS);
-        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->dataObjectsInCMS);
-        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->modelAdmins);
-        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->archiveCMSLinks);
-        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->leftAndMainLnks);
-        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->reportLinks);
-        $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->customCMSLinks);
-        sort($this->allCMSLinks);
-
+            $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->pagesInCMS);
+            $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->dataObjectsInCMS);
+            $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->modelAdmins);
+            $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->archiveCMSLinks);
+            $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->leftAndMainLnks);
+            $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->reportLinks);
+            $this->allCMSLinks = $this->addToArrayOfLinks($this->allCMSLinks, $this->customCMSLinks);
+            sort($this->allCMSLinks);
+        }
         $this->otherControllerMethods = $this->ListOfAllControllerMethods();
 
         return [
@@ -193,7 +200,6 @@ class AllLinks extends AllLinksProviderBase
     public function ListOfAllModelAdmins()
     {
         $obj = Injector::inst()->get(AllLinksModelAdmin::class);
-        $obj->setNumberOfExamples($this->Config()->number_of_examples);
 
         return $obj->getAllLinksInner();
     }
@@ -206,7 +212,6 @@ class AllLinks extends AllLinksProviderBase
     public function ListOfAllArchiveCMSLinks()
     {
         $obj = Injector::inst()->get(AllLinksArchiveAdmin::class);
-        $obj->setNumberOfExamples($this->Config()->number_of_examples);
 
         return $obj->getAllLinksInner();
     }
@@ -238,7 +243,6 @@ class AllLinks extends AllLinksProviderBase
     public function ListOfDataObjectsLinks(bool $inCMS): array
     {
         $obj = Injector::inst()->get(AllLinksDataObjects::class);
-        $obj->setNumberOfExamples($this->Config()->number_of_examples);
 
         return $obj->getAllLinksInner($inCMS);
     }
@@ -258,29 +262,27 @@ class AllLinks extends AllLinksProviderBase
         $return = [];
         $siteTreeClassNames = $this->getListOfAllClasses();
         foreach ($siteTreeClassNames as $class) {
-            for ($i = 0; $i < $this->Config()->number_of_examples; ++$i) {
-                $excludedClasses = $this->arrayExcept($siteTreeClassNames, $class);
-                $page = Versioned::get_by_stage($class, Versioned::LIVE)
+            $excludedClasses = $this->arrayExcept($siteTreeClassNames, $class);
+            $pages = Versioned::get_by_stage($class, Versioned::LIVE)
+                ->exclude(['ClassName' => $excludedClasses])
+                ->shuffle()
+                ->limit($this->numberOfExamples);
+            if (! $pages->exists()) {
+                $pages = Versioned::get_by_stage($class, Versioned::DRAFT)
                     ->exclude(['ClassName' => $excludedClasses])
                     ->shuffle()
-                    ->first();
-                if (!$page instanceof \SilverStripe\ORM\DataObject) {
-                    $page = Versioned::get_by_stage($class, Versioned::DRAFT)
-                        ->exclude(['ClassName' => $excludedClasses])
-                        ->shuffle()
-                        ->first();
-                }
+                    ->limit($this->numberOfExamples);
+            }
 
-                if (null !== $page) {
-                    if ($pageInCMS) {
-                        $url = $page->CMSEditLink();
-                        $return[] = $url;
-                        $return[] = str_replace('/edit/', '/settings/', $url);
-                        $return[] = str_replace('/edit/', '/history/', $url);
-                    } else {
-                        $url = $page->Link();
-                        $return[] = $url;
-                    }
+            foreach($pages as $page) {
+                if ($pageInCMS) {
+                    $url = $page->CMSEditLink();
+                    $return[] = $url;
+                    $return[] = str_replace('/edit/', '/settings/', $url);
+                    $return[] = str_replace('/edit/', '/history/', $url);
+                } else {
+                    $url = $page->Link();
+                    $return[] = $url;
                 }
             }
         }

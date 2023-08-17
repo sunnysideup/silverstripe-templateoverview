@@ -38,13 +38,32 @@ class CheckAllTemplates extends BuildTask
         //because if you do not log in, the test will not work.
         if (! Permission::check('ADMIN')) {
             die('Please <a href="/Security/login/?BackURL=/dev/tasks/smoketest/">log in</a> first.');
+        }
+        $obj = Injector::inst()->get(AllLinks::class);
+
+        if (! empty($_GET['limit'])) {
+            $obj->setNumberOfExamples((int) $_GET['limit']);
+        }
+
+        if (! empty($_GET['nofrontend'])) {
+            $obj->setIncludeFrontEnd(false);
+        }
+
+        if (! empty($_GET['nobackend'])) {
+            $obj->setIncludeBackEnd(false);
+        }
+
+        $allLinks = $obj->getAllLinks();
+
+        if (! empty($_GET['htmllist'])) {
+
+            $this->htmlListOutput($allLinks);
 
             return;
         }
+        if (! empty($_GET['sitemaperrors'])) {
 
-        $allLinks = Injector::inst()->get(AllLinks::class)->getAllLinks();
-        if (! empty($_GET['htmllist'])) {
-            $this->htmlListOutput($allLinks);
+            $this->sitemapErrorsOutput($obj);
 
             return;
         }
@@ -127,6 +146,20 @@ class CheckAllTemplates extends BuildTask
             echo '<ol><li>' . implode('</li><li>', $array) . '</li></ol>';
         } else {
             echo 'No links available';
+        }
+    }
+
+    protected function sitemapErrorsOutput($obj)
+    {
+        $base = $this->baseURL();
+        $array = [];
+        $array = $obj->getErrorsInGoogleSitemap();
+        if(count($array)) {
+            foreach ($array as $key => $error) {
+                echo '<li>' . $error . '</li>';
+            }
+        } else {
+            echo 'No errors found';
         }
     }
 }

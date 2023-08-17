@@ -59,33 +59,35 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
         $links = [];
         $sanitizedModel = AllLinks::sanitise_class_name($model);
         $modelLink = $modelAdminLink . $sanitizedModel . '/';
-        for ($i = 0; $i < $this->numberOfExamples; ++$i) {
-            $item = $this->getRandomArchivedItem($model);
-            $exceptionMethod = '';
-            foreach ($this->Config()->get('model_admin_alternatives') as $test => $method) {
-                if (! $method) {
-                    $method = 'do-not-use';
+        $items = $this->getRandomArchivedItem($model);
+        if($items) {
+            foreach($items as $item) {
+                $exceptionMethod = '';
+                foreach ($this->Config()->get('model_admin_alternatives') as $test => $method) {
+                    if (! $method) {
+                        $method = 'do-not-use';
+                    }
+
+                    if (false !== strpos($modelAdminLink, $test)) {
+                        $exceptionMethod = $method;
+                    }
                 }
 
-                if (false !== strpos($modelAdminLink, $test)) {
-                    $exceptionMethod = $method;
-                }
-            }
-
-            if ($exceptionMethod) {
-                if ($item && $item->hasMethod($exceptionMethod)) {
-                    $links = array_merge($links, $item->{$exceptionMethod}($modelAdminLink));
-                }
-            } else {
-                //needs to stay here for exception!
-                $links[] = $modelLink;
-                if ($item) {
-                    $test1 = is_subclass_of($model, SiteTree::class);
-                    $test2 = SiteTree::class === (string) $model;
-                    if ($test1 || $test2) {
-                        $links[] = $modelLink . 'EditForm/field/Pages/item/' . $item->ID . '/view/';
-                    } else {
-                        $links[] = $modelLink . 'EditForm/field/Others/item/' . $item->ID . '/view/';
+                if ($exceptionMethod) {
+                    if ($item && $item->hasMethod($exceptionMethod)) {
+                        $links = array_merge($links, $item->{$exceptionMethod}($modelAdminLink));
+                    }
+                } else {
+                    //needs to stay here for exception!
+                    $links[] = $modelLink;
+                    if ($item) {
+                        $test1 = is_subclass_of($model, SiteTree::class);
+                        $test2 = SiteTree::class === (string) $model;
+                        if ($test1 || $test2) {
+                            $links[] = $modelLink . 'EditForm/field/Pages/item/' . $item->ID . '/view/';
+                        } else {
+                            $links[] = $modelLink . 'EditForm/field/Others/item/' . $item->ID . '/view/';
+                        }
                     }
                 }
             }
@@ -121,7 +123,7 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
             $list = $list->where("\"{$draftTable}\".\"ID\" IS NULL");
             $list = $list->shuffle();
 
-            return $list->First();
+            return $list->limit($this->getNumberOfExamples());
         }
     }
 }

@@ -21,36 +21,37 @@ class AllLinksDataObjects extends AllLinksProviderBase
         foreach ($list as $class) {
             if (! in_array($class, $exceptForArray, true)) {
                 if ($this->isValidClass($class)) {
-                    for ($i = 0; $i < $this->getNumberOfExamples(); ++$i) {
-                        $obj = $class::get()
-                            ->filter(['ClassName' => $class])
-                            ->orderBy(DB::get_conn()->random() . ' ASC')
-                            ->first();
-                        if (null !== $obj) {
-                            if ($inCMS) {
-                                if ($obj->hasMethod('CMSEditLink')) {
-                                    $return[] = $obj->CMSEditLink();
-                                }
+                    $objects = $class::get()
+                        ->filter(['ClassName' => $class])
+                        ->shuffle()
+                        ->limit($this->getNumberOfExamples());
+                    foreach($objects as $obj) {
 
-                                if ($obj->hasMethod('CMSAddLink')) {
-                                    $return[] = $obj->CMSAddLink();
-                                }
 
-                                if ($obj->hasMethod('CMSListLink')) {
-                                    $return[] = $obj->CMSListLink();
-                                }
+                        if ($inCMS) {
+                            if ($obj->hasMethod('CMSEditLink')) {
+                                $return[] = $obj->CMSEditLink();
+                            }
 
-                                if ($obj->hasMethod('PreviewLink')) {
-                                    $return[] = $obj->PreviewLink();
-                                }
-                            } else {
-                                if ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && null !== $obj->LinkID)) {
-                                    $return[] = $obj->Link();
-                                }
+                            if ($obj->hasMethod('CMSAddLink')) {
+                                $return[] = $obj->CMSAddLink();
+                            }
 
-                                if ($obj->hasMethod('getLink')) {
-                                    $return[] = $obj->getLink();
-                                }
+                            if ($obj->hasMethod('CMSListLink')) {
+                                $return[] = $obj->CMSListLink();
+                            }
+
+                            if ($obj->hasMethod('PreviewLink')) {
+                                $return[] = $obj->PreviewLink();
+                            }
+                        } else {
+                            if ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && null !== $obj->LinkID)) {
+                                $return[] = $obj->Link();
+                                $this->checkForErrorsInGoogleSitemap($obj, $obj->Link());
+                            } elseif($obj->hasMethod('AbsoluteLink')) {
+                                $return[] = $obj->AbsoluteLink();
+                            } elseif ($obj->hasMethod('getLink')) {
+                                $return[] = $obj->getLink();
                             }
                         }
                     }

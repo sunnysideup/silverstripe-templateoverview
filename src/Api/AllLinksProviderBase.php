@@ -8,6 +8,7 @@ use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 
 abstract class AllLinksProviderBase
@@ -18,9 +19,21 @@ abstract class AllLinksProviderBase
 
     protected $numberOfExamples = 1;
 
+    /**
+     * @var bool
+     */
+    public $includeFrontEnd = true;
+
+    /**
+     * @var bool
+     */
+    public $includeBackEnd = true;
+
     private $listOfAllSiteTreeClassesCache = [];
 
-    public function setNumberOfExamples($n): self
+    private $errorsInGoogleSitemap = [];
+
+    public function setNumberOfExamples(int $n): static
     {
         $this->numberOfExamples = $n;
 
@@ -30,6 +43,24 @@ abstract class AllLinksProviderBase
     public function getNumberOfExamples(): int
     {
         return $this->numberOfExamples;
+    }
+
+
+    public function setIncludeFrontEnd(bool $b): static
+    {
+        $this->includeFrontEnd = $b;
+        return $this;
+    }
+
+    public function setIncludeBackEnd(bool $b): static
+    {
+        $this->includeBackEnd = $b;
+        return $this;
+    }
+
+    public function getErrorsInGoogleSitemap(): array
+    {
+        return $this->errorsInGoogleSitemap;
     }
 
     /**
@@ -83,5 +114,17 @@ abstract class AllLinksProviderBase
         $tables = DB::table_list();
 
         return array_key_exists(strtolower($table), $tables);
+    }
+
+    protected function checkForErrorsInGoogleSitemap($obj, ?string $link = '')
+    {
+        if(class_exists('\\Wilr\\GoogleSitemaps\\GoogleSitemap')) {
+            if($obj instanceof DataObject) {
+                if(! $obj->hasExtension('\\Wilr\\GoogleSitemaps\\Extensions\\GoogleSitemapExtension')) {
+                    $this->errorsInGoogleSitemap[$obj->ClassName . ','.$obj->ID] =
+                        $obj->getTitle .' ('.$obj->i18n_singular_name().') is not listed in the google sitemap...'.$link;
+                }
+            }
+        }
     }
 }
