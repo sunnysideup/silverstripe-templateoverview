@@ -1,4 +1,5 @@
 <h1 id="allclasses">Templates used on this website ($TotalTemplateCount templates in $TotalPageCount pages): </h1>
+<% if $HasElemental %><a href="">Also see <a href="/admin/templates-elemental">elemental</a></p><% end_if %>
 <ul id="ClassList">
 <% loop $ListOfAllClasses %>
     <li id="sectionFor-$ClassName">
@@ -13,7 +14,7 @@
         <strong>$Count x $Name - template</strong>
         <ul>
             <li>
-                $Description
+                <% if $Description %>$Description<% else %>No description provided<% end_if %>
             </li>
             <% if ShowAll %>
             <li>
@@ -36,6 +37,10 @@
                     <li>
                         <em>allowed children:</em>
                         $AllowedChildren
+                    </li>
+                    <li>
+                        <em>allowed actions:</em>
+                        $AllowedActions
                     </li>
                 </ul>
             <li><em>example:</em>
@@ -62,7 +67,7 @@
                 <em>hide:</em>
                 <a href="#" class="typo-seeless" rel="entry-for-$URLSegment">less examples</a>
             </li>
-            <li>
+            <li class="more-details-holder">
                 <ol id="entry-for-$URLSegment" class="MoreDetailOL">
                     <li style="display: none;">&nbsp;</li>
                 </ol>

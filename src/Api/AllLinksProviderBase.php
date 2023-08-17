@@ -2,8 +2,6 @@
 
 namespace Sunnysideup\TemplateOverview\Api;
 
-namespace Sunnysideup\TemplateOverview\Api;
-
 use ReflectionClass;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Config\Configurable;

@@ -29,7 +29,7 @@ class SiteTreeDetails
 
     protected $arrayOfAllClasses = [];
 
-    private static $list_of_all_classes = [];
+    private static $list_of_all_classes = null;
 
     private static $list_of_all_classes_counter = [];
 
@@ -48,7 +48,7 @@ class SiteTreeDetails
 
     public function ListOfAllClasses(): ArrayList
     {
-        if (0 === count(self::$list_of_all_classes)) {
+        if (self::$list_of_all_classes === null) {
             $this->getArrayOfAllClasses();
 
             self::$list_of_all_classes = new ArrayList();

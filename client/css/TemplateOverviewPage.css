@@ -9,3 +9,4 @@ li { padding-top: 2rem!important; margin-left: 1rem!important; border-top: 1px s
 li li { padding-top: 1rem!important;list-style: circle!important; border-top: none!important;}
 li li li { padding-top: 0.5rem!important;}
 li li li li { padding-top: 0.2rem!important;}
+.more-details-holder {list-style: none!important;}

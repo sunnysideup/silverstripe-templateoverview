@@ -23,6 +23,7 @@ use SilverStripe\View\Requirements;
 use SilverStripe\View\SSViewer;
 use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
+use Sunnysideup\TemplateOverview\Api\TemplateOverviewArrayMethods;
 
 /**
  * Class \Sunnysideup\TemplateOverview\Control\TemplateOverviewPageController
@@ -177,6 +178,11 @@ class TemplateOverviewPageController extends PageController
         return $newList;
     }
 
+    public function HasElemental(): bool
+    {
+        return class_exists('\\DNADesign\\Elemental\\Models\\BaseElement');
+    }
+
     public function TotalTemplateCount(): int
     {
         $className = $this->getBaseClass();
@@ -206,9 +212,9 @@ class TemplateOverviewPageController extends PageController
             Requirements::css('silverstripe/admin: client/dist/styles/bundle.css');
             Requirements::javascript('https://code.jquery.com/jquery-3.6.3.min.js');
             Requirements::javascript('sunnysideup/templateoverview: client/javascript/TemplateOverviewPage.js');
-            if (class_exists(PrettyPhoto::class)) {
-                PrettyPhoto::include_code();
-            }
+            // if (class_exists(PrettyPhoto::class)) {
+            //     PrettyPhoto::include_code();
+            // }
 
             //user_error("It is recommended that you install the Sunny Side Up Pretty Photo Module", E_USER_NOTICE);
         } else {
@@ -240,12 +246,19 @@ class TemplateOverviewPageController extends PageController
         $listArray['PreviewLink'] = $obj->hasMethod('PreviewLink') ? $obj->PreviewLink() : 'please-add-PreviewLink-method';
         $listArray['CMSEditLink'] = $obj->hasMethod('CMSEditLink') ? $obj->CMSEditLink() : 'please-add-CMSEditLink-method';
         $listArray['MoreCanBeCreated'] = $isAdmin ? $canCreateString : 'Please login as ADMIN to see this value';
-        $listArray['AllowedChildren'] = '';
+        $listArray['AllowedChildren'] = 'none';
+        $listArray['AllowedActions'] = 'none';
         $listArray['Breadcrumbs'] = $parent ? $parent->Breadcrumbs() : '';
         $listArray['Icon'] = $this->getIcon($obj);
         if ($obj instanceof SiteTree) {
             $children = $this->listOfTitles($obj->allowedChildren());
-            $listArray['AllowedChildren'] = implode(', ', $children);
+            if(count($children)) {
+                $listArray['AllowedChildren'] = implode(', ', $children);
+            }
+            $actions = TemplateOverviewArrayMethods::get_best_array_keys($obj->Config()->get('allowed_actions'));
+            if(count($actions)) {
+                $listArray['AllowedActions'] = implode(', ', $actions);
+            }
         }
 
         return new ArrayData($listArray);

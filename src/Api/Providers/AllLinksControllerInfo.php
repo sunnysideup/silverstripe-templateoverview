@@ -14,6 +14,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
+use Sunnysideup\TemplateOverview\Api\TemplateOverviewArrayMethods;
 
 class AllLinksControllerInfo extends AllLinksProviderBase
 {
@@ -333,15 +334,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
     protected function getBestArray($array): array
     {
-        if (is_array($array)) {
-            if ($this->isAssociativeArray($array)) {
-                $array = array_keys($array);
-            }
-        } else {
-            $array = [];
-        }
-
-        return $array;
+        return TemplateOverviewArrayMethods::get_best_array_keys($array);
     }
 
     /**
@@ -438,12 +431,5 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         return '';
     }
 
-    private function isAssociativeArray(array $arr): bool
-    {
-        if ([] === $arr) {
-            return false;
-        }
 
-        return array_keys($arr) !== range(0, count($arr) - 1);
-    }
 }
