@@ -142,10 +142,6 @@ class AllLinks extends AllLinksProviderBase
             $this->numberOfExamples = $this->Config()->number_of_examples;
         }
         if($this->includeFrontEnd === true) {
-
-        }
-
-        if($this->includeFrontEnd === true) {
             $array1 = $this->Config()->get('custom_links');
             $array2 = [];
             $array2 = $this->getCustomisedLinks();
@@ -202,6 +198,7 @@ class AllLinks extends AllLinksProviderBase
     public function ListOfAllModelAdmins()
     {
         $obj = Injector::inst()->get(AllLinksModelAdmin::class);
+        $obj->setNumberOfExamples($this->getNumberOfExamples());
 
         return $obj->getAllLinksInner();
     }
@@ -214,6 +211,7 @@ class AllLinks extends AllLinksProviderBase
     public function ListOfAllArchiveCMSLinks()
     {
         $obj = Injector::inst()->get(AllLinksArchiveAdmin::class);
+        $obj->setNumberOfExamples($this->getNumberOfExamples());
 
         return $obj->getAllLinksInner();
     }
@@ -221,6 +219,7 @@ class AllLinks extends AllLinksProviderBase
     public function getCustomisedLinks(): array
     {
         $obj = Injector::inst()->get(AllLinksControllerInfo::class);
+        $obj->setNumberOfExamples($this->getNumberOfExamples());
 
         return $obj->getCustomisedLinks();
     }
@@ -228,6 +227,7 @@ class AllLinks extends AllLinksProviderBase
     public function ListOfAllControllerMethods(): array
     {
         $obj = Injector::inst()->get(AllLinksControllerInfo::class);
+        $obj->setNumberOfExamples($this->getNumberOfExamples());
         $obj->setValidNameSpaces($this->Config()->controller_name_space_filter);
 
         return $obj->getAllLinksInner();
@@ -236,6 +236,7 @@ class AllLinks extends AllLinksProviderBase
     public function ListOfAllTemplateoverviewtestsLinks(): array
     {
         $obj = Injector::inst()->get(AllLinksControllerInfo::class);
+        $obj->setNumberOfExamples($this->getNumberOfExamples());
         $list = $obj->getAllLinksInner();
         $list = $obj->getLinksAndActions();
 
@@ -245,6 +246,7 @@ class AllLinks extends AllLinksProviderBase
     public function ListOfDataObjectsLinks(bool $inCMS): array
     {
         $obj = Injector::inst()->get(AllLinksDataObjects::class);
+        $obj->setNumberOfExamples($this->getNumberOfExamples());
 
         return $obj->getAllLinksInner($inCMS);
     }

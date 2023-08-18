@@ -27,7 +27,6 @@ class AllLinksDataObjects extends AllLinksProviderBase
                         ->limit($this->getNumberOfExamples());
                     foreach($objects as $obj) {
 
-
                         if ($inCMS) {
                             if ($obj->hasMethod('CMSEditLink')) {
                                 $return[] = $obj->CMSEditLink();
