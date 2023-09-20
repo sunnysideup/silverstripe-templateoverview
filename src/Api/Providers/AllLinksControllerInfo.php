@@ -364,11 +364,15 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     protected function findControllerLink($className): string
     {
         $object = $this->findDataRecord($className);
-        if ($object && $object->hasMethod('Link')) {
-            $tmp = $object->Link();
-            $tmpArray = explode('?', $tmp);
+        if($object) {
+            foreach(['Link', 'getLink'] as $method) {
+                if ($object->hasMethod($method)) {
+                    $tmp = $object->$method();
+                    $tmpArray = explode('?', $tmp);
 
-            return $tmpArray[0];
+                    return $tmpArray[0];
+                }
+            }
         }
 
         return '';
