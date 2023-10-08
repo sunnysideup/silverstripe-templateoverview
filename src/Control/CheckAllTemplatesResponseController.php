@@ -145,7 +145,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                     $style = 'float: left;';
                     if ($this->isSuccess && ! $isCMSLink && $this->Config()->create_diff) {
                         $otherURL = $comparisonBaseURL . $testURL;
-                        $testContent = str_replace(Director::absoluteBaseURL(), $comparisonBaseURL, $this->rawResponse);
+                        $testContent = str_replace(rtrim(Director::absoluteBaseURL(), '/'), rtrim($comparisonBaseURL, '/'), $this->rawResponse);
                         $rawResponseOtherSite = @file_get_contents($otherURL);
                         if (class_exists(Differ::class)) {
                             $diff = (new Differ())->diff(
@@ -327,7 +327,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         if ($this->rawResponse && 'Fatal error' === substr((string) $this->rawResponse, 0, 12)) {
             $data['status'] = 'error';
             $data['content'] = $this->rawResponse;
-        } elseif (200 === $httpResponse && $this->rawResponse && strlen( (string) $this->rawResponse) < 200) {
+        } elseif (200 === $httpResponse && $this->rawResponse && strlen((string) $this->rawResponse) < 200) {
             if (! $this->isJson($this->rawResponse)) {
                 $data['status'] = 'error - no response';
                 $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;

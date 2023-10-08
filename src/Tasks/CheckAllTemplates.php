@@ -120,7 +120,7 @@ class CheckAllTemplates extends BuildTask
 
     protected function baseURL()
     {
-        return trim(Director::absoluteBaseURL(), '/');
+        return rtrim(Director::absoluteBaseURL(), '/');
     }
 
     protected function htmlListOutput(array $allLinks)
