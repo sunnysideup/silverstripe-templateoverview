@@ -106,6 +106,9 @@ class AllLinks extends AllLinksProviderBase
         'Security/logout',
         'Security/lostpassword',
         'Security/lostpassword/passwordsent',
+        '/Security/ping/',
+        '/Security/resetaccount/',
+        '/admin/externallinks/start/',
     ];
 
     /**
