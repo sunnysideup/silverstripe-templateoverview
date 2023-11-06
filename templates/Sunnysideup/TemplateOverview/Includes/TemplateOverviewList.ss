@@ -75,7 +75,7 @@
             </li>
             <li class="typo-less">
                 <em>hide:</em>
-                <a href="#" class="typo-seeless" rel="entry-for-$URLSegment">less examples</a>
+                <a href="#" class="typo-seeless prevent-default" rel="entry-for-$URLSegment">less examples</a>
             </li>
             <li class="more-details-holder">
                 <ol id="entry-for-$URLSegment" class="MoreDetailOL">

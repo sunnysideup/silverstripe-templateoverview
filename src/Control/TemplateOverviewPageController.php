@@ -45,11 +45,17 @@ class TemplateOverviewPageController extends PageController
     private static $folder_for_example_images = '';
 
     private static $allowed_actions = [
-        'showmore' => true,
-        'quicklist' => true,
-        'listofobjectsused' => true,
-        'exampleimage' => true,
+        'index' => '->AdminOrDev',
+        'showmore' => '->AdminOrDev',
+        'quicklist' => '->AdminOrDev',
+        'listofobjectsused' => '->AdminOrDev',
+        'exampleimage' => '->AdminOrDev',
     ];
+
+    public function AdminOrDev()
+    {
+        return Director::isDev() || Permission::check('ADMIN');
+    }
 
     private static $base_class = SiteTree::class;
 
@@ -126,7 +132,7 @@ class TemplateOverviewPageController extends PageController
 
     public function listofobjectsused($request)
     {
-        $classWeAreLookingFor = '\\' . str_replace('-', '\\', $request->param('ID'));
+        $classWeAreLookingFor = '\\' . str_replace('-', '\\', (string) $request->param('ID'));
         $classWeAreLookingFor = Injector::inst()->get($classWeAreLookingFor);
         if ($classWeAreLookingFor instanceof DataObject) {
             $list = $this->ListOfAllClasses();

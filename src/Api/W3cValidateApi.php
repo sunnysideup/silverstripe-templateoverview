@@ -58,7 +58,7 @@ class W3cValidateApi
             }
         }
 
-        return '<div style="background:' . $color1 . ';"><a href="#" class="showMoreClick">' . $type . '</a></strong>' . $errorDescription . '</div>';
+        return '<div style="background:' . $color1 . ';"><a href="#" class="showMoreClick prevent-default">' . $type . '</a></strong>' . $errorDescription . '</div>';
     }
 
     private function makePostVars()

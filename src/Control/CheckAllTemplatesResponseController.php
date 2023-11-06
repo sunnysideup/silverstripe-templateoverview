@@ -34,6 +34,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
      * @var array
      */
     private static $allowed_actions = [
+        'index' => 'ADMIN',
         'testone' => 'ADMIN',
     ];
 

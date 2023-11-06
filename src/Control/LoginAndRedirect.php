@@ -19,6 +19,7 @@ use SilverStripe\Security\Security;
 class LoginAndRedirect extends Controller
 {
     private static $allowed_actions = [
+        'index' => 'ADMIN',
         'login' => '->isDev',
     ];
 
