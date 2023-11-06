@@ -102,6 +102,7 @@ class AllLinks extends AllLinksProviderBase
      * @var array
      */
     private static $custom_links = [
+        'sitemap.xml',
         'Security/login',
         'Security/logout',
         'Security/lostpassword',
