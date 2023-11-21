@@ -81,7 +81,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     public static function get_user_email()
     {
         $userName = Config::inst()->get(self::class, 'username');
-        if (! $userName) {
+        if (!$userName) {
             if (Config::inst()->get(self::class, 'use_default_admin')) {
                 $userName = DefaultAdminService::getDefaultAdminUsername();
             } else {
@@ -95,12 +95,12 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     public static function get_password()
     {
         $password = Config::inst()->get(self::class, 'password');
-        if (! $password) {
+        if (!$password) {
             if (Config::inst()->get(self::class, 'use_default_admin')) {
                 $password = DefaultAdminService::getDefaultAdminPassword();
             } else {
                 $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
-                if (! $cache->has('password')) {
+                if (!$cache->has('password')) {
                     $password = strtolower('aa' . substr(uniqid(), 0, 8)) . '_.,' . strtoupper('BB' . substr(uniqid(), 0, 8));
                     $cache->set('password', $password);
                 }
@@ -137,14 +137,14 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $diff = 'Please install https://github.com/Kevin-Kip/meru/ to see diff.';
             //these echo is required!
             echo $content;
-            if (! Director::is_ajax()) {
+            if (!Director::is_ajax()) {
                 $comparisonBaseURL = Config::inst()->get(self::class, 'comparision_base_url');
                 $width = '98%';
                 $style = 'border: none;';
                 if ($comparisonBaseURL) {
                     $width = '48%';
                     $style = 'float: left;';
-                    if ($this->isSuccess && ! $isCMSLink && $this->Config()->create_diff) {
+                    if ($this->isSuccess && !$isCMSLink && $this->Config()->create_diff) {
                         $otherURL = $comparisonBaseURL . $testURL;
                         $testContent = str_replace(rtrim(Director::absoluteBaseURL(), '/'), rtrim($comparisonBaseURL, '/'), $this->rawResponse);
                         $rawResponseOtherSite = @file_get_contents($otherURL);
@@ -207,7 +207,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         $this->member->write();
         $auth = new MemberAuthenticator();
         $result = $auth->checkPassword($this->member, self::get_password());
-        if (! $result->isValid()) {
+        if (!$result->isValid()) {
             user_error('Error in creating test user.', E_USER_ERROR);
 
             return;
@@ -289,7 +289,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $validate = Config::inst()->get(self::class, 'use_w3_validation');
         }
 
-        $testURL = Director::absoluteURL('/admin/templateoverviewloginandredirect/login/?BackURL=');
+        $testURL = Director::absoluteURL((string)'/admin/templateoverviewloginandredirect/login/?BackURL=');
         $testURL .= urlencode($url);
         $this->guzzleSetup();
 
@@ -329,7 +329,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $data['status'] = 'error';
             $data['content'] = $this->rawResponse;
         } elseif (200 === $httpResponse && $this->rawResponse && strlen((string) $this->rawResponse) < 200) {
-            if (! $this->isJson($this->rawResponse)) {
+            if (!$this->isJson($this->rawResponse)) {
                 $data['status'] = 'error - no response';
                 $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
             }
