@@ -36,32 +36,32 @@ class CheckAllTemplates extends BuildTask
 
         //we have this check here so that even in dev mode you have to log in.
         //because if you do not log in, the test will not work.
-        if (! Permission::check('ADMIN')) {
+        if (!Permission::check('ADMIN')) {
             die('Please <a href="/Security/login/?BackURL=/dev/tasks/smoketest/">log in</a> first.');
         }
         $obj = Injector::inst()->get(AllLinks::class);
 
-        if (! empty($_GET['limit'])) {
+        if (!empty($_GET['limit'])) {
             $obj->setNumberOfExamples((int) $_GET['limit']);
         }
 
-        if (! empty($_GET['nofrontend'])) {
+        if (!empty($_GET['nofrontend'])) {
             $obj->setIncludeFrontEnd(false);
         }
 
-        if (! empty($_GET['nobackend'])) {
+        if (!empty($_GET['nobackend'])) {
             $obj->setIncludeBackEnd(false);
         }
 
         $allLinks = $obj->getAllLinks();
 
-        if (! empty($_GET['htmllist'])) {
+        if (!empty($_GET['htmllist'])) {
 
             $this->htmlListOutput($allLinks);
 
             return;
         }
-        if (! empty($_GET['sitemaperrors'])) {
+        if (!empty($_GET['sitemaperrors'])) {
 
             $this->sitemapErrorsOutput($obj);
 
