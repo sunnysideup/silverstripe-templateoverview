@@ -142,7 +142,7 @@ class AllLinks extends AllLinksProviderBase
      */
     public function getAllLinks(): array
     {
-        if(! $this->numberOfExamples) {
+        if(!$this->numberOfExamples) {
             $this->numberOfExamples = $this->Config()->number_of_examples;
         }
         if($this->includeFrontEnd === true) {
@@ -275,7 +275,7 @@ class AllLinks extends AllLinksProviderBase
                 ->exclude(['ClassName' => $excludedClasses])
                 ->shuffle()
                 ->limit($this->numberOfExamples);
-            if (! $pages->exists()) {
+            if (!$pages->exists()) {
                 $pages = Versioned::get_by_stage($class, Versioned::DRAFT)
                     ->exclude(['ClassName' => $excludedClasses])
                     ->shuffle()
@@ -345,7 +345,8 @@ class AllLinks extends AllLinksProviderBase
         foreach ($pushArray as $pushItem) {
             if ($pushItem) {
                 //clean
-                $pushItem = str_replace('?stage=Stage', '', (string) $pushItem);
+                $pushItem = rtrim(str_replace('?stage=Stage', '?', (string) $pushItem), '?');
+                $pushItem = str_replace('?&', '?', $pushItem);
 
                 $pushItem = self::sanitise_class_name($pushItem);
                 $pushItem = '/' . Director::makeRelative($pushItem);
