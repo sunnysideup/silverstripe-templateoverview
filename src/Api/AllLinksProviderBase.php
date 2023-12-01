@@ -17,7 +17,7 @@ abstract class AllLinksProviderBase
     use Injectable;
     use Configurable;
 
-    protected $numberOfExamples = 1;
+    protected $numberOfExamples = 3;
 
     /**
      * @var bool
@@ -85,7 +85,7 @@ abstract class AllLinksProviderBase
     {
         $obj = new ReflectionClass($class);
 
-        return ! $obj->isAbstract();
+        return !$obj->isAbstract();
     }
 
     /**
@@ -120,9 +120,9 @@ abstract class AllLinksProviderBase
     {
         if(class_exists('\\Wilr\\GoogleSitemaps\\GoogleSitemap')) {
             if($obj instanceof DataObject) {
-                if(! $obj->hasExtension('\\Wilr\\GoogleSitemaps\\Extensions\\GoogleSitemapExtension')) {
-                    $this->errorsInGoogleSitemap[$obj->ClassName . ','.$obj->ID] =
-                        $obj->getTitle .' ('.$obj->i18n_singular_name().') is not listed in the google sitemap...'.$link;
+                if(!$obj->hasExtension('\\Wilr\\GoogleSitemaps\\Extensions\\GoogleSitemapExtension')) {
+                    $this->errorsInGoogleSitemap[$obj->ClassName . ',' . $obj->ID] =
+                        $obj->getTitle . ' (' . $obj->i18n_singular_name() . ') is not listed in the google sitemap...' . $link;
                 }
             }
         }
