@@ -30,20 +30,49 @@ class SaveAll extends BuildTask
         DataObject::config()->set('validation_enabled', false);
         $classes = ClassInfo::subclassesFor(DataObject::class, false);
         foreach ($classes as $class) {
-            echo '<h2>' . Injector::inst()->get($class)->i18n_singular_name() . '</h2>';
-            $list = $class::get()->orderBy('RAND()')->limit(10);
-            foreach ($list as $obj) {
-                DB::alteration_message('Writing ' . $obj->getTitle());
-                if($obj->hasExtension(Versioned::class)) {
-                    $isPublished = $obj->isPublished();
-                    $obj->writeToStage(Versioned::DRAFT);
+            $singleton = Injector::inst()->get($class);
+            echo '<h2>' . $singleton->i18n_singular_name() . '</h2>';
+            if($singleton->canEdit()) {
+                $list = $class::get()->orderBy('RAND()')->limit(10);
+                foreach ($list as $obj) {
+                    DB::alteration_message('Writing ' . $obj->getTitle());
+                    if($obj->hasExtension(Versioned::class)) {
+                        $isPublished = $obj->isPublished() && !$obj->isModifiedOnDraft();
+                        $obj->writeToStage(Versioned::DRAFT);
+                        if($isPublished) {
+                            $obj->publishSingle();
+                        }
+                    } else {
+                        $obj->write();
+                    }
+                }
+            } else {
+                DB::alteration_message('No permission to edit ' . $singleton->i18n_singular_name());
+            }
+            $createdObj = null;
+            if($singleton->canCreate()) {
+                $createdObj = $class::create();
+                if($createdObj->hasExtension(Versioned::class)) {
+                    $createdObj->writeToStage(Versioned::DRAFT);
                     if($isPublished) {
-                        $obj->publishSingle();
+                        $createdObj->publishSingle();
                     }
                 } else {
-                    $obj->write();
+                    $createdObj->write();
                 }
+            } else {
+                DB::alteration_message('No permission to create ' . $singleton->i18n_singular_name());
             }
+            if($createdObj) {
+                if($createdObj->hasExtension(Versioned::class)) {
+                    $createdObj->doUnpublish();
+                    $createdObj->delete();
+                } else {
+                    $createdObj->deleted();
+                }
+                DB::alteration_message('Deleted new items of ' . $singleton->i18n_singular_name());
+            }
+
         }
         DB::alteration_message('-----------------DONE ------------------');
     }
