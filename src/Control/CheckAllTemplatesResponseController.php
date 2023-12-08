@@ -5,8 +5,6 @@ namespace Sunnysideup\TemplateOverview\Control;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Psr7;
-use Psr\SimpleCache\CacheInterface;
 use SebastianBergmann\Diff\Differ;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
@@ -15,18 +13,16 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Flushable;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Security\DefaultAdminService;
 use SilverStripe\Security\Member;
-use SilverStripe\Security\MemberAuthenticator\MemberAuthenticator;
-use SilverStripe\Security\Permission;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
+use Sunnysideup\TemplateOverview\Api\ProvideTestUser;
 use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
 
 /**
  * Class \Sunnysideup\TemplateOverview\Control\CheckAllTemplatesResponseController
  *
  */
-class CheckAllTemplatesResponseController extends Controller implements Flushable
+class CheckAllTemplatesResponseController extends Controller
 {
     /**
      * Defines methods that can be called directly.
@@ -38,11 +34,6 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         'testone' => 'ADMIN',
     ];
 
-    private static $use_default_admin = false;
-
-    protected static $username = null;
-
-    protected static $password = null;
 
     private static $url_segment = 'admin/templateoverviewsmoketestresponse';
 
@@ -72,53 +63,6 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
      */
     private $debug = false;
 
-    public static function flush()
-    {
-        $cache = self::get_cache();
-        $cache->clear();
-    }
-
-    protected static function get_cache()
-    {
-        return Injector::inst()->get(CacheInterface::class . '.templateoverview');
-    }
-
-    public static function get_user_email_from_cache(): string
-    {
-        return (string) self::get_cache()->get('username');
-    }
-    public static function get_user_email(): string
-    {
-        if(self::$username === null) {
-            if (Config::inst()->get(self::class, 'use_default_admin')) {
-                self::$username = DefaultAdminService::getDefaultAdminUsername();
-            } else {
-                self::$username = bin2hex(random_bytes(32)) . '@' . bin2hex(random_bytes(32)) . '.co.nz';
-            }
-            $hashArray = explode('@', self::$username);
-            self::get_cache()->set('username', $hashArray[0]);
-        }
-        return self::$username;
-    }
-
-    public static function get_password(): string
-    {
-        if(self::$password === null) {
-            if (Config::inst()->get(self::class, 'use_default_admin')) {
-                self::$password = DefaultAdminService::getDefaultAdminPassword();
-            } else {
-                self::$password = bin2hex(random_bytes(32)) . '_17_#_PdKd';
-            }
-        }
-
-        return self::$password;
-    }
-
-    public static function get_test_user(): Member
-    {
-        return Injector::inst()->get(self::class)->getTestUser();
-    }
-
     /**
      * Main function
      * has two streams:
@@ -129,13 +73,13 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     {
         $isCMSLink = (bool) $request->getVar('iscmslink');
         $testURL = $request->getVar('test') ?: null;
-
+        $testUser = Injector::inst()->get(ProvideTestUser::class);
         // 1. actually test a URL and return the data
         if ($testURL) {
             $this->guzzleSetup();
-            $this->getTestUser();
+            $testUser->getTestUser();
             $content = $this->testURL($testURL);
-            $this->deleteUser();
+            $testUser->deleteUser();
             //these echo is required!
             echo $content;
             $this->doComparison($testURL, $isCMSLink);
@@ -146,46 +90,6 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         user_error('no test url provided.');
     }
 
-    public function getTestUser(): ?Member
-    {
-        $service = Injector::inst()->get(DefaultAdminService::class);
-        if (Config::inst()->get(self::class, 'use_default_admin')) {
-            $this->member = $service->findOrCreateDefaultAdmin();
-
-            return $this->member;
-        }
-
-        //Make temporary admin member
-        $filter = ['Email' => self::get_user_email()];
-        // @var Member|null $this->member
-        $this->member = Member::get()
-            ->filter($filter)
-            ->first()
-        ;
-        if (empty($this->member)) {
-            $this->member = Member::create($filter);
-        }
-
-        $this->member->Password = self::get_password();
-        $this->member->LockedOutUntil = null;
-        $this->member->write();
-        $auth = new MemberAuthenticator();
-        $result = $auth->checkPassword($this->member, self::get_password());
-        if (!$result->isValid()) {
-            user_error('Error in creating test user.', E_USER_ERROR);
-
-            return null;
-        }
-
-        $service->findOrCreateAdmin($this->member->Email, $this->member->FirstName);
-        if (!Permission::checkMember($this->member, 'ADMIN')) {
-            user_error('No admin group exists', E_USER_ERROR);
-
-            return  null;
-        }
-
-        return $this->member;
-    }
 
     /**
      * @return mixed
@@ -193,7 +97,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     protected function guzzleSendRequest(string $url)
     {
         $this->guzzleHasError = false;
-        $credentials = base64_encode(self::get_user_email() . ':' . self::get_password());
+        $credentials = base64_encode(ProvideTestUser::get_user_email() . ':' . ProvideTestUser::get_password());
 
         try {
             $response = $this->guzzleClient->request(
@@ -202,12 +106,12 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
                 [
                     'cookies' => $this->guzzleCookieJar,
                     'headers' => [
-                        'PHP_AUTH_USER' => self::get_user_email(),
-                        'PHP_AUTH_PW' => self::get_password(),
+                        'PHP_AUTH_USER' => ProvideTestUser::get_user_email(),
+                        'PHP_AUTH_PW' => ProvideTestUser::get_password(),
                     ],
                     'auth' => [
-                        self::get_user_email(),
-                        self::get_password(),
+                        ProvideTestUser::get_user_email(),
+                        ProvideTestUser::get_password(),
                     ],
                     'Authorization' => ['Basic ' . $credentials],
                 ]
@@ -239,7 +143,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
      *
      * @param string $url
      */
-    private function testURL($url)
+    protected function testURL($url)
     {
         if (strlen(trim($url)) < 1) {
             user_error('empty url'); //Checks for empty strings.
@@ -251,9 +155,10 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $validate = Config::inst()->get(self::class, 'use_w3_validation');
         }
 
-        $testURL = Director::absoluteURL('/admin/templateoverviewloginandredirect/login/?BackURL=');
-        $testURL .= urlencode($url);
-        $testURL .= '&hash=' . self::get_user_email_from_cache();
+        $testURL = Director::absoluteURL('/admin/templateoverviewloginandredirect/login')
+            . '?BackURL=' . urlencode($url)
+            . '&hash=' . ProvideTestUser::get_user_name_from_cache()
+        ;
         $this->guzzleSetup();
 
         $start = microtime(true);
@@ -370,16 +275,6 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         );
     }
 
-    private function deleteUser()
-    {
-        /** @var null|bool $isAdmin */
-        $isAdmin = Config::inst()->get(self::class, 'use_default_admin');
-        if ($isAdmin) {
-            //do nothing;
-        } else {
-            $this->member->delete();
-        }
-    }
 
     // private function debugme($lineNumber, $variable = "")
     // {

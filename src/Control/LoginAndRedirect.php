@@ -12,6 +12,7 @@ use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\MemberAuthenticator\CookieAuthenticationHandler;
 use SilverStripe\Security\Security;
+use Sunnysideup\TemplateOverview\Api\ProvideTestUser;
 
 /**
  * Class \Sunnysideup\TemplateOverview\Control\LoginAndRedirect
@@ -32,7 +33,7 @@ class LoginAndRedirect extends Controller
     {
         $url = $request->getVar('BackURL');
         $hash = $request->getVar('hash');
-        $testvalue = CheckAllTemplatesResponseController::get_user_email_from_cache();
+        $testvalue = ProvideTestUser::get_user_name_from_cache();
         if($testvalue && $testvalue === $hash) {
             $member = Member::get()->filter(['Email:StartsWith' => $testvalue . '@'])->first();
             if($member) {
@@ -41,10 +42,7 @@ class LoginAndRedirect extends Controller
                 return $this->redirect($url);
             }
         }
-        // Injector::inst()->get(CookieAuthenticationHandler::class)
-        //     ->logIn($member, $persist = true)
-        // ;
-        die('ERROR: ' . $url);
+        user_error('Could not log you in while trying to access ' . $url . '. Please try again.', E_USER_ERROR);
     }
 
     public function isDev()
