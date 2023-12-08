@@ -30,14 +30,12 @@ class LoginAndRedirect extends Controller
 
     public function login($request)
     {
-        die('AAA');
         $url = $request->getVar('BackURL');
         $hash = $request->getVar('hash');
         $testvalue = CheckAllTemplatesResponseController::get_user_email_from_cache();
         if($testvalue && $testvalue === $hash) {
             $member = Member::get()->filter(['Email:StartsWith' => $testvalue . '@'])->first();
-            $memberTest = Member::get()->sort(['ID' => 'DESC'])->first();
-            if($member->ID === $memberTest->ID) {
+            if($member) {
                 Security::setCurrentUser($member);
                 Injector::inst()->get(IdentityStore::class)->logIn($member, true);
                 return $this->redirect($url);

@@ -95,7 +95,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             } else {
                 self::$username = bin2hex(random_bytes(32)) . '@' . bin2hex(random_bytes(32)) . '.co.nz';
             }
-            $hashArray = explode(self::$username, '@');
+            $hashArray = explode('@', self::$username);
             self::get_cache()->set('username', $hashArray[0]);
         }
         return self::$username;
@@ -146,7 +146,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         user_error('no test url provided.');
     }
 
-    public function getTestUser(): Member
+    public function getTestUser(): ?Member
     {
         $service = Injector::inst()->get(DefaultAdminService::class);
         if (Config::inst()->get(self::class, 'use_default_admin')) {
@@ -174,14 +174,14 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         if (!$result->isValid()) {
             user_error('Error in creating test user.', E_USER_ERROR);
 
-            return;
+            return null;
         }
 
         $service->findOrCreateAdmin($this->member->Email, $this->member->FirstName);
         if (!Permission::checkMember($this->member, 'ADMIN')) {
             user_error('No admin group exists', E_USER_ERROR);
 
-            return;
+            return  null;
         }
 
         return $this->member;
@@ -318,6 +318,9 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         }
 
         $content = '';
+        if(Director::isDev()) {
+            $content .= '<p><strong>TEST URL:</strong> ' . $testURL . '</p>';
+        }
         $content .= '<p><strong>URL:</strong> ' . $url . '</p>';
         $content .= '<p><strong>Status:</strong> ' . $data['status'] . '</p>';
         $content .= '<p><strong>HTTP response:</strong> ' . $data['httpResponse'] . '</p>';

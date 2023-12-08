@@ -344,7 +344,7 @@ class AllLinks extends AllLinksProviderBase
         $excludeList = $this->Config()->exclude_list;
         foreach ($pushArray as $pushItem) {
             if ($pushItem) {
-                //clean
+                // clean
                 $pushItem = rtrim(str_replace('?stage=Stage', '?', (string) $pushItem), '?');
                 $pushItem = str_replace('?&', '?', $pushItem);
 
@@ -354,18 +354,21 @@ class AllLinks extends AllLinksProviderBase
                 if (strpos($pushItem, '.') > (strlen((string) $pushItem) - 6)) {
                     $pushItem = rtrim($pushItem, '/');
                 }
-
-                if ('' !== $pushItem) {
-                    if (!empty($excludeList)) {
-                        foreach ($excludeList as $excludeItem) {
-                            if (false !== stripos((string) $pushItem, $excludeItem)) {
-                                continue 2;
+                if(str_starts_with($pushItem, 'http') || str_starts_with($pushItem, '//')) {
+                    continue;
+                } else {
+                    if ('' !== $pushItem) {
+                        if (!empty($excludeList)) {
+                            foreach ($excludeList as $excludeItem) {
+                                if (false !== stripos((string) $pushItem, $excludeItem)) {
+                                    continue 2;
+                                }
                             }
                         }
-                    }
 
-                    if (!in_array($pushItem, $array, true)) {
-                        $array[] = $pushItem;
+                        if (!in_array($pushItem, $array, true)) {
+                            $array[] = $pushItem;
+                        }
                     }
                 }
             }
