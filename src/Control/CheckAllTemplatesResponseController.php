@@ -38,11 +38,11 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         'testone' => 'ADMIN',
     ];
 
-    private static $use_default_admin = true;
+    private static $use_default_admin = false;
 
-    private static $username = '';
+    protected static $username = null;
 
-    private static $password = '';
+    protected static $password = null;
 
     private static $url_segment = 'admin/templateoverviewsmoketestresponse';
 
@@ -74,45 +74,47 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
     public static function flush()
     {
-        $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
+        $cache = self::get_cache();
         $cache->clear();
     }
 
-    public static function get_user_email()
+    protected static function get_cache()
     {
-        $userName = Config::inst()->get(self::class, 'username');
-        if (!$userName) {
+        return Injector::inst()->get(CacheInterface::class . '.templateoverview');
+    }
+
+    public static function get_user_email_from_cache(): string
+    {
+        return (string) self::get_cache()->get('username');
+    }
+    public static function get_user_email(): string
+    {
+        if(self::$username === null) {
             if (Config::inst()->get(self::class, 'use_default_admin')) {
-                $userName = DefaultAdminService::getDefaultAdminUsername();
+                self::$username = DefaultAdminService::getDefaultAdminUsername();
             } else {
-                $userName = 'smoketest@test.com.ssu';
+                self::$username = bin2hex(random_bytes(32)) . '@' . bin2hex(random_bytes(32)) . '.co.nz';
+            }
+            $hashArray = explode(self::$username, '@');
+            self::get_cache()->set('username', $hashArray[0]);
+        }
+        return self::$username;
+    }
+
+    public static function get_password(): string
+    {
+        if(self::$password === null) {
+            if (Config::inst()->get(self::class, 'use_default_admin')) {
+                self::$password = DefaultAdminService::getDefaultAdminPassword();
+            } else {
+                self::$password = bin2hex(random_bytes(32)) . '_17_#_PdKd';
             }
         }
 
-        return $userName;
+        return self::$password;
     }
 
-    public static function get_password()
-    {
-        $password = Config::inst()->get(self::class, 'password');
-        if (!$password) {
-            if (Config::inst()->get(self::class, 'use_default_admin')) {
-                $password = DefaultAdminService::getDefaultAdminPassword();
-            } else {
-                $cache = Injector::inst()->get(CacheInterface::class . '.templateoverview');
-                if (!$cache->has('password')) {
-                    $password = strtolower('aa' . substr(uniqid(), 0, 8)) . '_.,' . strtoupper('BB' . substr(uniqid(), 0, 8));
-                    $cache->set('password', $password);
-                }
-
-                $password = $cache->get('password');
-            }
-        }
-
-        return $password;
-    }
-
-    public static function get_test_user()
+    public static function get_test_user(): Member
     {
         return Injector::inst()->get(self::class)->getTestUser();
     }
@@ -134,46 +136,9 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $this->getTestUser();
             $content = $this->testURL($testURL);
             $this->deleteUser();
-            $diff = 'Please install https://github.com/Kevin-Kip/meru/ to see diff.';
             //these echo is required!
             echo $content;
-            if (!Director::is_ajax()) {
-                $comparisonBaseURL = Config::inst()->get(self::class, 'comparision_base_url');
-                $width = '98%';
-                $style = 'border: none;';
-                if ($comparisonBaseURL) {
-                    $width = '48%';
-                    $style = 'float: left;';
-                    if ($this->isSuccess && !$isCMSLink && $this->Config()->create_diff) {
-                        $otherURL = $comparisonBaseURL . $testURL;
-                        $testContent = str_replace(rtrim(Director::absoluteBaseURL(), '/'), rtrim($comparisonBaseURL, '/'), $this->rawResponse);
-                        $rawResponseOtherSite = @file_get_contents($otherURL);
-                        if (class_exists(Differ::class)) {
-                            $diff = (new Differ())->diff(
-                                $testContent,
-                                $rawResponseOtherSite
-                            );
-                            $rawResponseOtherSite = Convert::raw2htmlatt(str_replace("'", '\\\'', $rawResponseOtherSite));
-                            $diff = '
-                            <iframe id="iframe2" width="' . $width . '%" height="7000" srcdoc=\'' . $rawResponseOtherSite . '\' style="float: right;"></iframe>
-
-                            <hr style="clear: both; margin-top: 20px; padding-top: 20px;" />
-                            <h1>Diff</h1>
-                            <link href="/resources/vendor/sunnysideup/templateoverview/client/css/checkalltemplates.css" rel="stylesheet" type="text/css" />
-                            ' . $diff;
-                        }
-                    }
-                }
-
-                $rawResponse = Convert::raw2htmlatt(str_replace("'", '\\\'', $this->rawResponse));
-                echo '
-                    <h1>Response</h1>
-                ';
-                echo $diff;
-                echo '
-                    <iframe id="iframe" width="' . $width . '" height="700" srcdoc=\'' . $rawResponse . '\' style="' . $style . '"></iframe>
-                ';
-            }
+            $this->doComparison($testURL, $isCMSLink);
 
             return;
         }
@@ -181,10 +146,11 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
         user_error('no test url provided.');
     }
 
-    public function getTestUser()
+    public function getTestUser(): Member
     {
+        $service = Injector::inst()->get(DefaultAdminService::class);
         if (Config::inst()->get(self::class, 'use_default_admin')) {
-            $this->member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
+            $this->member = $service->findOrCreateDefaultAdmin();
 
             return $this->member;
         }
@@ -202,8 +168,6 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
         $this->member->Password = self::get_password();
         $this->member->LockedOutUntil = null;
-        $this->member->FirstName = 'Test';
-        $this->member->Surname = 'User';
         $this->member->write();
         $auth = new MemberAuthenticator();
         $result = $auth->checkPassword($this->member, self::get_password());
@@ -213,10 +177,8 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             return;
         }
 
-        $service = Injector::inst()->get(DefaultAdminService::class);
-        $adminGroup = $service->findOrCreateAdminGroup();
-        $this->member->Groups()->add($adminGroup);
-        if (Permission::checkMember($this->member, 'ADMIN')) {
+        $service->findOrCreateAdmin($this->member->Email, $this->member->FirstName);
+        if (!Permission::checkMember($this->member, 'ADMIN')) {
             user_error('No admin group exists', E_USER_ERROR);
 
             return;
@@ -289,8 +251,9 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
             $validate = Config::inst()->get(self::class, 'use_w3_validation');
         }
 
-        $testURL = Director::absoluteURL((string)'/admin/templateoverviewloginandredirect/login/?BackURL=');
+        $testURL = Director::absoluteURL('/admin/templateoverviewloginandredirect/login/?BackURL=');
         $testURL .= urlencode($url);
+        $testURL .= '&hash=' . self::get_user_email_from_cache();
         $this->guzzleSetup();
 
         $start = microtime(true);
@@ -299,7 +262,7 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
 
         $data = [
             'status' => 'success',
-            'httpResponse' => '200',
+            'httpResponse' => '?',
             'content' => '',
             'responseTime' => round($end - $start, 4),
             'type' => '',
@@ -423,4 +386,46 @@ class CheckAllTemplatesResponseController extends Controller implements Flushabl
     //         flush();
     //     }
     // }
+
+    protected function doComparison(string $testURL, bool $isCMSLink)
+    {
+        if (!Director::is_ajax()) {
+            $diff = 'Please install https://github.com/Kevin-Kip/meru/ to see diff.';
+            $comparisonBaseURL = Config::inst()->get(self::class, 'comparision_base_url');
+            $width = '98%';
+            $style = 'border: none;';
+            if ($comparisonBaseURL) {
+                $width = '48%';
+                $style = 'float: left;';
+                if ($this->isSuccess && !$isCMSLink && $this->Config()->create_diff) {
+                    $otherURL = $comparisonBaseURL . $testURL;
+                    $testContent = str_replace(rtrim(Director::absoluteBaseURL(), '/'), rtrim($comparisonBaseURL, '/'), $this->rawResponse);
+                    $rawResponseOtherSite = @file_get_contents($otherURL);
+                    if (class_exists(Differ::class)) {
+                        $diff = (new Differ())->diff(
+                            $testContent,
+                            $rawResponseOtherSite
+                        );
+                        $rawResponseOtherSite = Convert::raw2htmlatt(str_replace("'", '\\\'', $rawResponseOtherSite));
+                        $diff = '
+                        <iframe id="iframe2" width="' . $width . '%" height="7000" srcdoc=\'' . $rawResponseOtherSite . '\' style="float: right;"></iframe>
+
+                        <hr style="clear: both; margin-top: 20px; padding-top: 20px;" />
+                        <h1>Diff</h1>
+                        <link href="/resources/vendor/sunnysideup/templateoverview/client/css/checkalltemplates.css" rel="stylesheet" type="text/css" />
+                        ' . $diff;
+                    }
+                }
+            }
+
+            $rawResponse = Convert::raw2htmlatt(str_replace("'", '\\\'', $this->rawResponse));
+            echo '
+                <h1>Response</h1>
+            ';
+            echo $diff;
+            echo '
+                <iframe id="iframe" width="' . $width . '" height="700" srcdoc=\'' . $rawResponse . '\' style="' . $style . '"></iframe>
+            ';
+        }
+    }
 }

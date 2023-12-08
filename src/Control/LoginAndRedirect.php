@@ -9,6 +9,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Security\IdentityStore;
+use SilverStripe\Security\Member;
 use SilverStripe\Security\MemberAuthenticator\CookieAuthenticationHandler;
 use SilverStripe\Security\Security;
 
@@ -29,15 +30,23 @@ class LoginAndRedirect extends Controller
 
     public function login($request)
     {
+        die('AAA');
         $url = $request->getVar('BackURL');
-        $member = CheckAllTemplatesResponseController::get_test_user();
-        Security::setCurrentUser($member);
-        // Injector::inst()->get(IdentityStore::class)->logIn($member, true);
-        Injector::inst()->get(CookieAuthenticationHandler::class)
-            ->logIn($member, $persist = true)
-        ;
-        // die($url);
-        return $this->redirect($url);
+        $hash = $request->getVar('hash');
+        $testvalue = CheckAllTemplatesResponseController::get_user_email_from_cache();
+        if($testvalue && $testvalue === $hash) {
+            $member = Member::get()->filter(['Email:StartsWith' => $testvalue . '@'])->first();
+            $memberTest = Member::get()->sort(['ID' => 'DESC'])->first();
+            if($member->ID === $memberTest->ID) {
+                Security::setCurrentUser($member);
+                Injector::inst()->get(IdentityStore::class)->logIn($member, true);
+                return $this->redirect($url);
+            }
+        }
+        // Injector::inst()->get(CookieAuthenticationHandler::class)
+        //     ->logIn($member, $persist = true)
+        // ;
+        die('ERROR: ' . $url);
     }
 
     public function isDev()
