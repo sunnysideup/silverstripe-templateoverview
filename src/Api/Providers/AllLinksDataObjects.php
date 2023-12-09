@@ -30,6 +30,15 @@ class AllLinksDataObjects extends AllLinksProviderBase
                             if ($obj->hasMethod('CMSEditLink')) {
                                 $return[] = $obj->CMSEditLink();
                             }
+                            if ($obj->hasMethod('getCMSEditLink')) {
+                                $return[] = $obj->getCMSEditLink();
+                            }
+                            if ($obj->hasMethod('EditLink')) {
+                                $return[] = $obj->EditLink();
+                            }
+                            if ($obj->hasMethod('getEditLink')) {
+                                $return[] = $obj->getEditLink();
+                            }
 
                             if ($obj->hasMethod('CMSAddLink')) {
                                 $return[] = $obj->CMSAddLink();
