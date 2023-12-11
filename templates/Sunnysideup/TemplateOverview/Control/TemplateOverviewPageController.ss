@@ -9,6 +9,6 @@
 <body>
     $Content
     <script src="//code.jquery.com/jquery-1.7.2.min.js"></script>
-    <script src="resources/vendor/sunnysideup/templateoverview/client/javascript/TemplateOverviewPage.js"></script>
+    <script src="_resources/vendor/sunnysideup/templateoverview/client/javascript/TemplateOverviewPage.js"></script>
 </body>
 </html>
