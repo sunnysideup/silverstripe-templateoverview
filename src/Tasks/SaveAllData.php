@@ -10,6 +10,7 @@ use SilverStripe\ORM\DB;
 use SilverStripe\Versioned\Versioned;
 use Page;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Environment;
 
 /**
  * A task to manually flush InterventionBackend cache.
@@ -28,6 +29,7 @@ class SaveAllData extends BuildTask
      */
     public function run($request)
     {
+        Environment::increaseTimeLimitTo(600);
         DataObject::config()->set('validation_enabled', false);
         $classes = ClassInfo::subclassesFor(DataObject::class, false);
         if(!Director::isDev()) {
@@ -37,9 +39,9 @@ class SaveAllData extends BuildTask
 
         foreach ($classes as $class) {
             $singleton = Injector::inst()->get($class);
-            $type =  $singleton->i18n_singular_name() . ' - ' . $singleton->ClassName;
+            $type =  $singleton->i18n_singular_name() . '<br />' . $singleton->ClassName;
             if($singleton->canEdit()) {
-                $list = $class::get()->orderBy('RAND()')->limit(10);
+                $list = $class::get()->orderBy('RAND()')->limit(1);
                 $action = 'write';
                 foreach ($list as $obj) {
                     $timeBefore = microtime(true);
@@ -113,13 +115,44 @@ class SaveAllData extends BuildTask
     protected function writeTableHeader()
     {
         echo '
-            <table>
+            <style>
+                .table {
+                    max-width: 80%;
+                    margin: auto;
+                    border-collapse: collapse;
+                    font-family: Arial, sans-serif;
+                }
+
+                .table th,
+                .table td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                    width: 25%;
+                }
+
+                .table th {
+                    background-color: #f4f4f4;
+                    color: #333;
+                }
+                .table .right {
+                    text-align: right;
+                }
+                .table tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+
+                .table tr:hover {
+                    background-color: #f1f1f1;
+                }
+            </style>
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Action</th>
                         <th>Type</th>
                         <th>Name</th>
-                        <th>Time Taken</th>
+                        <th class="right">Time Taken</th>
                     </tr>
                 </thead>
             <tbody>';
@@ -136,12 +169,19 @@ class SaveAllData extends BuildTask
     {
         $timeAfter = microtime(true);
         $timeTaken = round($timeAfter - $timeBefore, 2);
+        if($timeTaken > 0.3) {
+            $timeTaken .= ' SUPER SLOW';
+        } elseif($timeTaken > 0.2) {
+            $timeTaken .= ' SLOW';
+        } elseif($timeTaken > 0.1) {
+            $timeTaken .= ' SLUGGISH';
+        }
         echo '
             <tr>
                 <td>' . $action . '</td>
                 <td>' . $type . '</td>
                 <td>' . $title . '</td>
-                <td>' . $timeTaken . '</td>
+                <td class="right">' . $timeTaken . '</td>
             </tr>';
     }
 }
