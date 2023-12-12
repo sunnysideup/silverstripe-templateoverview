@@ -284,7 +284,7 @@ class AllLinks extends AllLinksProviderBase
 
             foreach($pages as $page) {
                 if ($pageInCMS) {
-                    $url = $page->CMSEditLink();
+                    $url = (string) $page->CMSEditLink();
                     $return[] = $url;
                     $return[] = str_replace('/edit/', '/settings/', $url);
                     $return[] = str_replace('/edit/', '/history/', $url);

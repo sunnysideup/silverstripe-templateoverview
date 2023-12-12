@@ -77,7 +77,7 @@ class CheckAllTemplatesResponseController extends Controller
         // 1. actually test a URL and return the data
         if ($testURL) {
             $this->guzzleSetup();
-            $testUser->getTestUser();
+            $testUser->getUser();
             $content = $this->testURL($testURL);
             $testUser->deleteUser();
             //these echo is required!

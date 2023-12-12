@@ -113,7 +113,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
     {
         foreach ($this->Config()->get('replacers') as $search => $replace) {
             foreach ($links as $key => $link) {
-                $links[$key] = str_replace($search, $replace, $link);
+                $links[$key] = str_replace($search, $replace, (string) $link);
             }
         }
 
