@@ -21,6 +21,7 @@ use SilverStripe\Security\DefaultAdminService;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\MemberAuthenticator\MemberAuthenticator;
 use SilverStripe\Security\Permission;
+use SilverStripe\Security\Security;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
 
@@ -44,16 +45,18 @@ class ProvideTestUser implements Flushable
     protected static $password = null;
     public static function flush()
     {
-        $cache = self::get_cache();
-        $cache->clear();
-        //Make temporary admin member
-        $filter = ['Email:EndsWith' => self::FAKE_DOMAIN_NAME];
-        // @var Member|null $this->member
-        $members =  Member::get()
-            ->filter($filter)
-        ;
-        foreach($members as $member) {
-            $member->delete();
+        if(Security::database_is_ready()) {
+            $cache = self::get_cache();
+            $cache->clear();
+            //Make temporary admin member
+            $filter = ['Email:EndsWith' => self::FAKE_DOMAIN_NAME];
+            // @var Member|null $this->member
+            $members =  Member::get()
+                ->filter($filter)
+            ;
+            foreach($members as $member) {
+                $member->delete();
+            }
         }
     }
 
