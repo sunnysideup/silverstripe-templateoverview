@@ -61,10 +61,11 @@ class SaveAllData extends BuildTask
         $this->writeTableHeader();
         $dontSave = $this->Config()->get('dont_save');
         foreach ($classes as $class) {
-            echo '<h1>TESTING ' . $class . '</h1>';
             if(in_array($class, $dontSave, true)) {
+                echo '<h1>SKIPPING ' . $class . '</h1>';
                 continue;
             }
+            echo '<h1>TESTING ' . $class . '</h1>';
             $singleton = Injector::inst()->get($class);
             $type =  $singleton->i18n_singular_name() . '<br />' . $singleton->ClassName;
             if($singleton->canEdit()) {
