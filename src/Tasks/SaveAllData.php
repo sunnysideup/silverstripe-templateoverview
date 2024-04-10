@@ -11,6 +11,16 @@ use SilverStripe\Versioned\Versioned;
 use Page;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Environment;
+use SilverStripe\HybridSessions\HybridSessionDataObject;
+use SilverStripe\MFA\Model\RegisteredMethod;
+use SilverStripe\Security\MemberPassword;
+use SilverStripe\Security\Permission;
+use SilverStripe\Security\PermissionRole;
+use SilverStripe\Security\PermissionRoleCode;
+use SilverStripe\Security\RememberLoginHash;
+use SilverStripe\UserForms\Model\EditableFormField;
+use SilverStripe\Versioned\ChangeSet;
+use SilverStripe\Versioned\ChangeSetItem;
 
 /**
  * A task to manually flush InterventionBackend cache.
@@ -21,6 +31,19 @@ class SaveAllData extends BuildTask
 
     protected $description = 'for testing purposes only';
     private static $segment = 'write-all-data-objects';
+
+    private static $dont_save = [
+        ChangeSet::class,
+        ChangeSetItem::class,
+        RegisteredMethod::class,
+        HybridSessionDataObject::class,
+        RememberLoginHash::class,
+        Permission::class,
+        PermissionRole::class,
+        PermissionRoleCode::class,
+        MemberPassword::class,
+        EditableFormField::class,
+    ];
 
     /**
      * @param \SilverStripe\Control\HTTPRequest $request
@@ -36,8 +59,12 @@ class SaveAllData extends BuildTask
             die('you can only run this in dev mode');
         }
         $this->writeTableHeader();
-
+        $dontSave = $this->Config()->get('dont_save');
         foreach ($classes as $class) {
+            echo '<h1>TESTING ' . $class . '</h1>';
+            if(in_array($class, $dontSave, true)) {
+                continue;
+            }
             $singleton = Injector::inst()->get($class);
             $type =  $singleton->i18n_singular_name() . '<br />' . $singleton->ClassName;
             if($singleton->canEdit()) {
@@ -70,19 +97,25 @@ class SaveAllData extends BuildTask
                 $action = 'create';
                 $title = 'NEW OBJECT';
                 $createdObj = $class::create();
-                if($createdObj->hasExtension(Versioned::class)) {
-                    $createdObj->writeToStage(Versioned::DRAFT);
-                    if($isPublished) {
-                        $createdObj->publishSingle();
+                try {
+                    if($createdObj->hasExtension(Versioned::class)) {
+                        $createdObj->writeToStage(Versioned::DRAFT);
+                        if($isPublished) {
+                            $createdObj->publishSingle();
+                        }
+                    } else {
+                        try {
+                            $createdObj->write();
+                        } catch (\Exception $e) {
+                            $action = 'create (failed)';
+                            $title = $e->getMessage();
+                        }
                     }
-                } else {
-                    try {
-                        //$createdObj->write();
-                    } catch (\Exception $e) {
-                        $action = 'create (failed)';
-                        $title = $e->getMessage();
-                    }
+                } catch (\Exception $e) {
+                    $action = 'create ERROR!!!';
+                    $title = 'n/a';
                 }
+
             } else {
                 $action = 'creatre (not allowed)';
                 $title = 'n/a';
