@@ -62,12 +62,18 @@ class SaveAllData extends BuildTask
         $dontSave = $this->Config()->get('dont_save');
         foreach ($classes as $class) {
             if(in_array($class, $dontSave, true)) {
-                echo '<h1>SKIPPING ' . $class . '</h1>';
+                DB::alteration_message('SKIPPING ' . $class, 'deleted');
                 continue;
             }
-            echo '<h1>TESTING ' . $class . '</h1>';
             $singleton = Injector::inst()->get($class);
-            $type =  $singleton->i18n_singular_name() . '<br />' . $singleton->ClassName;
+            foreach($dontSave as $dontSaveClass) {
+                if($singleton instanceof $dontSaveClass) {
+                    DB::alteration_message('SKIPPING ' . $class, 'deleted');
+                    continue 2;
+                }
+            }
+            $type =  '<strong>'.$singleton->i18n_singular_name() .'</strong><br />' . $singleton->ClassName;
+            DB::alteration_message('-----------------TESTING ' . $class . ' ------------------');
             if($singleton->canEdit()) {
                 $list = $class::get()->orderBy('RAND()')->limit(1);
                 $action = 'write';
@@ -183,8 +189,8 @@ class SaveAllData extends BuildTask
             <table class="table">
                 <thead>
                     <tr>
+                        <th>Record</th>
                         <th>Action</th>
-                        <th>Type</th>
                         <th>Name</th>
                         <th class="right">Time Taken</th>
                     </tr>
@@ -212,8 +218,8 @@ class SaveAllData extends BuildTask
         }
         echo '
             <tr>
-                <td>' . $action . '</td>
                 <td>' . $type . '</td>
+                <td>' . $action . '</td>
                 <td>' . $title . '</td>
                 <td class="right">' . $timeTaken . '</td>
             </tr>';
