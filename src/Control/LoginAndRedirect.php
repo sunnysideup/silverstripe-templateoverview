@@ -47,7 +47,7 @@ class LoginAndRedirect extends Controller
 
     public function isDev()
     {
-        if (Environment::getEnv('SS_ALLOW_SMOKE_TEST')) {
+        if (Director::isDev() && Environment::getEnv('SS_ALLOW_SMOKE_TEST')) {
             $allowedIPs = Config::inst()->get(self::class, 'allowed_ips');
             if (IPUtils::checkIP($this->request->getIP(), $allowedIPs)) {
                 return Director::isDev();
