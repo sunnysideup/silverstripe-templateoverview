@@ -98,3 +98,13 @@ a {
 .test span {
     font-size: 10px;
 }
+
+
+aside {
+    float: right;
+    margin-left: 20px;
+    background-color: #ccc;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
