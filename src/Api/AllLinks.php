@@ -91,7 +91,9 @@ class AllLinks extends AllLinksProviderBase
      *
      * @var array
      */
-    private static $exclude_list = [];
+    private static $exclude_list = [
+        'admin/user-forms',
+    ];
 
     /**
      * @var int
@@ -107,9 +109,7 @@ class AllLinks extends AllLinksProviderBase
         'Security/logout',
         'Security/lostpassword',
         'Security/lostpassword/passwordsent',
-        '/Security/ping/',
-        '/Security/resetaccount/',
-        '/admin/externallinks/start/',
+        '/Security/ping',
     ];
 
     /**
