@@ -28,7 +28,8 @@ class AllLinksModelAdmin extends AllLinksProviderBase
      * @var array
      */
     private static $replacers = [
-        '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor' => '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/QueuedJobDescriptor/',
+        '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor' =>
+        '/admin/queuedjobs/Symbiote-QueuedJobs-DataObjects-QueuedJobDescriptor/EditForm/field/QueuedJobDescriptor/',
     ];
 
     public function getAllLinksInner(): array
