@@ -11,17 +11,11 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
-use SilverStripe\Core\Flushable;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Security\Member;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 use Sunnysideup\TemplateOverview\Api\ProvideTestUser;
 use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
 
-/**
- * Class \Sunnysideup\TemplateOverview\Control\CheckAllTemplatesResponseController
- *
- */
 class CheckAllTemplatesResponseController extends Controller
 {
     /**
@@ -33,7 +27,6 @@ class CheckAllTemplatesResponseController extends Controller
         'index' => 'ADMIN',
         'testone' => 'ADMIN',
     ];
-
 
     private static $url_segment = 'admin/templateoverviewsmoketestresponse';
 
@@ -49,19 +42,7 @@ class CheckAllTemplatesResponseController extends Controller
 
     private $isSuccess = false;
 
-    /**
-     * temporary Admin used to log in.
-     *
-     * @var Member
-     */
-    private $member;
-
     private $rawResponse = '';
-
-    /**
-     * @var bool
-     */
-    private $debug = false;
 
     /**
      * Main function
@@ -89,7 +70,6 @@ class CheckAllTemplatesResponseController extends Controller
 
         user_error('no test url provided.');
     }
-
 
     /**
      * @return mixed
@@ -197,7 +177,7 @@ class CheckAllTemplatesResponseController extends Controller
             $data['status'] = 'error';
             $data['content'] = $this->rawResponse;
         } elseif (200 === $httpResponse && $this->rawResponse && strlen((string) $this->rawResponse) < 200) {
-            if (!$this->isJson($this->rawResponse)) {
+            if (! $this->isJson($this->rawResponse)) {
                 $data['status'] = 'error - no response';
                 $data['content'] = 'SHORT RESPONSE: ' . $this->rawResponse;
             }
@@ -223,7 +203,7 @@ class CheckAllTemplatesResponseController extends Controller
         }
 
         $content = '';
-        if(Director::isDev()) {
+        if (Director::isDev()) {
             $content .= '<p><strong>TEST URL:</strong> ' . $testURL . '</p>';
         }
         $content .= '<p><strong>URL:</strong> ' . $url . '</p>';
@@ -275,7 +255,6 @@ class CheckAllTemplatesResponseController extends Controller
         );
     }
 
-
     // private function debugme($lineNumber, $variable = "")
     // {
     //     if ($this->debug) {
@@ -287,7 +266,7 @@ class CheckAllTemplatesResponseController extends Controller
 
     protected function doComparison(string $testURL, bool $isCMSLink)
     {
-        if (!Director::is_ajax()) {
+        if (! Director::is_ajax()) {
             $diff = 'Please install https://github.com/Kevin-Kip/meru/ to see diff.';
             $comparisonBaseURL = Config::inst()->get(self::class, 'comparision_base_url');
             $width = '98%';
@@ -295,7 +274,7 @@ class CheckAllTemplatesResponseController extends Controller
             if ($comparisonBaseURL) {
                 $width = '48%';
                 $style = 'float: left;';
-                if ($this->isSuccess && !$isCMSLink && $this->Config()->create_diff) {
+                if ($this->isSuccess && ! $isCMSLink && $this->Config()->create_diff) {
                     $otherURL = $comparisonBaseURL . $testURL;
                     $testContent = str_replace(rtrim(Director::absoluteBaseURL(), '/'), rtrim($comparisonBaseURL, '/'), $this->rawResponse);
                     $rawResponseOtherSite = @file_get_contents($otherURL);

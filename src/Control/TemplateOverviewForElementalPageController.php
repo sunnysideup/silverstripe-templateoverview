@@ -4,10 +4,6 @@ namespace Sunnysideup\TemplateOverview\Control;
 
 use Sunnysideup\TemplateOverview\Api\ElementalDetails;
 
-/**
- * Class \Sunnysideup\TemplateOverview\Control\TemplateOverviewForElementalPageController
- *
- */
 class TemplateOverviewForElementalPageController extends TemplateOverviewPageController
 {
     private static $url_segment = 'admin/templates-elemental';

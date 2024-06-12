@@ -19,9 +19,6 @@ class TemplateOverviewArrayMethods
 
     /**
      * isAssociativeArray
-     *
-     * @param array $arr
-     * @return boolean
      */
     public static function is_associative_array(array $arr): bool
     {

@@ -25,13 +25,10 @@ use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 use Sunnysideup\TemplateOverview\Api\TemplateOverviewArrayMethods;
 
-/**
- * Class \Sunnysideup\TemplateOverview\Control\TemplateOverviewPageController
- *
- */
 class TemplateOverviewPageController extends PageController
 {
     protected $myMoreList;
+
     protected $totalPageCount = 0;
 
     private static $url_segment = 'admin/templates';
@@ -139,7 +136,6 @@ class TemplateOverviewPageController extends PageController
             foreach ($list as $item) {
                 $config = Config::inst();
 
-                /** @var array $listOfImages */
                 $a = (array) $config->get($item->ClassName, 'has_one', Config::UNINHERITED);
                 $b = (array) $config->get($item->ClassName, 'has_many', Config::UNINHERITED);
                 $c = (array) $config->get($item->ClassName, 'many_many', Config::UNINHERITED);
@@ -231,6 +227,7 @@ class TemplateOverviewPageController extends PageController
         } else {
             return Security::permissionFailure($this, 'Please login to access this list');
         }
+        return null;
     }
 
     /**
@@ -242,7 +239,7 @@ class TemplateOverviewPageController extends PageController
     protected function createPageObject($obj, $count)
     {
         $parent = $obj->Parent();
-        if($parent instanceof SiteTree) {
+        if ($parent instanceof SiteTree) {
             $breadCrumbs = $parent ? $parent->Breadcrumbs() : '';
         } else {
             $breadCrumbs = '';
@@ -268,11 +265,11 @@ class TemplateOverviewPageController extends PageController
         $listArray['Icon'] = $this->getIcon($obj);
         if ($obj instanceof SiteTree) {
             $children = $this->listOfTitles($obj->allowedChildren());
-            if(count($children)) {
+            if (count($children) > 0) {
                 $listArray['AllowedChildren'] = implode(', ', $children);
             }
             $actions = TemplateOverviewArrayMethods::get_best_array_keys($obj->Config()->get('allowed_actions'));
-            if(count($actions)) {
+            if ($actions !== []) {
                 $listArray['AllowedActions'] = implode(', ', $actions);
             }
         }
@@ -282,19 +279,18 @@ class TemplateOverviewPageController extends PageController
 
     protected function getIcon($obj): string
     {
-        $icon = '';
         $icon = $this->getIconInner($obj, 'getPageIconURL');
-        if (!$icon) {
+        if (! $icon) {
             $icon = $this->getIconInner($obj, 'getIconClass');
-            if (!$icon) {
+            if (! $icon) {
                 $icon = $this->getIconInner($obj, 'getIcon');
-                if (!$icon) {
+                if (! $icon) {
                     return (string) LeftAndMain::menu_icon_for_class($obj->ClassName);
                 }
             }
         }
 
-        if (!$icon) {
+        if ($icon === '0') {
             $icon = 'font-page';
         }
 
@@ -309,7 +305,7 @@ class TemplateOverviewPageController extends PageController
     {
         if ($obj->hasMethod($method)) {
             $icon = (string) $obj->{$method}();
-            if ($icon) {
+            if ($icon !== '' && $icon !== '0') {
                 return $icon;
             }
         }

@@ -9,7 +9,6 @@ use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\DB;
 
 class SiteTreeDetails
 {
@@ -29,7 +28,7 @@ class SiteTreeDetails
 
     protected $arrayOfAllClasses = [];
 
-    private static $list_of_all_classes = null;
+    private static $list_of_all_classes;
 
     private static $list_of_all_classes_counter = [];
 

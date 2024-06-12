@@ -10,14 +10,9 @@ use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\Member;
-use SilverStripe\Security\MemberAuthenticator\CookieAuthenticationHandler;
 use SilverStripe\Security\Security;
 use Sunnysideup\TemplateOverview\Api\ProvideTestUser;
 
-/**
- * Class \Sunnysideup\TemplateOverview\Control\LoginAndRedirect
- *
- */
 class LoginAndRedirect extends Controller
 {
     private static $allowed_actions = [
@@ -34,15 +29,16 @@ class LoginAndRedirect extends Controller
         $url = $request->getVar('BackURL');
         $hash = $request->getVar('hash');
         $testvalue = ProvideTestUser::get_user_name_from_cache();
-        if($testvalue && $testvalue === $hash) {
+        if ($testvalue && $testvalue === $hash) {
             $member = Member::get()->filter(['Email:StartsWith' => $testvalue . '@'])->first();
-            if($member) {
+            if ($member) {
                 Security::setCurrentUser($member);
                 Injector::inst()->get(IdentityStore::class)->logIn($member, true);
                 return $this->redirect($url);
             }
         }
         user_error('Could not log you in while trying to access ' . $url . '. Please try again.', E_USER_ERROR);
+        return null;
     }
 
     public function isDev()
@@ -60,12 +56,13 @@ class LoginAndRedirect extends Controller
                 E_USER_ERROR
             );
 
-            return;
+            return null;
         }
 
         user_error(
             'Please set SS_ALLOW_SMOKE_TEST in your environment variables to use this service.',
             E_USER_ERROR
         );
+        return null;
     }
 }

@@ -281,7 +281,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                     // ->filter(['ClassName' => $dataRecordClassName])
                     ->orderBy(DB::get_conn()->random() . ' ASC')
                     ->first();
-
             }
         }
 
@@ -296,17 +295,13 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         $array1 = [];
         $array2 = [];
         $classObject = $this->findSingleton($className);
-        if ($classObject) {
-            if ($classObject->hasMethod('templateOverviewTests')) {
-                $array1 = $classObject->templateOverviewTests();
-            }
+        if ($classObject && $classObject->hasMethod('templateOverviewTests')) {
+            $array1 = $classObject->templateOverviewTests();
         }
 
         $object = $this->findDataRecord($className);
-        if (null !== $object) {
-            if ($object->hasMethod('templateOverviewTests')) {
-                $array2 = $object->templateOverviewTests();
-            }
+        if (null !== $object && $object->hasMethod('templateOverviewTests')) {
+            $array2 = $object->templateOverviewTests();
         }
 
         return $array1 + $array2;
@@ -364,8 +359,8 @@ class AllLinksControllerInfo extends AllLinksProviderBase
     protected function findControllerLink($className): string
     {
         $object = $this->findDataRecord($className);
-        if($object) {
-            foreach(['Link', 'getLink'] as $method) {
+        if ($object) {
+            foreach (['Link', 'getLink'] as $method) {
                 if ($object->hasMethod($method)) {
                     $tmp = $object->$method();
                     $tmpArray = explode('?', $tmp);
@@ -421,12 +416,10 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         $controllerReflectionClass = $this->controllerReflectionClass($className);
         if (null !== $controllerReflectionClass) {
             foreach ($controllerReflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                if ($method->class === $className) {
-                    if ('Link' === $method->name) {
-                        $classObject = $this->findSingleton($className);
-                        if ($classObject) {
-                            return $classObject->Link();
-                        }
+                if ($method->class === $className && 'Link' === $method->name) {
+                    $classObject = $this->findSingleton($className);
+                    if ($classObject) {
+                        return $classObject->Link();
                     }
                 }
             }
@@ -434,6 +427,4 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
         return '';
     }
-
-
 }

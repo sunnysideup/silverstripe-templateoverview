@@ -2,17 +2,15 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
+use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\DB;
-use SilverStripe\Versioned\Versioned;
-use Page;
-use SilverStripe\Control\Director;
-use SilverStripe\Core\Environment;
 use SilverStripe\HybridSessions\HybridSessionDataObject;
 use SilverStripe\MFA\Model\RegisteredMethod;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DB;
 use SilverStripe\Security\MemberPassword;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionRole;
@@ -21,6 +19,7 @@ use SilverStripe\Security\RememberLoginHash;
 use SilverStripe\UserForms\Model\EditableFormField;
 use SilverStripe\Versioned\ChangeSet;
 use SilverStripe\Versioned\ChangeSetItem;
+use SilverStripe\Versioned\Versioned;
 
 /**
  * A task to manually flush InterventionBackend cache.
@@ -30,6 +29,7 @@ class SaveAllData extends BuildTask
     protected $title = 'Write all dataobjects - use with extreme caution.';
 
     protected $description = 'for testing purposes only';
+
     private static $segment = 'write-all-data-objects';
 
     private static $dont_save = [
@@ -55,35 +55,35 @@ class SaveAllData extends BuildTask
         Environment::increaseTimeLimitTo(600);
         DataObject::config()->set('validation_enabled', false);
         $classes = ClassInfo::subclassesFor(DataObject::class, false);
-        if(!Director::isDev()) {
+        if (! Director::isDev()) {
             die('you can only run this in dev mode');
         }
         $this->writeTableHeader();
         $dontSave = $this->Config()->get('dont_save');
         foreach ($classes as $class) {
-            if(in_array($class, $dontSave, true)) {
+            if (in_array($class, $dontSave, true)) {
                 DB::alteration_message('SKIPPING ' . $class, 'deleted');
                 continue;
             }
             $singleton = Injector::inst()->get($class);
-            foreach($dontSave as $dontSaveClass) {
-                if($singleton instanceof $dontSaveClass) {
+            foreach ($dontSave as $dontSaveClass) {
+                if ($singleton instanceof $dontSaveClass) {
                     DB::alteration_message('SKIPPING ' . $class, 'deleted');
                     continue 2;
                 }
             }
-            $type =  '<strong>'.$singleton->i18n_singular_name() .'</strong><br />' . $singleton->ClassName;
+            $type = '<strong>' . $singleton->i18n_singular_name() . '</strong><br />' . $singleton->ClassName;
             DB::alteration_message('-----------------TESTING ' . $class . ' ------------------');
-            if($singleton->canEdit()) {
+            if ($singleton->canEdit()) {
                 $list = $class::get()->orderBy('RAND()')->limit(1);
                 $action = 'write';
                 foreach ($list as $obj) {
                     $timeBefore = microtime(true);
                     $title = (string) $obj->getTitle() ?: (string) $obj->ID;
-                    if($obj->hasExtension(Versioned::class)) {
-                        $isPublished = $obj->isPublished() && !$obj->isModifiedOnDraft();
+                    if ($obj->hasExtension(Versioned::class)) {
+                        $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft();
                         $obj->writeToStage(Versioned::DRAFT);
-                        if($isPublished) {
+                        if ($isPublished) {
                             $action .= ' and publish';
                             $obj->publishSingle();
                         }
@@ -99,15 +99,15 @@ class SaveAllData extends BuildTask
                 $this->writeTableRow($action, $type, $title, $timeBefore);
             }
             $createdObj = null;
-            if($singleton->canCreate()) {
+            if ($singleton->canCreate()) {
                 $timeBefore = microtime(true);
                 $action = 'create';
                 $title = 'NEW OBJECT';
                 $createdObj = $class::create();
                 try {
-                    if($createdObj->hasExtension(Versioned::class)) {
+                    if ($createdObj->hasExtension(Versioned::class)) {
                         $createdObj->writeToStage(Versioned::DRAFT);
-                        if($isPublished) {
+                        if ($isPublished) {
                             $createdObj->publishSingle();
                         }
                     } else {
@@ -122,18 +122,17 @@ class SaveAllData extends BuildTask
                     $action = 'create ERROR!!!';
                     $title = 'n/a';
                 }
-
             } else {
                 $action = 'creatre (not allowed)';
                 $title = 'n/a';
                 $timeBefore = microtime(true);
             }
             $this->writeTableRow($action, $type, $title, $timeBefore);
-            if($createdObj && $createdObj->exists()) {
+            if ($createdObj && $createdObj->exists()) {
                 $action = 'delete';
                 $title = (string) $createdObj->getTitle() ?: (string) $createdObj->ID;
                 $timeBefore = microtime(true);
-                if($createdObj->hasExtension(Versioned::class)) {
+                if ($createdObj->hasExtension(Versioned::class)) {
                     $createdObj->doUnpublish();
                     $createdObj->delete();
                     $action .= ' and unpublish';
@@ -146,7 +145,6 @@ class SaveAllData extends BuildTask
                 $timeBefore = microtime(true);
             }
             $this->writeTableRow($action, $type, $title, $timeBefore);
-
         }
         $this->writeTableFooter();
         DB::alteration_message('-----------------DONE ------------------');
@@ -209,11 +207,11 @@ class SaveAllData extends BuildTask
     {
         $timeAfter = microtime(true);
         $timeTaken = round($timeAfter - $timeBefore, 2);
-        if($timeTaken > 0.3) {
+        if ($timeTaken > 0.3) {
             $timeTaken .= ' SUPER SLOW';
-        } elseif($timeTaken > 0.2) {
+        } elseif ($timeTaken > 0.2) {
             $timeTaken .= ' SLOW';
-        } elseif($timeTaken > 0.1) {
+        } elseif ($timeTaken > 0.1) {
             $timeTaken .= ' SLUGGISH';
         }
         echo '

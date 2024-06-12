@@ -6,7 +6,6 @@ use SilverStripe\Admin\CMSMenu;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\DB;
 use SilverStripe\VersionedAdmin\ArchiveAdmin;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
@@ -60,8 +59,8 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
         $sanitizedModel = AllLinks::sanitise_class_name($model);
         $modelLink = $modelAdminLink . $sanitizedModel . '/';
         $items = $this->getRandomArchivedItem($model);
-        if($items) {
-            foreach($items as $item) {
+        if ($items) {
+            foreach ($items as $item) {
                 $exceptionMethod = '';
                 foreach ($this->Config()->get('model_admin_alternatives') as $test => $method) {
                     if (! $method) {
@@ -125,5 +124,6 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
 
             return $list->limit($this->getNumberOfExamples());
         }
+        return null;
     }
 }

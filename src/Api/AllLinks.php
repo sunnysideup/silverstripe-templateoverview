@@ -5,7 +5,6 @@ namespace Sunnysideup\TemplateOverview\Api;
 use SilverStripe\Admin\CMSMenu;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\ORM\DB;
 use SilverStripe\Versioned\Versioned;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksArchiveAdmin;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksControllerInfo;
@@ -117,12 +116,9 @@ class AllLinks extends AllLinksProviderBase
      */
     private static $controller_name_space_filter = [];
 
-    /**
-     * @param string $link
-     */
     public static function is_admin_link(string $link): bool
     {
-        return 'admin' === substr(ltrim((string) $link, '/'), 0, 5);
+        return 'admin' === substr(ltrim($link, '/'), 0, 5);
     }
 
     /**
@@ -142,12 +138,11 @@ class AllLinks extends AllLinksProviderBase
      */
     public function getAllLinks(): array
     {
-        if(!$this->numberOfExamples) {
+        if (! $this->numberOfExamples) {
             $this->numberOfExamples = $this->Config()->number_of_examples;
         }
-        if($this->includeFrontEnd === true) {
+        if ($this->includeFrontEnd === true) {
             $array1 = $this->Config()->get('custom_links');
-            $array2 = [];
             $array2 = $this->getCustomisedLinks();
             foreach (array_merge($array1, $array2) as $link) {
                 $link = '/' . ltrim($link, '/') . '/';
@@ -166,7 +161,7 @@ class AllLinks extends AllLinksProviderBase
         }
         sort($this->allNonCMSLinks);
 
-        if($this->includeBackEnd === true) {
+        if ($this->includeBackEnd === true) {
             $this->templateoverviewtestsLinks = $this->ListOfAllTemplateoverviewtestsLinks();
             $this->pagesInCMS = $this->ListOfPagesLinks(true);
             $this->dataObjectsInCMS = $this->ListOfDataObjectsLinks(true);
@@ -275,14 +270,14 @@ class AllLinks extends AllLinksProviderBase
                 ->exclude(['ClassName' => $excludedClasses])
                 ->shuffle()
                 ->limit($this->numberOfExamples);
-            if (!$pages->exists()) {
+            if (! $pages->exists()) {
                 $pages = Versioned::get_by_stage($class, Versioned::DRAFT)
                     ->exclude(['ClassName' => $excludedClasses])
                     ->shuffle()
                     ->limit($this->numberOfExamples);
             }
 
-            foreach($pages as $page) {
+            foreach ($pages as $page) {
                 if ($pageInCMS) {
                     $url = (string) $page->CMSEditLink();
                     $return[] = $url;
@@ -351,24 +346,21 @@ class AllLinks extends AllLinksProviderBase
                 $pushItem = self::sanitise_class_name($pushItem);
                 $pushItem = '/' . Director::makeRelative($pushItem);
                 //is it a file?
-                if (strpos($pushItem, '.') > (strlen((string) $pushItem) - 6)) {
+                if (strpos($pushItem, '.') > (strlen($pushItem) - 6)) {
                     $pushItem = rtrim($pushItem, '/');
                 }
-                if(str_starts_with($pushItem, 'http') || str_starts_with($pushItem, '//')) {
+                if (str_starts_with($pushItem, 'http') || str_starts_with($pushItem, '//')) {
                     continue;
-                } else {
-                    if ('' !== $pushItem) {
-                        if (!empty($excludeList)) {
-                            foreach ($excludeList as $excludeItem) {
-                                if (false !== stripos((string) $pushItem, $excludeItem)) {
-                                    continue 2;
-                                }
+                } elseif ('' !== $pushItem) {
+                    if (! empty($excludeList)) {
+                        foreach ($excludeList as $excludeItem) {
+                            if (false !== stripos($pushItem, $excludeItem)) {
+                                continue 2;
                             }
                         }
-
-                        if (!in_array($pushItem, $array, true)) {
-                            $array[] = $pushItem;
-                        }
+                    }
+                    if (! in_array($pushItem, $array, true)) {
+                        $array[] = $pushItem;
                     }
                 }
             }

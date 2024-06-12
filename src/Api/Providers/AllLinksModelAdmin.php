@@ -7,7 +7,6 @@ use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\DB;
 use SilverStripe\VersionedAdmin\ArchiveAdmin;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
@@ -47,11 +46,11 @@ class AllLinksModelAdmin extends AllLinksProviderBase
             $modelsToAdd = $modelAdminSingleton->getManagedModels();
             if ($modelsToAdd && count($modelsToAdd)) {
                 foreach ($modelsToAdd as $key => $model) {
-                    if (is_array($model) || !is_subclass_of($model, DataObject::class)) {
+                    if (is_array($model) || ! is_subclass_of($model, DataObject::class)) {
                         $model = $key;
                     }
 
-                    if (!is_subclass_of($model, DataObject::class)) {
+                    if (! is_subclass_of($model, DataObject::class)) {
                         continue;
                     }
 
@@ -75,11 +74,11 @@ class AllLinksModelAdmin extends AllLinksProviderBase
             ->shuffle()
             ->limit($this->getNumberOfExamples())
         ;
-        foreach($items as $item) {
+        foreach ($items as $item) {
             $singleton = $item ?: Injector::inst()->get($model);
             $exceptionMethod = '';
             foreach ($this->Config()->get('model_admin_alternatives') as $test => $method) {
-                if (!$method) {
+                if (! $method) {
                     $method = 'do-not-use';
                 }
 
@@ -99,10 +98,8 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                     $links[] = Controller::join_links($modelLink, 'EditForm', 'field', $sanitizedModel, 'item', 'new');
                 }
 
-                if ($item) {
-                    if ($item->canEdit()) {
-                        $links[] = Controller::join_links($modelLink, 'EditForm', 'field', $sanitizedModel, 'item', $item->ID, 'edit');
-                    }
+                if ($item && $item->canEdit()) {
+                    $links[] = Controller::join_links($modelLink, 'EditForm', 'field', $sanitizedModel, 'item', $item->ID, 'edit');
                 }
             }
         }

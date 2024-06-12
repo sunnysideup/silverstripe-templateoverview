@@ -45,7 +45,6 @@ abstract class AllLinksProviderBase
         return $this->numberOfExamples;
     }
 
-
     public function setIncludeFrontEnd(bool $b): static
     {
         $this->includeFrontEnd = $b;
@@ -85,7 +84,7 @@ abstract class AllLinksProviderBase
     {
         $obj = new ReflectionClass($class);
 
-        return !$obj->isAbstract();
+        return ! $obj->isAbstract();
     }
 
     /**
@@ -118,13 +117,9 @@ abstract class AllLinksProviderBase
 
     protected function checkForErrorsInGoogleSitemap($obj, ?string $link = '')
     {
-        if(class_exists('\\Wilr\\GoogleSitemaps\\GoogleSitemap')) {
-            if($obj instanceof DataObject) {
-                if(!$obj->hasExtension('\\Wilr\\GoogleSitemaps\\Extensions\\GoogleSitemapExtension')) {
-                    $this->errorsInGoogleSitemap[$obj->ClassName . ',' . $obj->ID] =
-                        $obj->getTitle . ' (' . $obj->i18n_singular_name() . ') is not listed in the google sitemap...' . $link;
-                }
-            }
+        if (class_exists('\\Wilr\\GoogleSitemaps\\GoogleSitemap') && $obj instanceof DataObject && ! $obj->hasExtension('\\Wilr\\GoogleSitemaps\\Extensions\\GoogleSitemapExtension')) {
+            $this->errorsInGoogleSitemap[$obj->ClassName . ',' . $obj->ID] =
+                $obj->getTitle . ' (' . $obj->i18n_singular_name() . ') is not listed in the google sitemap...' . $link;
         }
     }
 }
