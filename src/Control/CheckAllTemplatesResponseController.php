@@ -202,7 +202,7 @@ class CheckAllTemplatesResponseController extends Controller
             }
         }
 
-        if (Director::is_ajax()) {
+        if (Director::is_ajax() || Director::is_cli()) {
             return json_encode($data);
         }
 
