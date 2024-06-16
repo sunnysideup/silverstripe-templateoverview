@@ -56,9 +56,10 @@ class CheckAllTemplatesResponseController extends Controller
         $testURL = $request->getVar('test') ?: null;
         // 1. actually test a URL and return the data
         if ($testURL) {
-            $content = $this->testoneinner($testURL, $isCMSLink);
+            $content = $this->testOneInner($testURL, $isCMSLink);
             echo $content;
             $this->doComparison($testURL, $isCMSLink);
+            return;
         }
 
         user_error('no test url provided.');
