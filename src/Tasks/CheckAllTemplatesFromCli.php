@@ -45,12 +45,12 @@ class CheckAllTemplatesCli extends BuildTask
         $controller = new CheckAllTemplatesResponseController();
         foreach($allLinks['allNonCMSLinks'] as $link) {
             $testLink = $this->createTestLink($link, false);
-            $controller->testOneInner($testLink, false);
+            print_r($controller->testOneInner($testLink, false));
 
         }
         foreach($allLinks['allCMSLinks'] as $link) {
             $testLink = $this->createTestLink($link, true);
-            $controller->testOneInner($testLink, false);
+            print_r($controller->testOneInner($testLink, false));
         }
 
     }
