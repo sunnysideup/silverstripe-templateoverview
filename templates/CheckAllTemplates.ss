@@ -24,6 +24,9 @@
         <p>
             There is also a list of <a href="/admin/templates">templates</a> available.
         </p>
+        <p>
+            If you really want test without caution, you can <a href="/dev/tasks/write-all-data-objects">write all dataobjects</a> to the database.
+        </p>
     </aside>
     <% if $HasEnvironmentVariable %><a href="#" class="start btn prevent-default">Start</a><% else %>
         <span style="color: red">You must set the <strong>SS_ALLOW_SMOKE_TEST</strong> environment variable to <strong>TRUE</strong> to run the tests below!</span>

@@ -109,6 +109,7 @@ class AllLinks extends AllLinksProviderBase
         'Security/lostpassword',
         'Security/lostpassword/passwordsent',
         '/Security/ping',
+        '/dev/generatesecuretoken/',
     ];
 
     /**

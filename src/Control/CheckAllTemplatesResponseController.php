@@ -54,21 +54,24 @@ class CheckAllTemplatesResponseController extends Controller
     {
         $isCMSLink = (bool) $request->getVar('iscmslink');
         $testURL = $request->getVar('test') ?: null;
-        $testUser = Injector::inst()->get(ProvideTestUser::class);
         // 1. actually test a URL and return the data
         if ($testURL) {
-            $this->guzzleSetup();
-            $testUser->getUser();
-            $content = $this->testURL($testURL);
-            $testUser->deleteUser();
-            //these echo is required!
+            $content = $this->testoneinner($testURL, $isCMSLink);
             echo $content;
             $this->doComparison($testURL, $isCMSLink);
-
-            return;
         }
 
         user_error('no test url provided.');
+    }
+
+    public function testOneInner($testURL, $isCMSLink): string
+    {
+        $testUser = Injector::inst()->get(ProvideTestUser::class);
+        $this->guzzleSetup();
+        $testUser->getUser();
+        $content = $this->testURL($testURL);
+        $testUser->deleteUser();
+        return $content;
     }
 
     /**
