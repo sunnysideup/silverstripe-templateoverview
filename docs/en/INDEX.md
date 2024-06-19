@@ -83,3 +83,28 @@ Installation Instructions
 4. [OPTIONAL] add to the bottom of your Page.ss file:
 
 		<% include TemplateOverviewPageDevelopmentFooter %>
+
+
+Isses with smoketest
+---------------------------------------------------
+
+If you try to run Smoketest, and all of your links are resulting in an HTTP
+Response of 500 and a Response of
+`unexpected response: Internal Server Error500|Internal Server Error`, you
+probably need to add your IP address to the `allowed_ips` config for the module.
+Check your logs and you should see a message like:
+
+```
+Got error 'PHP message: PHP Fatal error:  Please include your ip address in LoginAndRedirect.allowed_ips: 192.168.247.5.
+Currently set are: 127.0.0.1 in /var/www/html/vendor/sunnysideup/templateoverview/src/Control/LoginAndRedirect.php on line 52'
+```
+
+Create a new YAML config file in `/app/_config` named `templateoverview.yml`, and add the follow content, replacing the IP address with the one mentioned in your error message:
+
+```
+---
+Name: templateoverview_app
+---
+Sunnysideup\TemplateOverview\Control\LoginAndRedirect:
+  allowed_ips:
+    - 192.168.247.5
