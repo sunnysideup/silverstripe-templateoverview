@@ -1,0 +1,6 @@
+---
+Name: templateoverview_app
+---
+Sunnysideup\TemplateOverview\Control\LoginAndRedirect:
+  allowed_ips:
+    - 192.168.247.5
