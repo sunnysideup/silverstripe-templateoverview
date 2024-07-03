@@ -207,19 +207,23 @@ class SaveAllData extends BuildTask
     {
         $timeAfter = microtime(true);
         $timeTaken = round($timeAfter - $timeBefore, 2);
+        $colour = 'transparent';
         if ($timeTaken > 0.3) {
             $timeTaken .= ' SUPER SLOW';
+            $colour = 'red';
         } elseif ($timeTaken > 0.2) {
             $timeTaken .= ' SLOW';
+            $colour = 'orange';
         } elseif ($timeTaken > 0.1) {
             $timeTaken .= ' SLUGGISH';
+            $colour = 'yellow';
         }
         echo '
             <tr>
                 <td>' . $type . '</td>
                 <td>' . $action . '</td>
                 <td>' . $title . '</td>
-                <td class="right">' . $timeTaken . '</td>
+                <td class="right" style="background-color: '.$colour.';">' . $timeTaken . '</td>
             </tr>';
     }
 }
