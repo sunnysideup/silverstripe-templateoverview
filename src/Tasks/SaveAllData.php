@@ -211,16 +211,16 @@ class SaveAllData extends BuildTask
         $timeTaken = round(($timeAfter - $timeBefore) / $divider, 2);
         $colour = 'transparent';
         if ($timeTaken > 0.3) {
-            $timeTaken .= 'seconds - SUPER SLOW';
+            $timeTaken .= 's - SUPER SLOW';
             $colour = 'red';
         } elseif ($timeTaken > 0.2) {
-            $timeTaken .= 'seconds - SLOW';
+            $timeTaken .= 's - SLOW';
             $colour = 'orange';
         } elseif ($timeTaken > 0.1) {
-            $timeTaken .= 'seconds - SLUGGISH';
+            $timeTaken .= 's - SLUGGISH';
             $colour = 'yellow';
         } else {
-            $timeTaken .= 'seconds';
+            $timeTaken .= 's';
         }
         echo '
             <tr>
