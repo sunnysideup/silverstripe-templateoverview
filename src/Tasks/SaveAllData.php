@@ -80,14 +80,13 @@ class SaveAllData extends BuildTask
             if ($singleton->canEdit()) {
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
-                $action = 'write (100x)';
+                $action = 'write ('.$list->count().'x)';
                 foreach ($list as $obj) {
                     $title = (string) $obj->getTitle() ?: (string) $obj->ID;
                     if ($obj->hasExtension(Versioned::class)) {
                         $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft();
                         $obj->writeToStage(Versioned::DRAFT);
                         if ($isPublished) {
-                            $action .= ' and publish';
                             $obj->publishSingle();
                         }
                     } else {
