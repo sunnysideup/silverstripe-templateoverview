@@ -45,6 +45,8 @@ class SaveAllData extends BuildTask
         EditableFormField::class,
     ];
 
+    private static $limit = 100;
+
     /**
      * @param \SilverStripe\Control\HTTPRequest $request
      *
@@ -60,6 +62,7 @@ class SaveAllData extends BuildTask
         }
         $this->writeTableHeader();
         $dontSave = $this->Config()->get('dont_save');
+        $limit = $this->Config()->get('limit');
         foreach ($classes as $class) {
             if (in_array($class, $dontSave, true)) {
                 DB::alteration_message('SKIPPING ' . $class, 'deleted');
@@ -75,10 +78,10 @@ class SaveAllData extends BuildTask
             $type = '<strong>' . $singleton->i18n_singular_name() . '</strong><br />' . $singleton->ClassName;
             DB::alteration_message('-----------------TESTING ' . $class . ' ------------------');
             if ($singleton->canEdit()) {
-                $list = $class::get()->orderBy('RAND()')->limit(1);
-                $action = 'write';
+                $list = $class::get()->orderBy('RAND()')->limit($limit);
+                $timeBefore = microtime(true);
+                $action = 'write (100x)';
                 foreach ($list as $obj) {
-                    $timeBefore = microtime(true);
                     $title = (string) $obj->getTitle() ?: (string) $obj->ID;
                     if ($obj->hasExtension(Versioned::class)) {
                         $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft();
@@ -90,8 +93,8 @@ class SaveAllData extends BuildTask
                     } else {
                         $obj->write();
                     }
-                    $this->writeTableRow($action, $type, $title, $timeBefore);
                 }
+                $this->writeTableRow($action, $type, $title, $timeBefore, $limit);
             } else {
                 $action = 'write (not allowed)';
                 $title = 'n/a';
@@ -203,20 +206,22 @@ class SaveAllData extends BuildTask
             </teable>';
     }
 
-    protected function writeTableRow(string $action, string $type, string $title, float $timeBefore)
+    protected function writeTableRow(string $action, string $type, string $title, float $timeBefore, int $divider = 1)
     {
         $timeAfter = microtime(true);
-        $timeTaken = round($timeAfter - $timeBefore, 2);
+        $timeTaken = round(($timeAfter - $timeBefore) / $divider, 2);
         $colour = 'transparent';
         if ($timeTaken > 0.3) {
-            $timeTaken .= ' SUPER SLOW';
+            $timeTaken .= 'seconds - SUPER SLOW';
             $colour = 'red';
         } elseif ($timeTaken > 0.2) {
-            $timeTaken .= ' SLOW';
+            $timeTaken .= 'seconds - SLOW';
             $colour = 'orange';
         } elseif ($timeTaken > 0.1) {
-            $timeTaken .= ' SLUGGISH';
+            $timeTaken .= 'seconds - SLUGGISH';
             $colour = 'yellow';
+        } else {
+            $timeTaken .= 'seconds';
         }
         echo '
             <tr>
