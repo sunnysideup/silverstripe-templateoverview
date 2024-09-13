@@ -16,7 +16,7 @@ use Sunnysideup\TemplateOverview\Api\AllLinks;
 
 class CheckAllTemplates extends BuildTask
 {
-    protected $title = 'Check URLs for HTTP errors';
+    protected $title = 'SMOKETEST: Check URLs for HTTP errors';
 
     protected $description = 'Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited in ModelAdmin, checking for HTTP response errors (e.g. 404). Click start to run.';
 

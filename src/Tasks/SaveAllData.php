@@ -93,13 +93,14 @@ class SaveAllData extends BuildTask
                         $obj->write();
                     }
                 }
-                $this->writeTableRow($action, $type, $title, $timeBefore, $limit);
+                $this->writeTableRow($type, $action, $title, $timeBefore, $limit);
             } else {
                 $action = 'write (not allowed)';
                 $title = 'n/a';
                 $timeBefore = microtime(true);
                 $this->writeTableRow($action, $type, $title, $timeBefore);
             }
+            $type = '<div style="color: #555;">' . $type . '</div>';
             $createdObj = null;
             if ($singleton->canCreate()) {
                 $timeBefore = microtime(true);
@@ -205,7 +206,7 @@ class SaveAllData extends BuildTask
             </teable>';
     }
 
-    protected function writeTableRow(string $action, string $type, string $title, float $timeBefore, int $divider = 1)
+    protected function writeTableRow(string $type, string $action, string $title, float $timeBefore, int $divider = 1)
     {
         $timeAfter = microtime(true);
         $timeTaken = round(($timeAfter - $timeBefore) / $divider, 2);
