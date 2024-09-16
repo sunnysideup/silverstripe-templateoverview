@@ -1,5 +1,5 @@
 jQuery(document).ready(function () {
-    var checker = {
+    const checker = {
         useJSTest: false,
 
         totalResponseTime: 0,
@@ -37,29 +37,81 @@ jQuery(document).ready(function () {
                 }
             })
         },
+        getResponseColor: function (seconds) {
+            const colorStops = [
+                { r: 204, g: 255, b: 204 }, // Light green
+                { r: 0, g: 100, b: 0 }, // Dark green
+                { r: 173, g: 216, b: 230 }, // Light blue
+                { r: 0, g: 0, b: 139 }, // Dark blue
+                { r: 255, g: 255, b: 224 }, // Light yellow
+                { r: 255, g: 215, b: 0 }, // Dark yellow
+                { r: 255, g: 165, b: 0 }, // Orange
+                { r: 255, g: 69, b: 0 }, // Red
+                { r: 139, g: 0, b: 0 }, // Dark red
+                { r: 0, g: 0, b: 0 } // Black
+            ]
+
+            function interpolateColor (start, end, factor) {
+                const r = Math.round(start.r + factor * (end.r - start.r))
+                const g = Math.round(start.g + factor * (end.g - start.g))
+                const b = Math.round(start.b + factor * (end.b - start.b))
+                return `rgb(${r},${g},${b})`
+            }
+
+            const numSteps = colorStops.length - 1
+            const step = Math.floor((seconds / 10) * numSteps)
+            const nextStep = step + 1
+
+            // Shift transition earlier by slightly reducing time spent on each color
+            const localT = Math.min(
+                1,
+                ((seconds % (10 / numSteps)) / (10 / numSteps)) * 1.5
+            )
+
+            return interpolateColor(
+                colorStops[step],
+                colorStops[nextStep],
+                localT
+            )
+        },
+        getContrastingColor: function (hexColor) {
+            // Remove the '#' if it's there
+            hexColor = hexColor.replace('#', '')
+
+            // Convert hex to RGB
+            const r = parseInt(hexColor.substring(0, 2), 16)
+            const g = parseInt(hexColor.substring(2, 4), 16)
+            const b = parseInt(hexColor.substring(4, 6), 16)
+
+            // Calculate the luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+
+            // If the luminance is high, return black, else return white
+            return luminance > 0.5 ? '#000000' : '#FFFFFF'
+        },
+        baseLink: '',
 
         checkURL: function () {
             if (!checker.stop) {
-                var linkItem = jQuery(checker.item)
+                const linkItem = jQuery(checker.item)
+                let data = {}
                 if (checker.useJSTest) {
-                    var data = {}
-                    var baseLink = checker.item.dataset.link
+                    checker.baseLink = checker.item.dataset.link
                 } else {
-                    var baseLink = checker.baseURL
-                    var isCMSLink = linkItem.data('is-cms-link')
-                    var testLink = linkItem.data('link')
-                    var data = {
+                    checker.baseLink = checker.baseURL
+                    const isCMSLink = linkItem.data('is-cms-link')
+                    const testLink = linkItem.data('link')
+                    data = {
                         test: testLink,
                         iscmslink: isCMSLink,
                         unique: new Date().getTime()
                     }
                 }
-                var rowID = linkItem.attr('ID')
-                var tableRow = jQuery('#' + rowID)
+                const rowID = linkItem.attr('ID')
+                let tableRow = jQuery('#' + rowID)
                 tableRow.addClass('loading')
-
                 jQuery.ajax({
-                    url: baseLink,
+                    url: checker.baseLink,
                     type: 'get',
                     data: data,
                     success: function (data, textStatus) {
@@ -67,10 +119,10 @@ jQuery(document).ready(function () {
 
                         checker.item = checker.list.shift()
 
-                        var jsonData = null
-
+                        let jsonData = null
                         if (data.length > 1) {
                             jsonData = JSON.parse(data)
+
                             if (jsonData.status !== 'success') {
                                 checker.numberOfErrors++
                             }
@@ -79,24 +131,6 @@ jQuery(document).ready(function () {
                                 .addClass(jsonData.status)
 
                             tableRow
-                                .find('td.response-time')
-                                .text(jsonData.responseTime)
-                            if (jsonData.responseTime > 0.3) {
-                                tableRow
-                                    .find('td.response-time')
-                                    .css('background-color', 'orange')
-                            }
-                            if (jsonData.responseTime > 0.4) {
-                                tableRow
-                                    .find('td.response-time')
-                                    .css('background-color', 'orangered')
-                            }
-                            if (jsonData.responseTime > 0.5) {
-                                tableRow
-                                    .find('td.response-time')
-                                    .css('background-color', 'red')
-                            }
-                            tableRow
                                 .find('td.http-response')
                                 .text(jsonData.httpResponse)
                             tableRow
@@ -104,38 +138,43 @@ jQuery(document).ready(function () {
                                 .text(jsonData.w3Content)
                             tableRow.find('td.content').text(jsonData.content)
 
-                            if (
-                                jsonData.responseTime &&
-                                typeof jsonData.responseTime !== 'undefined'
-                            ) {
+                            if (jsonData.responseTime) {
+                                const bgColour = checker.getResponseColor(
+                                    jsonData.responseTime
+                                )
+                                const fontColour =
+                                    checker.getContrastingColor(bgColour)
                                 checker.numberOfTests++
+                                tableRow
+                                    .find('td.response-time')
+                                    .text(jsonData.responseTime)
+                                    .css('background-color', bgColour)
+                                    .css('color', fontColour)
+
                                 let errorRate =
-                                    Math.round(
-                                        1000 *
-                                            (checker.numberOfErrors /
-                                                checker.numberOfTests)
-                                    ) /
-                                        10 +
-                                    '%'
+                                    checker.numberOfErrors /
+                                    checker.numberOfTests
+                                let errorRateRounded =
+                                    Math.round(1000 * errorRate) / 10 + '%'
                                 let responseTime =
-                                    Math.round(
-                                        100 *
-                                            (checker.totalResponseTime /
-                                                checker.numberOfTests)
-                                    ) / 100
+                                    checker.totalResponseTime /
+                                    checker.numberOfTests
+                                let responseTimeRounded =
+                                    Math.round(100 * responseTime) / 100
                                 checker.totalResponseTime =
                                     checker.totalResponseTime +
                                     jsonData.responseTime
+
                                 jQuery('#NumberOfTests').text(
                                     checker.numberOfTests
                                 )
                                 jQuery('#AverageResponseTime').text(
-                                    responseTime
+                                    responseTimeRounded
                                 )
                                 jQuery('#NumberOfErrors').text(
                                     checker.numberOfErrors
                                 )
-                                jQuery('#ErrorRate').text(errorRate)
+                                jQuery('#ErrorRate').text(errorRateRounded)
                             }
                         } else {
                             checker.numberOfErrors++
@@ -149,7 +188,7 @@ jQuery(document).ready(function () {
                         if (checker.item) {
                             window.setTimeout(function () {
                                 checker.checkURL()
-                            }, 250)
+                            }, 10)
                         } else {
                             jQuery('a.start')
                                 .addClass('disabled')
@@ -157,8 +196,6 @@ jQuery(document).ready(function () {
                         }
                     },
                     error: function (error) {
-                        checker.item = null
-
                         checker.item = checker.list.shift()
 
                         tableRow
@@ -170,7 +207,7 @@ jQuery(document).ready(function () {
                         if (checker.item) {
                             window.setTimeout(function () {
                                 checker.checkURL()
-                            }, 250)
+                            }, 10)
                         } else {
                             jQuery('a.start')
                                 .addClass('disabled')
