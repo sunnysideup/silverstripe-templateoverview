@@ -56,6 +56,10 @@ jQuery(document).ready(function () {
       ]
 
       function interpolateColor (start, end, factor) {
+        // Provide default fallback values if start or end are undefined
+        start = start || { r: 0, g: 0, b: 0 } // Default to black if undefined
+        end = end || { r: 0, g: 0, b: 0 } // Default to black if undefined
+
         const r = Math.round(start.r + factor * (end.r - start.r))
         const g = Math.round(start.g + factor * (end.g - start.g))
         const b = Math.round(start.b + factor * (end.b - start.b))
