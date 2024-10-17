@@ -1,110 +1,117 @@
 html {
-    color: #000000;
-    background: #ffffff;
-    font-family: sans-serif;
+  color: #000000;
+  background: #ffffff;
+  font-family: sans-serif;
 }
 
 a {
-    color: inherit;
+  color: inherit;
+}
+
+.clickable {
+  cursor: pointer;
 }
 
 .btn {
-    display: inline-block;
-    font-weight: 400;
-    color: #fff;
-    background-color: #007bff;
-    border: 1px solid #007bff;
-    text-align: center;
-    vertical-align: middle;
-    padding: .375rem .75rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    border-radius: .25rem;
-    text-decoration: none;
-    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+  display: inline-block;
+  font-weight: 400;
+  color: #fff;
+  background-color: #007bff;
+  border: 1px solid #007bff;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out;
 }
 
 .btn:not(.disabled):hover {
-    color: #fff;
-    background-color: #0069d9;
-    border-color: #0062cc;
+  color: #fff;
+  background-color: #0069d9;
+  border-color: #0062cc;
 }
 
 .btn.disabled {
-    opacity: 0.65;
-    cursor: default;
+  opacity: 0.65;
+  cursor: default;
 }
 
 .table {
-    width: 100%;
-    margin-bottom: 1em;
-    border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1em;
+  border-collapse: collapse;
 }
 
 .table th,
 .table td {
-    padding: .75rem;
-    border: 1px solid #dee2e6;
-    vertical-align: top;
-    text-align: left;
-    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+  padding: 0.75rem;
+  border: 1px solid #dee2e6;
+  vertical-align: top;
+  text-align: left;
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out;
 }
 
 .table thead th {
-    color: #fff;
-    background-color: #343a40;
-    border-color: #454d55;
+  color: #fff;
+  background-color: #343a40;
+  border-color: #454d55;
 }
 
 .table tr.loading td {
-    color: #004085;
-    background-color: #cce5ff;
-    border-color: #b8daff;
+  color: #004085;
+  background-color: #cce5ff;
+  border-color: #b8daff;
 }
 
 .table tr.success td {
-    color: #155724;
-    background-color: #d4edda;
-    border-color: #c3e6cb;
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
 }
 
 .table tr.error td {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
 }
-
 
 .stats span {
-    background-color: #efefb2;
-    display: inline-block;
-    padding: 2px;
+  background-color: #efefb2;
+  display: inline-block;
+  padding: 2px;
 }
 
-
 .diff-removed {
-    background-color: #ffded7;
+  background-color: #ffded7;
 }
 
 .diff-added {
-    background-color: #d7ffd7;
+  background-color: #d7ffd7;
 }
 
 .http-response,
 .response-time,
 .isNonCMSLink .test {
-    text-align: center;
+  text-align: center;
 }
 .test span {
-    font-size: 10px;
+  font-size: 10px;
 }
 
-
 aside {
-    float: right;
-    margin-left: 20px;
-    background-color: #ccc;
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 10px;
+  float: right;
+  margin-left: 20px;
+  background-color: #ccc;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
 }
