@@ -98,7 +98,6 @@ class CheckAllTemplates extends BuildTask
             $otherLinks .= '<li><a href="' . $linkArray['Link'] . '">' . $linkArray['Link'] . '</a></li>';
         }
 
-        Requirements::javascript('https://code.jquery.com/jquery-3.3.1.min.js');
         Requirements::javascript('sunnysideup/templateoverview:client/javascript/checkalltemplates.js');
         Requirements::themedCSS('client/css/checkalltemplates');
 
