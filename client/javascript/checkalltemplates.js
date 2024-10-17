@@ -133,9 +133,9 @@ jQuery(document).ready(function () {
           url: checker.baseLink,
           type: 'get',
           data: data,
+          timeout: 30000, // 30 seconds timeout
           success: function (data, textStatus) {
             checker.item = null
-
             checker.item = checker.list.shift()
 
             let jsonData = null
