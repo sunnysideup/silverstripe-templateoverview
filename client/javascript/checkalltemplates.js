@@ -1,4 +1,4 @@
-const checker = {
+const SmokeTester = {
   useJSTest: false,
 
   totalResponseTime: 0,
@@ -6,6 +6,8 @@ const checker = {
   numberOfTests: 0,
 
   numberOfTestsDone: 0,
+
+  nextItemRetrieved: false,
 
   numberOfErrors: 0,
 
@@ -18,25 +20,28 @@ const checker = {
   stop: true,
 
   init: function () {
-    document.getElementById('NumberOfTests').textContent = checker.list.length
+    document.getElementById('NumberOfTests').textContent =
+      SmokeTester.list.length
     document.querySelector('a.start').addEventListener('click', function () {
-      if (checker.stop === true) {
+      console.log('start')
+      if (SmokeTester.stop === true) {
         this.textContent = 'Stop'
-        checker.stop = false
+        SmokeTester.stop = false
 
-        if (!checker.item) {
-          checker.item = checker.list.shift()
+        if (!SmokeTester.item) {
+          SmokeTester.item = SmokeTester.list.shift()
         }
 
-        if (checker.item) {
-          checker.checkURL()
+        if (SmokeTester.item) {
+          console.log('check', SmokeTester.item)
+          SmokeTester.checkURL()
         } else {
           this.classList.add('disabled')
           this.textContent = 'Complete'
         }
       } else {
         this.textContent = 'Start'
-        checker.stop = true
+        SmokeTester.stop = true
       }
     })
   },
@@ -88,7 +93,7 @@ const checker = {
   baseLink: '',
 
   sortTable: function (tdSelector) {
-    if (checker.list.length === checker.numberOfTestsDone) {
+    if (SmokeTester.list.length === SmokeTester.numberOfTestsDone) {
       const table = document.querySelector('table')
       const tbody = table.querySelector('tbody')
       const rows = Array.from(tbody.querySelectorAll('tr'))
@@ -102,43 +107,52 @@ const checker = {
       rows.forEach(row => tbody.appendChild(row))
     }
   },
-
   checkURL: function () {
-    if (!checker.stop) {
-      const linkItem = checker.item
+    console.log('checkURL function called')
+    if (!SmokeTester.stop) {
+      SmokeTester.nextItemRetrieved = false
+      const linkItem = SmokeTester.item
+      console.log('Link item:', linkItem)
       let data = {}
-      if (checker.useJSTest) {
-        checker.baseLink = checker.item.dataset.link
+      if (SmokeTester.useJSTest) {
+        SmokeTester.baseLink = SmokeTester.item.dataset.link
+        console.log('Using JS test. Base link:', SmokeTester.baseLink)
       } else {
-        checker.baseLink = checker.baseURL
+        SmokeTester.baseLink = SmokeTester.baseURL
+        console.log('Using base URL:', SmokeTester.baseLink)
         const isCMSLink = linkItem.dataset.isCmsLink
         const testLink = linkItem.dataset.link
         data = {
           test: testLink,
           iscmslink: isCMSLink,
-          unique: new Date().getTime()
+          unique: new Date().getTime(),
+          ajax: 1
         }
+        console.log('Data object constructed:', data)
       }
 
       const rowID = linkItem.getAttribute('ID')
       const tableRow = document.getElementById(rowID)
+      console.log('Row ID:', rowID, 'Table row:', tableRow)
       tableRow.classList.add('loading')
-
-      fetch(`${checker.baseLink}?${new URLSearchParams(data)}`, {
+      fetch(`${SmokeTester.baseLink}?${new URLSearchParams(data)}`, {
         method: 'GET',
         timeout: 30000
       })
         .then(response => response.text())
         .then(data => {
-          checker.item = null
-          checker.item = checker.list.shift()
-
+          console.log('Fetch response received')
           let jsonData = null
           if (data.length > 1) {
             jsonData = JSON.parse(data)
+            console.log('Parsed JSON data:', jsonData)
 
             if (jsonData.status !== 'success') {
-              checker.numberOfErrors++
+              SmokeTester.numberOfErrors++
+              console.log(
+                'Error detected. Total errors:',
+                SmokeTester.numberOfErrors
+              )
             }
             tableRow.classList.remove('loading')
             tableRow.classList.add(jsonData.status)
@@ -150,9 +164,19 @@ const checker = {
             tableRow.querySelector('td.content').textContent = jsonData.content
 
             if (jsonData.responseTime) {
-              const bgColour = checker.getResponseColor(jsonData.responseTime)
-              const fontColour = checker.getContrastingColor(bgColour)
-              checker.numberOfTestsDone++
+              const bgColour = SmokeTester.getResponseColor(
+                jsonData.responseTime
+              )
+              const fontColour = SmokeTester.getContrastingColor(bgColour)
+              SmokeTester.numberOfTestsDone++
+              console.log(
+                'Response time:',
+                jsonData.responseTime,
+                'Background color:',
+                bgColour,
+                'Font color:',
+                fontColour
+              )
               tableRow.querySelector('td.response-time').textContent =
                 jsonData.responseTime
               tableRow.querySelector('td.response-time').style.backgroundColor =
@@ -161,58 +185,77 @@ const checker = {
                 fontColour
 
               const errorRate =
-                (checker.numberOfErrors / checker.numberOfTestsDone).toFixed(
-                  1
-                ) + '%'
+                (
+                  SmokeTester.numberOfErrors / SmokeTester.numberOfTestsDone
+                ).toFixed(1) + '%'
               const responseTimeRounded = (
-                checker.totalResponseTime / checker.numberOfTestsDone
+                SmokeTester.totalResponseTime / SmokeTester.numberOfTestsDone
               ).toFixed(2)
-              checker.totalResponseTime += jsonData.responseTime
+              SmokeTester.totalResponseTime += jsonData.responseTime
+
+              console.log(
+                'Updated metrics - Tests done:',
+                SmokeTester.numberOfTestsDone,
+                'Avg response time:',
+                responseTimeRounded,
+                'Error rate:',
+                errorRate
+              )
 
               document.getElementById('NumberOfTestsDone').textContent =
-                checker.numberOfTestsDone
+                SmokeTester.numberOfTestsDone
               document.getElementById('AverageResponseTime').textContent =
                 responseTimeRounded
               document.getElementById('NumberOfErrors').textContent =
-                checker.numberOfErrors
+                SmokeTester.numberOfErrors
               document.getElementById('ErrorRate').textContent = errorRate
             }
           } else {
-            checker.numberOfErrors++
+            SmokeTester.numberOfErrors++
+            console.log(
+              'Data length <= 1, marking as error. Total errors:',
+              SmokeTester.numberOfErrors
+            )
             tableRow.classList.remove('loading')
             tableRow.classList.add('error')
             tableRow.querySelector('td.content').innerHTML = 'Error'
           }
-
-          if (checker.item) {
-            setTimeout(() => {
-              checker.checkURL()
-            }, 10)
-          } else {
-            document.querySelector('a.start').classList.add('disabled')
-            document.querySelector('a.start').textContent = 'Complete'
-          }
+          SmokeTester.runNextItem()
         })
-        .catch(() => {
-          checker.item = checker.list.shift()
+        .catch(error => {
+          console.log('Fetch error:', error)
 
           tableRow.classList.remove('loading')
           tableRow.classList.add('error')
-          tableRow.querySelector('td.content').innerHTML = 'Error'
+          tableRow.querySelector('td.content').innerHTML = 'Error: ' + error
 
-          if (checker.item) {
-            setTimeout(() => {
-              checker.checkURL()
-            }, 10)
-          } else {
-            document.querySelector('a.start').classList.add('disabled')
-            document.querySelector('a.start').textContent = 'Complete'
-          }
+          SmokeTester.runNextItem()
         })
+    } else {
+      console.log('checkURL stopped as SmokeTester.stop is true')
+    }
+  },
+
+  runNextItem: function () {
+    if (!SmokeTester.nextItemRetrieved) {
+      SmokeTester.item = null
+      SmokeTester.item = SmokeTester.list.shift()
+      console.log('Next item in list:', SmokeTester.item)
+      SmokeTester.nextItemRetrieved = true
+    }
+    if (SmokeTester.item) {
+      console.log('Setting timeout for next checkURL call')
+      setTimeout(() => {
+        SmokeTester.checkURL()
+      }, 10)
+    } else {
+      console.log('No more items. Process complete.')
+      document.querySelector('a.start').classList.add('disabled')
+      document.querySelector('a.start').textContent = 'Complete'
     }
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  checker.init()
+  SmokeTester.init()
 })
