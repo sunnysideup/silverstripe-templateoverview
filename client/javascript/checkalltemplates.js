@@ -92,20 +92,32 @@ const SmokeTester = {
 
   baseLink: '',
 
+  currentSortDirection: 'asc',
+
+  currentSortSelection: '',
+
   sortTable: function (tdSelector) {
-    if (SmokeTester.list.length === SmokeTester.numberOfTestsDone) {
-      const table = document.querySelector('table')
-      const tbody = table.querySelector('tbody')
-      const rows = Array.from(tbody.querySelectorAll('tr'))
-
-      rows.sort((rowA, rowB) => {
-        const timeA = parseFloat(rowA.querySelector(tdSelector).textContent)
-        const timeB = parseFloat(rowB.querySelector(tdSelector).textContent)
-        return timeA - timeB
-      })
-
-      rows.forEach(row => tbody.appendChild(row))
+    if (SmokeTester.currentSortSelection === tdSelector) {
+      if (SmokeTester.currentSortDirection === 'asc') {
+        SmokeTester.currentSortDirection = 'desc'
+      } else if (SmokeTester.currentSortDirection === 'desc') {
+        SmokeTester.currentSortDirection = 'asc'
+      }
+    } else {
+      SmokeTester.currentSortDirection = 'asc'
+      SmokeTester.currentSortSelection = tdSelector
     }
+    const table = document.querySelector('table')
+    const tbody = table.querySelector('tbody')
+    const rows = Array.from(tbody.querySelectorAll('tr'))
+
+    rows.sort((rowA, rowB) => {
+      const timeA = parseFloat(rowA.querySelector(tdSelector).textContent)
+      const timeB = parseFloat(rowB.querySelector(tdSelector).textContent)
+      return timeA - timeB
+    })
+
+    rows.forEach(row => tbody.appendChild(row))
   },
   checkURL: function () {
     console.log('checkURL function called')

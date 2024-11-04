@@ -44,8 +44,8 @@
             <tr>
                 <th>Test</th>
                 <th>Link</th>
-                <th class="clickable" onclick="checker.sortTable('.http-response')">HTTP&nbsp;response</th>
-                <th class="clickable" onclick="checker.sortTable('.response-time')">Response&nbsp;time</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.http-response')">HTTP&nbsp;response</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.response-time')">Response&nbsp;time</th>
                 <th>Response</th>
                 <th>W3&nbsp;check</th>
             </tr>
