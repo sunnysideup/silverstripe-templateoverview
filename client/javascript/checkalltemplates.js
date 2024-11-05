@@ -96,33 +96,53 @@ const SmokeTester = {
 
   currentSortSelection: '',
 
-  sortTable: function (tdSelector) {
+  sortTable: function (tdSelector, headerElement) {
+    // Toggle sort direction
     if (SmokeTester.currentSortSelection === tdSelector) {
-      if (SmokeTester.currentSortDirection === 'asc') {
-        SmokeTester.currentSortDirection = 'desc'
-      } else if (SmokeTester.currentSortDirection === 'desc') {
-        SmokeTester.currentSortDirection = 'asc'
-      }
+      SmokeTester.currentSortDirection =
+        SmokeTester.currentSortDirection === 'asc' ? 'desc' : 'asc'
     } else {
       SmokeTester.currentSortDirection = 'asc'
       SmokeTester.currentSortSelection = tdSelector
     }
+
     const table = document.querySelector('table')
     const tbody = table.querySelector('tbody')
     const rows = Array.from(tbody.querySelectorAll('tr'))
 
+    // Remove sort classes from all headers
+    table
+      .querySelectorAll('th')
+      .forEach(th =>
+        th.classList.remove('sort-asc', 'sort-desc', 'sort-active')
+      )
+
+    // Add sort classes to the clicked header element
+    headerElement.classList.add('sort-active')
+    headerElement.classList.add(
+      SmokeTester.currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc'
+    )
+
+    // Sort rows
     rows.sort((rowA, rowB) => {
-      const timeA = parseFloat(rowA.querySelector(tdSelector).textContent)
-      const timeB = parseFloat(rowB.querySelector(tdSelector).textContent)
+      const cellA = rowA.querySelector(tdSelector).textContent.trim()
+      const cellB = rowB.querySelector(tdSelector).textContent.trim()
+
+      const isNumber = !isNaN(cellA) && !isNaN(cellB)
+      const valueA = isNumber ? parseFloat(cellA) : cellA.toLowerCase()
+      const valueB = isNumber ? parseFloat(cellB) : cellB.toLowerCase()
+
       if (SmokeTester.currentSortDirection === 'asc') {
-        return timeA - timeB
+        return valueA > valueB ? 1 : -1
       } else {
-        return timeB - timeA
+        return valueA < valueB ? 1 : -1
       }
     })
 
+    // Append sorted rows to tbody
     rows.forEach(row => tbody.appendChild(row))
   },
+
   checkURL: function () {
     console.log('checkURL function called')
     if (!SmokeTester.stop) {

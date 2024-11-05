@@ -65,9 +65,17 @@ a {
   background-color: #343a40;
   border-color: #454d55;
 }
-.table thead th[onclick] {
+.table thead th.clickable {
   text-decoration: underline !important;
 }
+
+th.sort-asc::after {
+  content: " ▲";
+}
+th.sort-desc::after {
+  content: " ▼";
+}
+
 .table tr.loading td {
   color: #004085;
   background-color: #cce5ff;
