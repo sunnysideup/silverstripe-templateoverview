@@ -13,6 +13,10 @@ use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use Sunnysideup\TemplateOverview\Api\ProvideTestUser;
 
+/**
+ * Class \Sunnysideup\TemplateOverview\Control\LoginAndRedirect
+ *
+ */
 class LoginAndRedirect extends Controller
 {
     private static $allowed_actions = [

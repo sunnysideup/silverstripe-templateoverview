@@ -25,6 +25,10 @@ use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 use Sunnysideup\TemplateOverview\Api\TemplateOverviewArrayMethods;
 
+/**
+ * Class \Sunnysideup\TemplateOverview\Control\TemplateOverviewPageController
+ *
+ */
 class TemplateOverviewPageController extends PageController
 {
     protected $myMoreList;
