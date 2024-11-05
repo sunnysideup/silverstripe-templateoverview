@@ -42,12 +42,12 @@
     <table class='checker-list table'>
         <thead>
             <tr>
-                <th>Test</th>
-                <th>Link</th>
-                <th class="clickable" onclick="checker.sortTable('.http-response')">HTTP&nbsp;response</th>
-                <th class="clickable" onclick="checker.sortTable('.response-time')">Response&nbsp;time</th>
-                <th>Response</th>
-                <th>W3&nbsp;check</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.test', this)">Test</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.link', this)">Link</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.http-response', this)">HTTP&nbsp;response</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.response-time', this)">Response&nbsp;time</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.content', this)">Response</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.w3-check', this)">>W3&nbsp;check</th>
             </tr>
         </thead>
         <tbody>

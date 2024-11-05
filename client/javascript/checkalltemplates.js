@@ -1,219 +1,297 @@
-jQuery(document).ready(function () {
-  const checker = {
-    useJSTest: false,
+const SmokeTester = {
+  useJSTest: false,
 
-    totalResponseTime: 0,
+  totalResponseTime: 0,
 
-    numberOfTests: 0,
+  numberOfTests: 0,
 
-    numberOfTestsDone: 0,
+  numberOfTestsDone: 0,
 
-    numberOfErrors: 0,
+  nextItemRetrieved: false,
 
-    list: jQuery('.checker-list .link-item').toArray(),
+  numberOfErrors: 0,
 
-    baseURL: 'admin/templateoverviewsmoketestresponse/testone/',
+  list: Array.from(document.querySelectorAll('.checker-list .link-item')),
 
-    item: null,
+  baseURL: 'admin/templateoverviewsmoketestresponse/testone/',
 
-    stop: true,
+  item: null,
 
-    init: function () {
-      jQuery('#NumberOfTests').text(checker.list.length)
-      jQuery('a.start').on('click', function () {
-        if (checker.stop === true) {
-          jQuery(this).text('Stop')
-          checker.stop = false
+  stop: true,
 
-          if (!checker.item) {
-            checker.item = checker.list.shift()
-          }
+  init: function () {
+    document.getElementById('NumberOfTests').textContent =
+      SmokeTester.list.length
+    document.querySelector('a.start').addEventListener('click', function () {
+      console.log('start')
+      if (SmokeTester.stop === true) {
+        this.textContent = 'Stop'
+        SmokeTester.stop = false
 
-          if (checker.item) {
-            checker.checkURL()
-          } else {
-            jQuery(this).addClass('disabled').text('Complete')
-          }
-        } else {
-          jQuery(this).text('Start')
-          checker.stop = true
+        if (!SmokeTester.item) {
+          SmokeTester.item = SmokeTester.list.shift()
         }
-      })
-    },
 
-    getResponseColor: function (seconds) {
-      const colorStops = [
-        { r: 204, g: 255, b: 204 }, // Light green
-        { r: 0, g: 100, b: 0 }, // Dark green
-        { r: 173, g: 216, b: 230 }, // Light blue
-        { r: 0, g: 0, b: 139 }, // Dark blue
-        { r: 255, g: 255, b: 224 }, // Light yellow
-        { r: 255, g: 215, b: 0 }, // Dark yellow
-        { r: 255, g: 165, b: 0 }, // Orange
-        { r: 255, g: 69, b: 0 }, // Red
-        { r: 139, g: 0, b: 0 }, // Dark red
-        { r: 0, g: 0, b: 0 } // Black
-      ]
-
-      function interpolateColor (start, end, factor) {
-        const r = Math.round(start.r + factor * (end.r - start.r))
-        const g = Math.round(start.g + factor * (end.g - start.g))
-        const b = Math.round(start.b + factor * (end.b - start.b))
-        return `rgb(${r},${g},${b})`
+        if (SmokeTester.item) {
+          console.log('check', SmokeTester.item)
+          SmokeTester.checkURL()
+        } else {
+          this.classList.add('disabled')
+          this.textContent = 'Complete'
+        }
+      } else {
+        this.textContent = 'Start'
+        SmokeTester.stop = true
       }
+    })
+  },
 
-      const numSteps = colorStops.length - 1
-      const step = Math.floor((seconds / 10) * numSteps)
-      const nextStep = step + 1
+  getResponseColor: function (seconds) {
+    const colorStops = [
+      { r: 204, g: 255, b: 204 }, // Light green
+      { r: 0, g: 100, b: 0 }, // Dark green
+      { r: 173, g: 216, b: 230 }, // Light blue
+      { r: 0, g: 0, b: 139 }, // Dark blue
+      { r: 255, g: 255, b: 224 }, // Light yellow
+      { r: 255, g: 215, b: 0 }, // Dark yellow
+      { r: 255, g: 165, b: 0 }, // Orange
+      { r: 255, g: 69, b: 0 }, // Red
+      { r: 139, g: 0, b: 0 }, // Dark red
+      { r: 0, g: 0, b: 0 } // Black
+    ]
 
-      // Shift transition earlier by slightly reducing time spent on each color
-      const localT = Math.min(
-        1,
-        ((seconds % (10 / numSteps)) / (10 / numSteps)) * 1.5
+    function interpolateColor (start, end, factor) {
+      const r = Math.round(start.r + factor * (end.r - start.r))
+      const g = Math.round(start.g + factor * (end.g - start.g))
+      const b = Math.round(start.b + factor * (end.b - start.b))
+      return `rgb(${r},${g},${b})`
+    }
+
+    const numSteps = colorStops.length - 1
+    const step = Math.floor((seconds / 10) * numSteps)
+    const nextStep = step + 1
+    const localT = Math.min(
+      1,
+      ((seconds % (10 / numSteps)) / (10 / numSteps)) * 1.5
+    )
+
+    return interpolateColor(colorStops[step], colorStops[nextStep], localT)
+  },
+
+  getContrastingColor: function (hexColor) {
+    hexColor = hexColor.replace('#', '')
+
+    const r = parseInt(hexColor.substring(0, 2), 16)
+    const g = parseInt(hexColor.substring(2, 4), 16)
+    const b = parseInt(hexColor.substring(4, 6), 16)
+
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+
+    return luminance > 0.5 ? '#000000' : '#FFFFFF'
+  },
+
+  baseLink: '',
+
+  currentSortDirection: 'asc',
+
+  currentSortSelection: '',
+
+  sortTable: function (tdSelector, headerElement) {
+    // Toggle sort direction
+    if (SmokeTester.currentSortSelection === tdSelector) {
+      SmokeTester.currentSortDirection =
+        SmokeTester.currentSortDirection === 'asc' ? 'desc' : 'asc'
+    } else {
+      SmokeTester.currentSortDirection = 'asc'
+      SmokeTester.currentSortSelection = tdSelector
+    }
+
+    const table = document.querySelector('table')
+    const tbody = table.querySelector('tbody')
+    const rows = Array.from(tbody.querySelectorAll('tr'))
+
+    // Remove sort classes from all headers
+    table
+      .querySelectorAll('th')
+      .forEach(th =>
+        th.classList.remove('sort-asc', 'sort-desc', 'sort-active')
       )
 
-      return interpolateColor(colorStops[step], colorStops[nextStep], localT)
-    },
+    // Add sort classes to the clicked header element
+    headerElement.classList.add('sort-active')
+    headerElement.classList.add(
+      SmokeTester.currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc'
+    )
 
-    getContrastingColor: function (hexColor) {
-      // Remove the '#' if it's there
-      hexColor = hexColor.replace('#', '')
+    // Sort rows
+    rows.sort((rowA, rowB) => {
+      const cellA = rowA.querySelector(tdSelector).textContent.trim()
+      const cellB = rowB.querySelector(tdSelector).textContent.trim()
 
-      // Convert hex to RGB
-      const r = parseInt(hexColor.substring(0, 2), 16)
-      const g = parseInt(hexColor.substring(2, 4), 16)
-      const b = parseInt(hexColor.substring(4, 6), 16)
+      const isNumber = !isNaN(cellA) && !isNaN(cellB)
+      const valueA = isNumber ? parseFloat(cellA) : cellA.toLowerCase()
+      const valueB = isNumber ? parseFloat(cellB) : cellB.toLowerCase()
 
-      // Calculate the luminance
-      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-
-      // If the luminance is high, return black, else return white
-      return luminance > 0.5 ? '#000000' : '#FFFFFF'
-    },
-
-    baseLink: '',
-
-    sortTable: function (tdSelector) {
-      if (checker.list.length === checker.numberOfTestsDone) {
-        const table = document.getElementsByName('table')[0]
-        const tbody = table.getElementsByTagName('tbody')[0]
-        const rows = Array.from(tbody.getElementsByTagName('tr'))
-
-        rows.sort((rowA, rowB) => {
-          const timeA = parseFloat(rowA.querySelector(tdSelector).textContent)
-          const timeB = parseFloat(rowB.querySelector(tdSelector).textContent)
-          return timeA - timeB
-        })
-
-        // Append the sorted rows back to the tbody
-        rows.forEach(row => tbody.appendChild(row))
+      if (SmokeTester.currentSortDirection === 'asc') {
+        return valueA > valueB ? 1 : -1
+      } else {
+        return valueA < valueB ? 1 : -1
       }
-    },
+    })
 
-    checkURL: function () {
-      if (!checker.stop) {
-        const linkItem = jQuery(checker.item)
-        let data = {}
-        if (checker.useJSTest) {
-          checker.baseLink = checker.item.dataset.link
-        } else {
-          checker.baseLink = checker.baseURL
-          const isCMSLink = linkItem.data('is-cms-link')
-          const testLink = linkItem.data('link')
-          data = {
-            test: testLink,
-            iscmslink: isCMSLink,
-            unique: new Date().getTime()
-          }
+    // Append sorted rows to tbody
+    rows.forEach(row => tbody.appendChild(row))
+  },
+
+  checkURL: function () {
+    console.log('checkURL function called')
+    if (!SmokeTester.stop) {
+      SmokeTester.nextItemRetrieved = false
+      const linkItem = SmokeTester.item
+      console.log('Link item:', linkItem)
+      let data = {}
+      if (SmokeTester.useJSTest) {
+        SmokeTester.baseLink = SmokeTester.item.dataset.link
+        console.log('Using JS test. Base link:', SmokeTester.baseLink)
+      } else {
+        SmokeTester.baseLink = SmokeTester.baseURL
+        console.log('Using base URL:', SmokeTester.baseLink)
+        const isCMSLink = linkItem.dataset.isCmsLink
+        const testLink = linkItem.dataset.link
+        data = {
+          test: testLink,
+          iscmslink: isCMSLink,
+          unique: new Date().getTime(),
+          ajax: 1
         }
-        const rowID = linkItem.attr('ID')
-        let tableRow = jQuery('#' + rowID)
-        tableRow.addClass('loading')
-        jQuery.ajax({
-          url: checker.baseLink,
-          type: 'get',
-          data: data,
-          success: function (data, textStatus) {
-            checker.item = null
-
-            checker.item = checker.list.shift()
-
-            let jsonData = null
-            if (data.length > 1) {
-              jsonData = JSON.parse(data)
-
-              if (jsonData.status !== 'success') {
-                checker.numberOfErrors++
-              }
-              tableRow.removeClass('loading').addClass(jsonData.status)
-
-              tableRow.find('td.http-response').text(jsonData.httpResponse)
-              tableRow.find('td.w3-check').text(jsonData.w3Content)
-              tableRow.find('td.content').text(jsonData.content)
-
-              if (jsonData.responseTime) {
-                const bgColour = checker.getResponseColor(jsonData.responseTime)
-                const fontColour = checker.getContrastingColor(bgColour)
-                checker.numberOfTestsDone++
-                tableRow
-                  .find('td.response-time')
-                  .text(jsonData.responseTime)
-                  .css('background-color', bgColour)
-                  .css('color', fontColour)
-
-                let errorRate =
-                  checker.numberOfErrors / checker.numberOfTestsDone
-                let errorRateRounded = Math.round(1000 * errorRate) / 10 + '%'
-                let responseTime =
-                  checker.totalResponseTime / checker.numberOfTestsDone
-                let responseTimeRounded = Math.round(100 * responseTime) / 100
-                checker.totalResponseTime =
-                  checker.totalResponseTime + jsonData.responseTime
-
-                jQuery('#NumberOfTestsDone').text(checker.numberOfTestsDone)
-                jQuery('#AverageResponseTime').text(responseTimeRounded)
-                jQuery('#NumberOfErrors').text(checker.numberOfErrors)
-                jQuery('#ErrorRate').text(errorRateRounded)
-              }
-            } else {
-              checker.numberOfErrors++
-              tableRow
-                .removeClass('loading')
-                .addClass('error')
-                .find('td.content')
-                .html('Error')
-            }
-
-            if (checker.item) {
-              window.setTimeout(function () {
-                checker.checkURL()
-              }, 10)
-            } else {
-              jQuery('a.start').addClass('disabled').text('Complete')
-            }
-          },
-          error: function (error) {
-            checker.item = checker.list.shift()
-
-            tableRow
-              .removeClass('loading')
-              .addClass('error')
-              .find('td.content')
-              .html('Error')
-
-            if (checker.item) {
-              window.setTimeout(function () {
-                checker.checkURL()
-              }, 10)
-            } else {
-              jQuery('a.start').addClass('disabled').text('Complete')
-            }
-          },
-          dataType: 'html'
-        })
+        console.log('Data object constructed:', data)
       }
+
+      const rowID = linkItem.getAttribute('ID')
+      const tableRow = document.getElementById(rowID)
+      console.log('Row ID:', rowID, 'Table row:', tableRow)
+      tableRow.classList.add('loading')
+      fetch(`${SmokeTester.baseLink}?${new URLSearchParams(data)}`, {
+        method: 'GET',
+        timeout: 30000
+      })
+        .then(response => response.text())
+        .then(data => {
+          console.log('Fetch response received')
+          let jsonData = null
+          if (data.length > 1) {
+            jsonData = JSON.parse(data)
+            console.log('Parsed JSON data:', jsonData)
+
+            if (jsonData.status !== 'success') {
+              SmokeTester.numberOfErrors++
+              console.log(
+                'Error detected. Total errors:',
+                SmokeTester.numberOfErrors
+              )
+            }
+            tableRow.classList.remove('loading')
+            tableRow.classList.add(jsonData.status)
+
+            tableRow.querySelector('td.http-response').textContent =
+              jsonData.httpResponse
+            tableRow.querySelector('td.w3-check').textContent =
+              jsonData.w3Content
+            tableRow.querySelector('td.content').textContent = jsonData.content
+
+            if (jsonData.responseTime) {
+              const bgColour = SmokeTester.getResponseColor(
+                jsonData.responseTime
+              )
+              const fontColour = SmokeTester.getContrastingColor(bgColour)
+              SmokeTester.numberOfTestsDone++
+              console.log(
+                'Response time:',
+                jsonData.responseTime,
+                'Background color:',
+                bgColour,
+                'Font color:',
+                fontColour
+              )
+              tableRow.querySelector('td.response-time').textContent =
+                jsonData.responseTime
+              tableRow.querySelector('td.response-time').style.backgroundColor =
+                bgColour
+              tableRow.querySelector('td.response-time').style.color =
+                fontColour
+
+              const errorRate =
+                (
+                  SmokeTester.numberOfErrors / SmokeTester.numberOfTestsDone
+                ).toFixed(1) + '%'
+              const responseTimeRounded = (
+                SmokeTester.totalResponseTime / SmokeTester.numberOfTestsDone
+              ).toFixed(2)
+              SmokeTester.totalResponseTime += jsonData.responseTime
+
+              console.log(
+                'Updated metrics - Tests done:',
+                SmokeTester.numberOfTestsDone,
+                'Avg response time:',
+                responseTimeRounded,
+                'Error rate:',
+                errorRate
+              )
+
+              document.getElementById('NumberOfTestsDone').textContent =
+                SmokeTester.numberOfTestsDone
+              document.getElementById('AverageResponseTime').textContent =
+                responseTimeRounded
+              document.getElementById('NumberOfErrors').textContent =
+                SmokeTester.numberOfErrors
+              document.getElementById('ErrorRate').textContent = errorRate
+            }
+          } else {
+            SmokeTester.numberOfErrors++
+            console.log(
+              'Data length <= 1, marking as error. Total errors:',
+              SmokeTester.numberOfErrors
+            )
+            tableRow.classList.remove('loading')
+            tableRow.classList.add('error')
+            tableRow.querySelector('td.content').innerHTML = 'Error'
+          }
+          SmokeTester.runNextItem()
+        })
+        .catch(error => {
+          console.log('Fetch error:', error)
+
+          tableRow.classList.remove('loading')
+          tableRow.classList.add('error')
+          tableRow.querySelector('td.content').innerHTML = 'Error: ' + error
+
+          SmokeTester.runNextItem()
+        })
+    } else {
+      console.log('checkURL stopped as SmokeTester.stop is true')
+    }
+  },
+
+  runNextItem: function () {
+    if (!SmokeTester.nextItemRetrieved) {
+      SmokeTester.item = null
+      SmokeTester.item = SmokeTester.list.shift()
+      console.log('Next item in list:', SmokeTester.item)
+      SmokeTester.nextItemRetrieved = true
+    }
+    if (SmokeTester.item) {
+      console.log('Setting timeout for next checkURL call')
+      setTimeout(() => {
+        SmokeTester.checkURL()
+      }, 10)
+    } else {
+      console.log('No more items. Process complete.')
+      document.querySelector('a.start').classList.add('disabled')
+      document.querySelector('a.start').textContent = 'Complete'
     }
   }
+}
 
-  checker.init()
+document.addEventListener('DOMContentLoaded', () => {
+  SmokeTester.init()
 })

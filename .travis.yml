@@ -8,18 +8,13 @@ cache:
   directories:
     - $HOME/.composer/cache/files
 
-# configure notifications (email, IRC, campfire etc)
-notifications:
-  email: ssuerrors@gmail.com
-
-
 addons:
   apt:
     packages:
       - tidy
 
 #before_install:
-  #- pip install --user codecov
+#- pip install --user codecov
 
 env:
   global:
@@ -37,10 +32,6 @@ matrix:
       env:
         - DB=MYSQL
 
-
-
-
-
 before_script:
   - pecl channel-update pecl.php.net
   - phpenv rehash
@@ -53,4 +44,4 @@ before_script:
 
 script:
   # Execute tests with no coverage.  This is the fastest option
- - vendor/bin/sake dev/build flush=all
+  - vendor/bin/sake dev/build flush=all
