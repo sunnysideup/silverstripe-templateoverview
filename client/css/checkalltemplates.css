@@ -65,7 +65,9 @@ a {
   background-color: #343a40;
   border-color: #454d55;
 }
-
+.table thead th[onclick] {
+  text-decoration: underline !important;
+}
 .table tr.loading td {
   color: #004085;
   background-color: #cce5ff;

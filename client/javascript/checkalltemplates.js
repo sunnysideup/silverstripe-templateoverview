@@ -114,7 +114,11 @@ const SmokeTester = {
     rows.sort((rowA, rowB) => {
       const timeA = parseFloat(rowA.querySelector(tdSelector).textContent)
       const timeB = parseFloat(rowB.querySelector(tdSelector).textContent)
-      return timeA - timeB
+      if (SmokeTester.currentSortDirection === 'asc') {
+        return timeA - timeB
+      } else {
+        return timeB - timeA
+      }
     })
 
     rows.forEach(row => tbody.appendChild(row))
