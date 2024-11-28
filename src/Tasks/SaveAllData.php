@@ -51,6 +51,7 @@ class SaveAllData extends BuildTask
     private static $limit = 100;
 
     private static $do_save = [];
+    private static $always_publish = false;
 
     /**
      * @param \SilverStripe\Control\HTTPRequest $request
@@ -70,6 +71,7 @@ class SaveAllData extends BuildTask
         $dontSave = $this->Config()->get('dont_save');
         $doSave = $this->Config()->get('do_save');
         $limit = $this->Config()->get('limit');
+        $alwaysPublish = $this->Config()->get('always_publish');
         if (Director::is_cli()) {
             $limit = 9999999;
         }
@@ -99,7 +101,9 @@ class SaveAllData extends BuildTask
             $type = '<strong>' . $singleton->i18n_singular_name() . '</strong><br />' . $singleton->ClassName;
             DB::alteration_message('-----------------TESTING ' . $class . ' ------------------');
             if ($singleton->canEdit($member) && $singleton->canDelete($member)) {
-
+                if ($class::get()->count() > $limit) {
+                    DB::alteration_message('SKIPPING some of ' . $class . ' as it has more than ' . $limit . ' records', 'deleted');
+                }
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
                 $action = 'write ('.$list->count().'x)';
@@ -108,7 +112,7 @@ class SaveAllData extends BuildTask
                     if ($obj->hasExtension(Versioned::class)) {
                         $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft();
                         $obj->writeToStage(Versioned::DRAFT);
-                        if ($isPublished) {
+                        if ($isPublished || $alwaysPublish) {
                             $obj->publishSingle();
                         }
                     } else {
@@ -133,7 +137,7 @@ class SaveAllData extends BuildTask
                     if ($createdObj->hasExtension(Versioned::class)) {
                         $createdObj->writeToStage(Versioned::DRAFT);
                         $isPublished = $createdObj->isPublished() && ! $createdObj->isModifiedOnDraft();
-                        if ($isPublished) {
+                        if ($isPublished || $alwaysPublish) {
                             $createdObj->publishSingle();
                         }
                     } else {
