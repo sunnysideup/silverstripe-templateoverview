@@ -1,6 +1,6 @@
 <?php
 
-namespace Sunnysideup\TemplateOverview\Tasks;
+namespace Sunnysideup\TemplateOverview\Tasks\SaveAllData;
 
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
@@ -36,7 +36,7 @@ class SaveAllData extends BuildTask
         ChangeSet::class,
         ChangeSetItem::class,
         RegisteredMethod::class,
-        HybridSessionDataObject::class,
+        'SilverStripe\\\HybridSessions\\HybridSessionDataObject',
         RememberLoginHash::class,
         Permission::class,
         PermissionRole::class,
@@ -45,7 +45,9 @@ class SaveAllData extends BuildTask
         EditableFormField::class,
     ];
 
-    private static $limit = 10000;
+    private static $limit = 100;
+
+    private static $do_save = [];
 
     /**
      * @param \SilverStripe\Control\HTTPRequest $request
@@ -65,6 +67,10 @@ class SaveAllData extends BuildTask
         $limit = $this->Config()->get('limit');
         foreach ($classes as $class) {
             if (in_array($class, $dontSave, true)) {
+                DB::alteration_message('SKIPPING ' . $class, 'deleted');
+                continue;
+            }
+            if (! empty($this->Config()->get('do_save')) && ! in_array($class, $this->Config()->get('do_save'), true)) {
                 DB::alteration_message('SKIPPING ' . $class, 'deleted');
                 continue;
             }
