@@ -64,14 +64,15 @@ class SaveAllData extends BuildTask
         }
         $this->writeTableHeader();
         $dontSave = $this->Config()->get('dont_save');
+        $doSave = $this->Config()->get('do_save');
         $limit = $this->Config()->get('limit');
         foreach ($classes as $class) {
             if (in_array($class, $dontSave, true)) {
-                DB::alteration_message('SKIPPING ' . $class, 'deleted');
+                DB::alteration_message('SKIPPING as listed in dontSave' . $class, 'deleted');
                 continue;
             }
-            if (! empty($this->Config()->get('do_save')) && ! in_array($class, $this->Config()->get('do_save'), true)) {
-                DB::alteration_message('SKIPPING ' . $class, 'deleted');
+            if (! empty($doSave) && ! in_array($class, $doSave, true)) {
+                DB::alteration_message('SKIPPING as not listed in doSave' . $class, 'deleted');
                 continue;
             }
             $singleton = Injector::inst()->get($class);
