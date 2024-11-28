@@ -1,7 +1,8 @@
 <?php
 
-namespace Sunnysideup\TemplateOverview\Tasks\SaveAllData;
+namespace Sunnysideup\TemplateOverview\Tasks;
 
+use PhpParser\Node\Scalar\MagicConst\File;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Environment;
@@ -11,6 +12,7 @@ use SilverStripe\HybridSessions\HybridSessionDataObject;
 use SilverStripe\MFA\Model\RegisteredMethod;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use SilverStripe\Security\DefaultAdminService;
 use SilverStripe\Security\MemberPassword;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionRole;
@@ -33,6 +35,7 @@ class SaveAllData extends BuildTask
     private static $segment = 'write-all-data-objects';
 
     private static $dont_save = [
+        File::class,
         ChangeSet::class,
         ChangeSetItem::class,
         RegisteredMethod::class,
@@ -56,6 +59,7 @@ class SaveAllData extends BuildTask
      */
     public function run($request)
     {
+        $member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
         Environment::increaseTimeLimitTo(600);
         DataObject::config()->set('validation_enabled', false);
         $classes = ClassInfo::subclassesFor(DataObject::class, false);
@@ -66,25 +70,36 @@ class SaveAllData extends BuildTask
         $dontSave = $this->Config()->get('dont_save');
         $doSave = $this->Config()->get('do_save');
         $limit = $this->Config()->get('limit');
+        if (Director::is_cli()) {
+            $limit = 9999999;
+        }
         foreach ($classes as $class) {
-            if (in_array($class, $dontSave, true)) {
-                DB::alteration_message('SKIPPING as listed in dontSave' . $class, 'deleted');
-                continue;
-            }
-            if (! empty($doSave) && ! in_array($class, $doSave, true)) {
-                DB::alteration_message('SKIPPING as not listed in doSave' . $class, 'deleted');
-                continue;
-            }
-            $singleton = Injector::inst()->get($class);
-            foreach ($dontSave as $dontSaveClass) {
-                if ($singleton instanceof $dontSaveClass) {
-                    DB::alteration_message('SKIPPING ' . $class, 'deleted');
-                    continue 2;
+            if (! empty($dontSave)) {
+                foreach ($dontSave as $dontSaveClass) {
+                    if (is_a($class, $dontSaveClass, true)) {
+                        DB::alteration_message('SKIPPING (as listed in dontSave using is_a test) ' . $class, 'deleted');
+                        continue 2;
+                    }
                 }
             }
+            if (! empty($doSave)) {
+                $save = false;
+                foreach ($doSave as $doSaveClass) {
+                    if (is_a($class, $doSaveClass, true)) {
+                        $save = true;
+                    }
+                }
+                if ($save === false) {
+                    DB::alteration_message('SKIPPING (as not listed in doSave using is_a test) ' . $class, 'deleted');
+                    continue;
+                }
+            }
+            DB::alteration_message('----------------- CREATING ' . $class . ' ------------------');
+            $singleton = Injector::inst()->get($class);
             $type = '<strong>' . $singleton->i18n_singular_name() . '</strong><br />' . $singleton->ClassName;
             DB::alteration_message('-----------------TESTING ' . $class . ' ------------------');
-            if ($singleton->canEdit() || Director::is_cli() || Director::isDev()) {
+            if ($singleton->canEdit($member) && $singleton->canDelete($member)) {
+
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
                 $action = 'write ('.$list->count().'x)';
@@ -109,7 +124,7 @@ class SaveAllData extends BuildTask
             }
             $type = '<div style="color: #555;">' . $type . '</div>';
             $createdObj = null;
-            if ($singleton->canCreate() || Director::is_cli() || Director::isDev()) {
+            if ($singleton->canCreate($member)) {
                 $timeBefore = microtime(true);
                 $action = 'create';
                 $title = 'NEW OBJECT';
@@ -163,7 +178,11 @@ class SaveAllData extends BuildTask
 
     protected function writeTableHeader()
     {
-        echo '
+        if (Director::is_cli()) {
+            return;
+        }
+        $this->output(
+            '
             <style>
                 .table {
                     max-width: 80%;
@@ -204,14 +223,15 @@ class SaveAllData extends BuildTask
                         <th class="right">Time Taken</th>
                     </tr>
                 </thead>
-            <tbody>';
+            <tbody>'
+        );
     }
 
     protected function writeTableFooter()
     {
-        echo '
+        $this->output('
             </tbody>
-            </teable>';
+            </teable>');
     }
 
     protected function writeTableRow(string $type, string $action, string $title, float $timeBefore, int $divider = 1)
@@ -231,12 +251,23 @@ class SaveAllData extends BuildTask
         } else {
             $timeTaken .= 's';
         }
-        echo '
+        $this->output(
+            '
             <tr>
                 <td>' . $type . '</td>
                 <td>' . $action . '</td>
                 <td>' . $title . '</td>
                 <td class="right" style="background-color: '.$colour.';">' . $timeTaken . '</td>
-            </tr>';
+            </tr>'
+        );
+    }
+
+    protected function output(string $string)
+    {
+        if (Director::is_cli()) {
+            echo strip_tags($string) . PHP_EOL;
+        } else {
+            echo $string;
+        }
     }
 }
