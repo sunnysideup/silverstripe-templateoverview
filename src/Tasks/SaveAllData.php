@@ -45,7 +45,7 @@ class SaveAllData extends BuildTask
         EditableFormField::class,
     ];
 
-    private static $limit = 100;
+    private static $limit = 10000;
 
     /**
      * @param \SilverStripe\Control\HTTPRequest $request
@@ -77,7 +77,7 @@ class SaveAllData extends BuildTask
             }
             $type = '<strong>' . $singleton->i18n_singular_name() . '</strong><br />' . $singleton->ClassName;
             DB::alteration_message('-----------------TESTING ' . $class . ' ------------------');
-            if ($singleton->canEdit()) {
+            if ($singleton->canEdit() || Director::is_cli() || Director::isDev()) {
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
                 $action = 'write ('.$list->count().'x)';
@@ -102,7 +102,7 @@ class SaveAllData extends BuildTask
             }
             $type = '<div style="color: #555;">' . $type . '</div>';
             $createdObj = null;
-            if ($singleton->canCreate()) {
+            if ($singleton->canCreate() || Director::is_cli() || Director::isDev()) {
                 $timeBefore = microtime(true);
                 $action = 'create';
                 $title = 'NEW OBJECT';
@@ -110,6 +110,7 @@ class SaveAllData extends BuildTask
                 try {
                     if ($createdObj->hasExtension(Versioned::class)) {
                         $createdObj->writeToStage(Versioned::DRAFT);
+                        $isPublished = $createdObj->isPublished() && ! $createdObj->isModifiedOnDraft();
                         if ($isPublished) {
                             $createdObj->publishSingle();
                         }
@@ -126,7 +127,7 @@ class SaveAllData extends BuildTask
                     $title = 'n/a';
                 }
             } else {
-                $action = 'creatre (not allowed)';
+                $action = 'create (not allowed)';
                 $title = 'n/a';
                 $timeBefore = microtime(true);
             }
