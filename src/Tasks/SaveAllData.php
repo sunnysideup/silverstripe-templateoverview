@@ -2,7 +2,7 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
-use PhpParser\Node\Scalar\MagicConst\File;
+use SilverStripe\Assets\File;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Environment;
@@ -106,7 +106,7 @@ class SaveAllData extends BuildTask
                 }
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
-                $action = 'write ('.$list->count().'x)';
+                $action = 'write (' . $list->count() . 'x)';
                 foreach ($list as $obj) {
                     $title = (string) $obj->getTitle() ?: (string) $obj->ID;
                     if ($obj->hasExtension(Versioned::class)) {
@@ -261,7 +261,7 @@ class SaveAllData extends BuildTask
                 <td>' . $type . '</td>
                 <td>' . $action . '</td>
                 <td>' . $title . '</td>
-                <td class="right" style="background-color: '.$colour.';">' . $timeTaken . '</td>
+                <td class="right" style="background-color: ' . $colour . ';">' . $timeTaken . '</td>
             </tr>'
         );
     }
