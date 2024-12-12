@@ -2,7 +2,7 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
-use PhpParser\Node\Scalar\MagicConst\File;
+use SilverStripe\Assets\File;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Environment;
@@ -262,7 +262,7 @@ class SaveAllData extends BuildTask
                 <td>' . $type . '</td>
                 <td>' . $action . '</td>
                 <td>' . $title . '</td>
-                <td class="right" style="background-color: '.$colour.';">' . $timeTaken . '</td>
+                <td class="right" style="background-color: ' . $colour . ';">' . $timeTaken . '</td>
             </tr>'
         );
     }
