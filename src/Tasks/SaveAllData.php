@@ -107,6 +107,7 @@ class SaveAllData extends BuildTask
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
                 $action = 'write ('.$list->count().'x)';
+                $title = 'not-set';
                 foreach ($list as $obj) {
                     $title = (string) $obj->getTitle() ?: (string) $obj->ID;
                     if ($obj->hasExtension(Versioned::class)) {
