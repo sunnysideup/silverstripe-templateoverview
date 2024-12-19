@@ -5,6 +5,7 @@ namespace Sunnysideup\TemplateOverview\Tasks;
 use SilverStripe\Assets\File;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
@@ -62,7 +63,7 @@ class SaveAllData extends BuildTask
     {
         $member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
         Environment::increaseTimeLimitTo(600);
-        DataObject::config()->set('validation_enabled', false);
+
         $classes = ClassInfo::subclassesFor(DataObject::class, false);
         if (! Director::isDev()) {
             die('you can only run this in dev mode');
@@ -76,6 +77,9 @@ class SaveAllData extends BuildTask
             $limit = 9999999;
         }
         foreach ($classes as $class) {
+            // we need to keep setting this...
+            Config::modify()->set(DataObject::class, 'validation_enabled', false);
+            DataObject::config()->set('validation_enabled', false);
             if (! empty($dontSave)) {
                 foreach ($dontSave as $dontSaveClass) {
                     if (is_a($class, $dontSaveClass, true)) {
@@ -106,7 +110,7 @@ class SaveAllData extends BuildTask
                 }
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
-                $action = 'write ('.$list->count().'x)';
+                $action = 'write (' . $list->count() . 'x)';
                 $title = 'not-set';
                 foreach ($list as $obj) {
                     $title = (string) $obj->getTitle() ?: (string) $obj->ID;
