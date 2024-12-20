@@ -65,7 +65,7 @@ class SaveAllData extends BuildTask
         Environment::increaseTimeLimitTo(600);
 
         $classes = ClassInfo::subclassesFor(DataObject::class, false);
-        if (! Director::isDev()) {
+        if (! Director::isDev() && ! Director::is_cli()) {
             die('you can only run this in dev mode');
         }
         $this->writeTableHeader();
