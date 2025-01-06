@@ -87,7 +87,7 @@ class SaveAllData extends BuildTask
             if (! empty($dontSave)) {
                 foreach ($dontSave as $dontSaveClass) {
                     if (is_a($class, $dontSaveClass, true)) {
-                        DB::alteration_message('SKIPPING (as listed in dontSave using is_a test) ' . $class, 'deleted');
+                        DB::alteration_message('SKIPPING ' . $class . ' (as listed in dontSave using is_a test)', 'deleted');
                         continue 2;
                     }
                 }
@@ -106,7 +106,8 @@ class SaveAllData extends BuildTask
             }
             DB::alteration_message('----------------- CREATING ' . $class . ' ------------------');
             $singleton = Injector::inst()->get($class);
-            $type = '<strong>' . $singleton->i18n_singular_name() . '</strong><br />' . $singleton->ClassName;
+            // space on purpose!
+            $type = '<strong>' . $singleton->i18n_singular_name() . '</strong> <br />' . $singleton->ClassName;
             DB::alteration_message('-----------------TESTING ' . $class . ' ------------------');
             if ($singleton->canEdit($member) || $alwaysWrite) {
                 if ($class::get()->count() > $limit) {
@@ -114,10 +115,11 @@ class SaveAllData extends BuildTask
                 }
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
-                $action = 'write (' . $list->count() . 'x)';
+                $writeCount = 0;
                 $publishCount = 0;
                 $title = 'not-set';
                 foreach ($list as $obj) {
+                    $writeCount++;
                     $title = (string) $obj->getTitle() ?: (string) $obj->ID;
                     if ($obj->hasExtension(Versioned::class)) {
                         $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft() && $obj->canPublish($member);
@@ -130,10 +132,11 @@ class SaveAllData extends BuildTask
                         $obj->write();
                     }
                 }
+                $action = 'write (' . $writeCount . 'x)';
                 if ($publishCount) {
                     $action .= ' and publish (' . $publishCount . 'x)';
                 }
-                $this->writeTableRow($type, $action, $title, $timeBefore, $limit);
+                $this->writeTableRow($type, $action, $title, $timeBefore, $writeCount);
             } else {
                 $action = 'write (not allowed)';
                 $title = 'n/a';
