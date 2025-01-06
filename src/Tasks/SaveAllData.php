@@ -14,6 +14,7 @@ use SilverStripe\MFA\Model\RegisteredMethod;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\Security\DefaultAdminService;
+use SilverStripe\Security\LoginAttempt;
 use SilverStripe\Security\MemberPassword;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionRole;
@@ -47,11 +48,13 @@ class SaveAllData extends BuildTask
         PermissionRoleCode::class,
         MemberPassword::class,
         EditableFormField::class,
+        LoginAttempt::class,
     ];
 
     private static $limit = 100;
 
     private static $do_save = [];
+    private static $always_write = false;
     private static $always_publish = false;
 
     /**
@@ -72,6 +75,7 @@ class SaveAllData extends BuildTask
         $dontSave = $this->Config()->get('dont_save');
         $doSave = $this->Config()->get('do_save');
         $limit = $this->Config()->get('limit');
+        $alwaysWrite = $this->Config()->get('always_write');
         $alwaysPublish = $this->Config()->get('always_publish');
         if (Director::is_cli()) {
             $limit = 9999999;
@@ -104,25 +108,30 @@ class SaveAllData extends BuildTask
             $singleton = Injector::inst()->get($class);
             $type = '<strong>' . $singleton->i18n_singular_name() . '</strong><br />' . $singleton->ClassName;
             DB::alteration_message('-----------------TESTING ' . $class . ' ------------------');
-            if ($singleton->canEdit($member) && $singleton->canDelete($member)) {
+            if ($singleton->canEdit($member) || $alwaysWrite) {
                 if ($class::get()->count() > $limit) {
                     DB::alteration_message('SKIPPING some of ' . $class . ' as it has more than ' . $limit . ' records', 'deleted');
                 }
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
                 $action = 'write (' . $list->count() . 'x)';
+                $publishCount = 0;
                 $title = 'not-set';
                 foreach ($list as $obj) {
                     $title = (string) $obj->getTitle() ?: (string) $obj->ID;
                     if ($obj->hasExtension(Versioned::class)) {
-                        $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft();
+                        $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft() && $obj->canPublish($member);
                         $obj->writeToStage(Versioned::DRAFT);
                         if ($isPublished || $alwaysPublish) {
                             $obj->publishSingle();
+                            $publishCount++;
                         }
                     } else {
                         $obj->write();
                     }
+                }
+                if ($publishCount) {
+                    $action .= ' and publish (' . $publishCount . 'x)';
                 }
                 $this->writeTableRow($type, $action, $title, $timeBefore, $limit);
             } else {
@@ -138,6 +147,7 @@ class SaveAllData extends BuildTask
                 $action = 'create';
                 $title = 'NEW OBJECT';
                 $createdObj = $class::create();
+                $outcome = 'ERROR';
                 try {
                     if ($createdObj->hasExtension(Versioned::class)) {
                         $createdObj->writeToStage(Versioned::DRAFT);
@@ -146,13 +156,9 @@ class SaveAllData extends BuildTask
                             $createdObj->publishSingle();
                         }
                     } else {
-                        try {
-                            $createdObj->write();
-                        } catch (\Exception $e) {
-                            $action = 'create (failed)';
-                            $title = $e->getMessage();
-                        }
+                        $createdObj->write();
                     }
+                    $outcome = 'ID = ' . $createdObj->ID;
                 } catch (\Exception $e) {
                     $action = 'create ERROR!!!';
                     $title = 'n/a';
@@ -162,11 +168,13 @@ class SaveAllData extends BuildTask
                 $title = 'n/a';
                 $timeBefore = microtime(true);
             }
-            $this->writeTableRow($action, $type, $title, $timeBefore);
+            $this->writeTableRow($action, $type, $title . ' OUTCOME: ' . $outcome, $timeBefore);
             if ($createdObj && $createdObj->exists()) {
+                $outcome = 'DELETED ID = ' . $createdObj->ID;
                 $action = 'delete';
                 $title = (string) $createdObj->getTitle() ?: (string) $createdObj->ID;
                 $timeBefore = microtime(true);
+
                 if ($createdObj->hasExtension(Versioned::class)) {
                     $createdObj->doUnpublish();
                     $createdObj->delete();
@@ -179,7 +187,7 @@ class SaveAllData extends BuildTask
                 $title = 'n/a';
                 $timeBefore = microtime(true);
             }
-            $this->writeTableRow($action, $type, $title, $timeBefore);
+            $this->writeTableRow($action, $type, $title . ' OUTCOME: ' . $outcome, $timeBefore);
         }
         $this->writeTableFooter();
         DB::alteration_message('-----------------DONE ------------------');
