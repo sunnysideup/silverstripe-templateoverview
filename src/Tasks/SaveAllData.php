@@ -41,7 +41,7 @@ class SaveAllData extends BuildTask
         ChangeSet::class,
         ChangeSetItem::class,
         RegisteredMethod::class,
-        'SilverStripe\\\HybridSessions\\HybridSessionDataObject',
+        'SilverStripe\\\HybridSessions\\\HybridSessionDataObject',
         RememberLoginHash::class,
         Permission::class,
         PermissionRole::class,
@@ -49,6 +49,7 @@ class SaveAllData extends BuildTask
         MemberPassword::class,
         EditableFormField::class,
         LoginAttempt::class,
+        'SilverStripe\\UserForms\\Model\\Submission\\SubmittedFileField',
     ];
 
     private static $limit = 100;
@@ -74,7 +75,7 @@ class SaveAllData extends BuildTask
         $this->writeTableHeader();
         $dontSave = $this->Config()->get('dont_save');
         $doSave = $this->Config()->get('do_save');
-        $limit = $this->Config()->get('limit');
+        $this->Config()->get('limit');
         $alwaysWrite = $this->Config()->get('always_write');
         $alwaysPublish = $this->Config()->get('always_publish');
         if (Director::is_cli()) {
@@ -104,11 +105,10 @@ class SaveAllData extends BuildTask
                     continue;
                 }
             }
-            DB::alteration_message('----------------- CREATING ' . $class . ' ------------------');
+            DB::alteration_message('----------------- WRITING ' . $class . ' ------------------');
             $singleton = Injector::inst()->get($class);
             // space on purpose!
             $type = '<strong>' . $singleton->i18n_singular_name() . '</strong> <br />' . $singleton->ClassName;
-            DB::alteration_message('-----------------TESTING ' . $class . ' ------------------');
             if ($singleton->canEdit($member) || $alwaysWrite) {
                 if ($class::get()->count() > $limit) {
                     DB::alteration_message('SKIPPING some of ' . $class . ' as it has more than ' . $limit . ' records', 'deleted');
@@ -257,6 +257,9 @@ class SaveAllData extends BuildTask
     protected function writeTableRow(string $type, string $action, string $title, float $timeBefore, int $divider = 1)
     {
         $timeAfter = microtime(true);
+        if ($divider < 1) {
+            $divider = 1;
+        }
         $timeTaken = round(($timeAfter - $timeBefore) / $divider, 2);
         $colour = 'transparent';
         if ($timeTaken > 0.3) {
