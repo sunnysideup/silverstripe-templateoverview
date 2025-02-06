@@ -75,7 +75,7 @@ class SaveAllData extends BuildTask
         $this->writeTableHeader();
         $dontSave = $this->Config()->get('dont_save');
         $doSave = $this->Config()->get('do_save');
-        $this->Config()->get('limit');
+        $limit = $this->Config()->get('limit');
         $alwaysWrite = $this->Config()->get('always_write');
         $alwaysPublish = $this->Config()->get('always_publish');
         if (Director::is_cli()) {

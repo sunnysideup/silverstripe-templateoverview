@@ -45,7 +45,7 @@ class LoginAndRedirect extends Controller
                 return null;
             }
         } else {
-            user_error('Could not log you in while trying to access ' . $hash . ' should be the same as '.$testvalue.'. Please try again.', E_USER_ERROR);
+            user_error('Could not log you in while trying to access ' . $hash . ' should be the same as ' . $testvalue . '. Please try again.', E_USER_ERROR);
             return null;
         }
     }
@@ -54,7 +54,13 @@ class LoginAndRedirect extends Controller
     {
         if (Director::isDev() && Environment::getEnv('SS_ALLOW_SMOKE_TEST')) {
             $allowedIPs = Config::inst()->get(self::class, 'allowed_ips');
-            if (IpUtils::checkIP($this->request->getIP(), $allowedIPs)) {
+            $test = false;
+            if (class_exists(IpUtils::class)) {
+                $test = IpUtils::checkIP($this->request->getIP(), $allowedIPs);
+            } else {
+                $test = in_array($this->request->getIP(), $allowedIPs, true);
+            }
+            if ($test) {
                 return Director::isDev();
             }
 
