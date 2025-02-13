@@ -20,7 +20,11 @@ class AllLinksDataObjects extends AllLinksProviderBase
         $exceptForArray = array_merge($this->getListOfAllClasses(), [DataObject::class]);
 
         // make it easier - just read live stuff.
-        Versioned::set_reading_mode(Versioned::DEFAULT_MODE);
+        if ($inCMS) {
+            Versioned::set_stage('Stage.Stage');
+        } else {
+            Versioned::set_reading_mode('Stage.Live');
+        }
         foreach ($list as $class) {
             if (! in_array($class, $exceptForArray, true) && $this->isValidClass($class)) {
                 $objects = $class::get()
