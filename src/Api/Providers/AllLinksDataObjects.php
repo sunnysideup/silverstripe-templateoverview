@@ -20,7 +20,7 @@ class AllLinksDataObjects extends AllLinksProviderBase
         $exceptForArray = array_merge($this->getListOfAllClasses(), [DataObject::class]);
 
         // make it easier - just read live stuff.
-        Versioned::set_reading_mode('Stage.Live');
+        Versioned::set_reading_mode(Versioned::DEFAULT_MODE);
         foreach ($list as $class) {
             if (! in_array($class, $exceptForArray, true) && $this->isValidClass($class)) {
                 $objects = $class::get()
@@ -50,13 +50,17 @@ class AllLinksDataObjects extends AllLinksProviderBase
                         if ($obj->hasMethod('PreviewLink')) {
                             $return[] = $obj->PreviewLink();
                         }
-                    } elseif ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && null !== $obj->LinkID)) {
-                        $return[] = $obj->Link();
-                        $this->checkForErrorsInGoogleSitemap($obj, $obj->Link());
-                    } elseif ($obj->hasMethod('AbsoluteLink')) {
-                        $return[] = $obj->AbsoluteLink();
-                    } elseif ($obj->hasMethod('getLink')) {
-                        $return[] = $obj->getLink();
+                    } else {
+                        if ($obj->hasMethod('IsPublished') && ! $obj->IsPublished()) {
+                            continue;
+                        } elseif ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && null !== $obj->LinkID)) {
+                            $return[] = $obj->Link();
+                            $this->checkForErrorsInGoogleSitemap($obj, $obj->Link());
+                        } elseif ($obj->hasMethod('AbsoluteLink')) {
+                            $return[] = $obj->AbsoluteLink();
+                        } elseif ($obj->hasMethod('getLink')) {
+                            $return[] = $obj->getLink();
+                        }
                     }
                 }
             }
