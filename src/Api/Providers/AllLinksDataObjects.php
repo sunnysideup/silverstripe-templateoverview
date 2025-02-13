@@ -4,6 +4,7 @@ namespace Sunnysideup\TemplateOverview\Api\Providers;
 
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Versioned\Versioned;
 use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 
 class AllLinksDataObjects extends AllLinksProviderBase
@@ -17,6 +18,9 @@ class AllLinksDataObjects extends AllLinksProviderBase
         $return = [];
         $list = ClassInfo::subclassesFor(DataObject::class);
         $exceptForArray = array_merge($this->getListOfAllClasses(), [DataObject::class]);
+
+        // make it easier - just read live stuff.
+        Versioned::set_reading_mode('Stage.Live');
         foreach ($list as $class) {
             if (! in_array($class, $exceptForArray, true) && $this->isValidClass($class)) {
                 $objects = $class::get()
