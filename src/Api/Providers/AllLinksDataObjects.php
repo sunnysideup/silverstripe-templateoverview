@@ -21,7 +21,7 @@ class AllLinksDataObjects extends AllLinksProviderBase
 
         // make it easier - just read live stuff.
         if ($inCMS) {
-            Versioned::set_stage('Stage.Stage');
+            Versioned::set_stage('Stage.Draft');
         } else {
             Versioned::set_reading_mode('Stage.Live');
         }
