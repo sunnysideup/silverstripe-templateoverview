@@ -21,9 +21,9 @@ class AllLinksDataObjects extends AllLinksProviderBase
 
         // make it easier - just read live stuff.
         if ($inCMS) {
-            Versioned::set_stage('Stage.Draft');
+            Versioned::set_stage(Versioned::DRAFT);
         } else {
-            Versioned::set_reading_mode('Stage.Live');
+            Versioned::set_stage(Versioned::LIVE);
         }
         foreach ($list as $class) {
             if (! in_array($class, $exceptForArray, true) && $this->isValidClass($class)) {
