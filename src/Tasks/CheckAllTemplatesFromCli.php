@@ -8,7 +8,7 @@ use SilverStripe\Dev\BuildTask;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 use Sunnysideup\TemplateOverview\Control\CheckAllTemplatesResponseController;
 
-class CheckAllTemplatesCli extends BuildTask
+class CheckAllTemplatesFromCli extends BuildTask
 {
     protected $title = 'CLI ONLY: Check URLs for HTTP errors';
 
