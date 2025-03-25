@@ -10,7 +10,7 @@ use Sunnysideup\TemplateOverview\Control\CheckAllTemplatesResponseController;
 
 class CheckAllTemplatesFromCli extends BuildTask
 {
-    protected $title = 'CLI ONLY: Check URLs for HTTP errors';
+    protected $title = 'CLI ONLY SMOKETEST: Check URLs for errors';
 
     protected $description = 'Run this task from the command line to check for HTTP response errors (e.g. 404).';
 

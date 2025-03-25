@@ -32,7 +32,8 @@
         <span style="color: red">You must set the <strong>SS_ALLOW_SMOKE_TEST</strong> environment variable to <strong>TRUE</strong> to run the tests below!</span>
     <% end_if %>
     <p class="stats">
-        <strong>Tests Done:</strong> <span id="NumberOfTests">0</span>,
+        <strong>Total Tests:</strong> <span id="NumberOfTests">0</span>,
+        <strong>Tests Done:</strong> <span id="NumberOfTestsDone">0</span>,
         <strong>Average Response Time:</strong> <span id="AverageResponseTime">0</span>,
         <strong>Number of errors:</strong> <span id="NumberOfErrors">0</span>,
         <strong>Error Percentage:</strong> <span id="ErrorRate">0%</span>
@@ -41,12 +42,12 @@
     <table class='checker-list table'>
         <thead>
             <tr>
-                <th>Test</th>
-                <th>Link</th>
-                <th>HTTP&nbsp;response</th>
-                <th>Response&nbsp;time</th>
-                <th>Response</th>
-                <th>W3&nbsp;check</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.test', this)">Test</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.link', this)">Link</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.http-response', this)">HTTP&nbsp;response</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.response-time', this)">Response&nbsp;time</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.content', this)">Response</th>
+                <th class="clickable" onclick="SmokeTester.sortTable('.w3-check', this)">>W3&nbsp;check</th>
             </tr>
         </thead>
         <tbody>

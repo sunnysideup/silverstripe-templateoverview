@@ -4,7 +4,7 @@ namespace Sunnysideup\TemplateOverview\Control;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
-use SilverStripe\Control\Util\IPUtils;
+use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
@@ -12,7 +12,12 @@ use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use Sunnysideup\TemplateOverview\Api\ProvideTestUser;
+use Symfony\Component\HttpFoundation\IpUtils;
 
+/**
+ * Class \Sunnysideup\TemplateOverview\Control\LoginAndRedirect
+ *
+ */
 class LoginAndRedirect extends Controller
 {
     private static $allowed_actions = [
@@ -24,7 +29,7 @@ class LoginAndRedirect extends Controller
         '127.0.0.1',
     ];
 
-    public function login($request)
+    public function login($request): HTTPResponse|null
     {
         $url = $request->getVar('BackURL');
         $hash = $request->getVar('hash');
@@ -35,17 +40,27 @@ class LoginAndRedirect extends Controller
                 Security::setCurrentUser($member);
                 Injector::inst()->get(IdentityStore::class)->logIn($member, true);
                 return $this->redirect($url);
+            } else {
+                user_error('Could not find user with email ' . $testvalue . '@. Please try again.', E_USER_ERROR);
+                return null;
             }
+        } else {
+            user_error('Could not log you in while trying to access ' . $hash . ' should be the same as ' . $testvalue . '. Please try again.', E_USER_ERROR);
+            return null;
         }
-        user_error('Could not log you in while trying to access ' . $url . '. Please try again.', E_USER_ERROR);
-        return null;
     }
 
     public function isDev()
     {
         if (Director::isDev() && Environment::getEnv('SS_ALLOW_SMOKE_TEST')) {
             $allowedIPs = Config::inst()->get(self::class, 'allowed_ips');
-            if (IPUtils::checkIP($this->request->getIP(), $allowedIPs)) {
+            $test = false;
+            if (class_exists(IpUtils::class)) {
+                $test = IpUtils::checkIP($this->request->getIP(), $allowedIPs);
+            } else {
+                $test = in_array($this->request->getIP(), $allowedIPs, true);
+            }
+            if ($test) {
                 return Director::isDev();
             }
 

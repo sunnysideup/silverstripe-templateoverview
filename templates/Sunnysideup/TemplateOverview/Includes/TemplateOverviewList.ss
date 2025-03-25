@@ -46,7 +46,7 @@
                     </li>
                     <li>
                         <em>allowed children:</em>
-                        $AllowedChildren
+                        $AllowedChildren.Count
                     </li>
                     <li>
                         <em>allowed actions:</em>
@@ -56,13 +56,7 @@
             <li><em>example:</em>
                 <ul>
                     <li>
-                        <a href="$LiveLink">$Title</a>
-                    </li>
-                    <li>
-                        <a href="$PreviewLink">Preview</a>
-                    </li>
-                    <li>
-                        <a href="$CMSEditLink">Edit in CMS</a>
+                        <a href="$LiveLink">$Title</a> | <a href="$CMSEditLink">Edit in CMS</a>
                     </li>
                 </ul>
             </li>

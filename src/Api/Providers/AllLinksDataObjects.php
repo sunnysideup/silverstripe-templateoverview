@@ -4,6 +4,7 @@ namespace Sunnysideup\TemplateOverview\Api\Providers;
 
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Versioned\Versioned;
 use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 
 class AllLinksDataObjects extends AllLinksProviderBase
@@ -17,6 +18,13 @@ class AllLinksDataObjects extends AllLinksProviderBase
         $return = [];
         $list = ClassInfo::subclassesFor(DataObject::class);
         $exceptForArray = array_merge($this->getListOfAllClasses(), [DataObject::class]);
+
+        // make it easier - just read live stuff.
+        if ($inCMS) {
+            Versioned::set_stage(Versioned::DRAFT);
+        } else {
+            Versioned::set_stage(Versioned::LIVE);
+        }
         foreach ($list as $class) {
             if (! in_array($class, $exceptForArray, true) && $this->isValidClass($class)) {
                 $objects = $class::get()
@@ -46,13 +54,17 @@ class AllLinksDataObjects extends AllLinksProviderBase
                         if ($obj->hasMethod('PreviewLink')) {
                             $return[] = $obj->PreviewLink();
                         }
-                    } elseif ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && null !== $obj->LinkID)) {
-                        $return[] = $obj->Link();
-                        $this->checkForErrorsInGoogleSitemap($obj, $obj->Link());
-                    } elseif ($obj->hasMethod('AbsoluteLink')) {
-                        $return[] = $obj->AbsoluteLink();
-                    } elseif ($obj->hasMethod('getLink')) {
-                        $return[] = $obj->getLink();
+                    } else {
+                        if ($obj->hasMethod('IsPublished') && ! $obj->IsPublished()) {
+                            continue;
+                        } elseif ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && null !== $obj->LinkID)) {
+                            $return[] = $obj->Link();
+                            $this->checkForErrorsInGoogleSitemap($obj, $obj->Link());
+                        } elseif ($obj->hasMethod('AbsoluteLink')) {
+                            $return[] = $obj->AbsoluteLink();
+                        } elseif ($obj->hasMethod('getLink')) {
+                            $return[] = $obj->getLink();
+                        }
                     }
                 }
             }

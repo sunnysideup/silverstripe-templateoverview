@@ -2,8 +2,10 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
+use SilverStripe\Assets\File;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
@@ -11,6 +13,8 @@ use SilverStripe\HybridSessions\HybridSessionDataObject;
 use SilverStripe\MFA\Model\RegisteredMethod;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use SilverStripe\Security\DefaultAdminService;
+use SilverStripe\Security\LoginAttempt;
 use SilverStripe\Security\MemberPassword;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionRole;
@@ -33,19 +37,26 @@ class SaveAllData extends BuildTask
     private static $segment = 'write-all-data-objects';
 
     private static $dont_save = [
+        File::class,
         ChangeSet::class,
         ChangeSetItem::class,
         RegisteredMethod::class,
-        HybridSessionDataObject::class,
+        'SilverStripe\\\HybridSessions\\\HybridSessionDataObject',
         RememberLoginHash::class,
         Permission::class,
         PermissionRole::class,
         PermissionRoleCode::class,
         MemberPassword::class,
         EditableFormField::class,
+        LoginAttempt::class,
+        'SilverStripe\\UserForms\\Model\\Submission\\SubmittedFileField',
     ];
 
     private static $limit = 100;
+
+    private static $do_save = [];
+    private static $always_write = false;
+    private static $always_publish = false;
 
     /**
      * @param \SilverStripe\Control\HTTPRequest $request
@@ -54,86 +65,119 @@ class SaveAllData extends BuildTask
      */
     public function run($request)
     {
+        $member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
         Environment::increaseTimeLimitTo(600);
-        DataObject::config()->set('validation_enabled', false);
+
         $classes = ClassInfo::subclassesFor(DataObject::class, false);
-        if (! Director::isDev()) {
+        if (! Director::isDev() && ! Director::is_cli()) {
             die('you can only run this in dev mode');
         }
         $this->writeTableHeader();
         $dontSave = $this->Config()->get('dont_save');
+        $doSave = $this->Config()->get('do_save');
         $limit = $this->Config()->get('limit');
+        $alwaysWrite = $this->Config()->get('always_write');
+        $alwaysPublish = $this->Config()->get('always_publish');
+        if (Director::is_cli()) {
+            $limit = 9999999;
+        }
         foreach ($classes as $class) {
-            if (in_array($class, $dontSave, true)) {
-                DB::alteration_message('SKIPPING ' . $class, 'deleted');
-                continue;
-            }
-            $singleton = Injector::inst()->get($class);
-            foreach ($dontSave as $dontSaveClass) {
-                if ($singleton instanceof $dontSaveClass) {
-                    DB::alteration_message('SKIPPING ' . $class, 'deleted');
-                    continue 2;
+            // we need to keep setting this...
+            Config::modify()->set(DataObject::class, 'validation_enabled', false);
+            DataObject::config()->set('validation_enabled', false);
+            if (! empty($dontSave)) {
+                foreach ($dontSave as $dontSaveClass) {
+                    if (is_a($class, $dontSaveClass, true)) {
+                        DB::alteration_message('SKIPPING ' . $class . ' (as listed in dontSave using is_a test)', 'deleted');
+                        continue 2;
+                    }
                 }
             }
-            $type = '<strong>' . $singleton->i18n_singular_name() . '</strong><br />' . $singleton->ClassName;
-            DB::alteration_message('-----------------TESTING ' . $class . ' ------------------');
-            if ($singleton->canEdit()) {
+            if (! empty($doSave)) {
+                $save = false;
+                foreach ($doSave as $doSaveClass) {
+                    if (is_a($class, $doSaveClass, true)) {
+                        $save = true;
+                    }
+                }
+                if ($save === false) {
+                    DB::alteration_message('SKIPPING (as not listed in doSave using is_a test) ' . $class, 'deleted');
+                    continue;
+                }
+            }
+            DB::alteration_message('----------------- WRITING ' . $class . ' ------------------');
+            $singleton = Injector::inst()->get($class);
+            // space on purpose!
+            $type = '<strong>' . $singleton->i18n_singular_name() . '</strong> <br />' . $singleton->ClassName;
+            if ($singleton->canEdit($member) || $alwaysWrite) {
+                if ($class::get()->count() > $limit) {
+                    DB::alteration_message('SKIPPING some of ' . $class . ' as it has more than ' . $limit . ' records', 'deleted');
+                }
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
-                $action = 'write ('.$list->count().'x)';
+                $writeCount = 0;
+                $publishCount = 0;
+                $title = 'not-set';
                 foreach ($list as $obj) {
+                    $writeCount++;
                     $title = (string) $obj->getTitle() ?: (string) $obj->ID;
                     if ($obj->hasExtension(Versioned::class)) {
-                        $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft();
+                        $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft() && $obj->canPublish($member);
                         $obj->writeToStage(Versioned::DRAFT);
-                        if ($isPublished) {
+                        if ($isPublished || $alwaysPublish) {
                             $obj->publishSingle();
+                            $publishCount++;
                         }
                     } else {
                         $obj->write();
                     }
                 }
-                $this->writeTableRow($action, $type, $title, $timeBefore, $limit);
+                $action = 'write (' . $writeCount . 'x)';
+                if ($publishCount) {
+                    $action .= ' and publish (' . $publishCount . 'x)';
+                }
+                $this->writeTableRow($type, $action, $title, $timeBefore, $writeCount);
             } else {
                 $action = 'write (not allowed)';
                 $title = 'n/a';
                 $timeBefore = microtime(true);
                 $this->writeTableRow($action, $type, $title, $timeBefore);
             }
+            $type = '<div style="color: #555;">' . $type . '</div>';
             $createdObj = null;
-            if ($singleton->canCreate()) {
+            if ($singleton->canCreate($member)) {
                 $timeBefore = microtime(true);
                 $action = 'create';
                 $title = 'NEW OBJECT';
                 $createdObj = $class::create();
+                $outcome = 'ERROR';
                 try {
                     if ($createdObj->hasExtension(Versioned::class)) {
                         $createdObj->writeToStage(Versioned::DRAFT);
-                        if ($isPublished) {
+                        $isPublished = $createdObj->isPublished() && ! $createdObj->isModifiedOnDraft();
+                        if ($isPublished || $alwaysPublish) {
                             $createdObj->publishSingle();
                         }
                     } else {
-                        try {
-                            $createdObj->write();
-                        } catch (\Exception $e) {
-                            $action = 'create (failed)';
-                            $title = $e->getMessage();
-                        }
+                        $createdObj->write();
                     }
+                    $outcome = 'ID = ' . $createdObj->ID;
                 } catch (\Exception $e) {
                     $action = 'create ERROR!!!';
                     $title = 'n/a';
                 }
             } else {
-                $action = 'creatre (not allowed)';
+                $action = 'create (not allowed)';
                 $title = 'n/a';
                 $timeBefore = microtime(true);
             }
-            $this->writeTableRow($action, $type, $title, $timeBefore);
+            $this->writeTableRow($action, $type, $title . ' OUTCOME: ' . $outcome, $timeBefore);
             if ($createdObj && $createdObj->exists()) {
+                $outcome = 'DELETED ID = ' . $createdObj->ID;
                 $action = 'delete';
                 $title = (string) $createdObj->getTitle() ?: (string) $createdObj->ID;
                 $timeBefore = microtime(true);
+
                 if ($createdObj->hasExtension(Versioned::class)) {
                     $createdObj->doUnpublish();
                     $createdObj->delete();
@@ -146,7 +190,7 @@ class SaveAllData extends BuildTask
                 $title = 'n/a';
                 $timeBefore = microtime(true);
             }
-            $this->writeTableRow($action, $type, $title, $timeBefore);
+            $this->writeTableRow($action, $type, $title . ' OUTCOME: ' . $outcome, $timeBefore);
         }
         $this->writeTableFooter();
         DB::alteration_message('-----------------DONE ------------------');
@@ -154,7 +198,11 @@ class SaveAllData extends BuildTask
 
     protected function writeTableHeader()
     {
-        echo '
+        if (Director::is_cli()) {
+            return;
+        }
+        $this->output(
+            '
             <style>
                 .table {
                     max-width: 80%;
@@ -195,19 +243,23 @@ class SaveAllData extends BuildTask
                         <th class="right">Time Taken</th>
                     </tr>
                 </thead>
-            <tbody>';
+            <tbody>'
+        );
     }
 
     protected function writeTableFooter()
     {
-        echo '
+        $this->output('
             </tbody>
-            </teable>';
+            </teable>');
     }
 
-    protected function writeTableRow(string $action, string $type, string $title, float $timeBefore, int $divider = 1)
+    protected function writeTableRow(string $type, string $action, string $title, float $timeBefore, int $divider = 1)
     {
         $timeAfter = microtime(true);
+        if ($divider < 1) {
+            $divider = 1;
+        }
         $timeTaken = round(($timeAfter - $timeBefore) / $divider, 2);
         $colour = 'transparent';
         if ($timeTaken > 0.3) {
@@ -222,12 +274,23 @@ class SaveAllData extends BuildTask
         } else {
             $timeTaken .= 's';
         }
-        echo '
+        $this->output(
+            '
             <tr>
                 <td>' . $type . '</td>
                 <td>' . $action . '</td>
                 <td>' . $title . '</td>
-                <td class="right" style="background-color: '.$colour.';">' . $timeTaken . '</td>
-            </tr>';
+                <td class="right" style="background-color: ' . $colour . ';">' . $timeTaken . '</td>
+            </tr>'
+        );
+    }
+
+    protected function output(string $string)
+    {
+        if (Director::is_cli()) {
+            echo strip_tags($string) . PHP_EOL;
+        } else {
+            echo $string;
+        }
     }
 }

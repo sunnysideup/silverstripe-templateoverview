@@ -25,6 +25,10 @@ use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 use Sunnysideup\TemplateOverview\Api\TemplateOverviewArrayMethods;
 
+/**
+ * Class \Sunnysideup\TemplateOverview\Control\TemplateOverviewPageController
+ *
+ */
 class TemplateOverviewPageController extends PageController
 {
     protected $myMoreList;
@@ -217,7 +221,6 @@ class TemplateOverviewPageController extends PageController
             Config::modify()->set(SSViewer::class, 'theme_enabled', false);
             Requirements::css('sunnysideup/templateoverview: client/css/TemplateOverviewPage.css');
             Requirements::css('silverstripe/admin: client/dist/styles/bundle.css');
-            Requirements::javascript('https://code.jquery.com/jquery-3.6.3.min.js');
             Requirements::javascript('sunnysideup/templateoverview: client/javascript/TemplateOverviewPage.js');
             // if (class_exists(PrettyPhoto::class)) {
             //     PrettyPhoto::include_code();

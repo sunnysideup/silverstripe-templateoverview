@@ -10,6 +10,7 @@ use Sunnysideup\TemplateOverview\Api\Providers\AllLinksArchiveAdmin;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksControllerInfo;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksDataObjects;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksModelAdmin;
+use Sunnysideup\TemplateOverview\Api\Providers\AllLinksPages;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksReports;
 
 class AllLinks extends AllLinksProviderBase
@@ -108,8 +109,6 @@ class AllLinks extends AllLinksProviderBase
         'Security/logout',
         'Security/lostpassword',
         'Security/lostpassword/passwordsent',
-        '/Security/ping',
-        '/dev/generatesecuretoken/',
     ];
 
     /**
@@ -262,36 +261,10 @@ class AllLinks extends AllLinksProviderBase
      */
     public function ListOfPagesLinks($pageInCMS = false)
     {
-        //first() will return null or the object
-        $return = [];
-        $siteTreeClassNames = $this->getListOfAllClasses();
-        foreach ($siteTreeClassNames as $class) {
-            $excludedClasses = $this->arrayExcept($siteTreeClassNames, $class);
-            $pages = Versioned::get_by_stage($class, Versioned::LIVE)
-                ->exclude(['ClassName' => $excludedClasses])
-                ->shuffle()
-                ->limit($this->numberOfExamples);
-            if (! $pages->exists()) {
-                $pages = Versioned::get_by_stage($class, Versioned::DRAFT)
-                    ->exclude(['ClassName' => $excludedClasses])
-                    ->shuffle()
-                    ->limit($this->numberOfExamples);
-            }
+        $obj = Injector::inst()->get(AllLinksPages::class);
+        $obj->setNumberOfExamples($this->getNumberOfExamples());
 
-            foreach ($pages as $page) {
-                if ($pageInCMS) {
-                    $url = (string) $page->CMSEditLink();
-                    $return[] = $url;
-                    $return[] = str_replace('/edit/', '/settings/', $url);
-                    $return[] = str_replace('/edit/', '/history/', $url);
-                } else {
-                    $url = $page->Link();
-                    $return[] = $url;
-                }
-            }
-        }
-
-        return $return;
+        return $obj->getAllLinksInner($pageInCMS);
     }
 
     /**

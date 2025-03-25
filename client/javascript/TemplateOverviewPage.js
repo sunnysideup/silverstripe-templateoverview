@@ -1,39 +1,54 @@
-if(
-    (document.getElementById("ClassList") !== null &&
-    typeof document.getElementById("ClassList") !== "undefined")
+if (
+  document.getElementById('ClassList') !== null &&
+  typeof document.getElementById('ClassList') !== 'undefined'
 ) {
+  document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('ClassList')) {
+      document.querySelectorAll('.typo-less').forEach(function (element) {
+        element.style.display = 'none'
+      })
 
+      document
+        .querySelectorAll('#ClassList .typo-seemore')
+        .forEach(function (seemoreElement) {
+          seemoreElement.addEventListener('click', function (event) {
+            event.preventDefault()
+            const url = seemoreElement.getAttribute('href')
+            const id = seemoreElement.getAttribute('rel')
+            const targetElement = document.getElementById(id)
 
-    jQuery(document).ready(
-        function () {
-            if( jQuery("#ClassList").length > 0) {
-                jQuery(".typo-less").hide();
-                jQuery("#ClassList .typo-seemore").click(
-                    function() {
-                        var url = jQuery(this).attr("href");
-                        var id = jQuery(this).attr("rel");
-                        jQuery("#" + id).show();
-                        jQuery("#" + id).html("<li>loading pages ....</li>");
-                        jQuery("#" + id).load(
-                            url,
-                            function() {
-                                //PrettyPhotoLoader.load("#" + id);
-                            }
-                        );
-                        jQuery(this).parent(".typo-more").hide().next(".typo-less").show().css("display", "block");
-                        return false;
-                    }
-                );
-                jQuery("#ClassList .typo-seeless").click(
-                    function() {
-                        var id = jQuery(this).attr("rel");
-                        jQuery("#" + id).hide();
-                        jQuery(this).parent(".typo-less").hide().prev(".typo-more").show().css("display", "block");
-                        return false;
-                    }
-                );
+            targetElement.style.display = 'block'
+            targetElement.innerHTML = '<li>loading pages ....</li>'
 
-            }
-        }
-    );
+            fetch(url)
+              .then(response => response.text())
+              .then(data => {
+                targetElement.innerHTML = data
+                // PrettyPhotoLoader.load("#" + id); // Uncomment if needed
+              })
+
+            seemoreElement.closest('.typo-more').style.display = 'none'
+            seemoreElement.closest(
+              '.typo-more'
+            ).nextElementSibling.style.display = 'block'
+          })
+        })
+
+      document
+        .querySelectorAll('#ClassList .typo-seeless')
+        .forEach(function (seelessElement) {
+          seelessElement.addEventListener('click', function (event) {
+            event.preventDefault()
+            const id = seelessElement.getAttribute('rel')
+            const targetElement = document.getElementById(id)
+
+            targetElement.style.display = 'none'
+            seelessElement.closest('.typo-less').style.display = 'none'
+            seelessElement.closest(
+              '.typo-less'
+            ).previousElementSibling.style.display = 'block'
+          })
+        })
+    }
+  })
 }
