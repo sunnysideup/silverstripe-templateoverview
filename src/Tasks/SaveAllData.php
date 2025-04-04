@@ -57,6 +57,7 @@ class SaveAllData extends BuildTask
     private static $do_save = [];
     private static $always_write = false;
     private static $always_publish = false;
+    private array $timeTakenAggregate = [];
 
     /**
      * @param \SilverStripe\Control\HTTPRequest $request
@@ -193,6 +194,7 @@ class SaveAllData extends BuildTask
             $this->writeTableRow($action, $type, $title . ' OUTCOME: ' . $outcome, $timeBefore);
         }
         $this->writeTableFooter();
+        $this->writeAverage();
         DB::alteration_message('-----------------DONE ------------------');
     }
 
@@ -254,6 +256,13 @@ class SaveAllData extends BuildTask
             </teable>');
     }
 
+    protected function writeAverage()
+    {
+        $this->output(
+            '<h3>Average time taken: ' . round(array_sum($this->timeTakenAggregate) / count($this->timeTakenAggregate), 2) . 's (' . count($this->timeTakenAggregate) . ' actions)</h3>'
+        );
+    }
+
     protected function writeTableRow(string $type, string $action, string $title, float $timeBefore, int $divider = 1)
     {
         $timeAfter = microtime(true);
@@ -261,6 +270,7 @@ class SaveAllData extends BuildTask
             $divider = 1;
         }
         $timeTaken = round(($timeAfter - $timeBefore) / $divider, 2);
+        $this->timeTakenAggregate[] = $timeTaken;
         $colour = 'transparent';
         if ($timeTaken > 0.3) {
             $timeTaken .= 's - SUPER SLOW';
