@@ -29,7 +29,7 @@ class LoginAndRedirect extends Controller
         '127.0.0.1',
     ];
 
-    public function login($request): HTTPResponse|null
+    public function login($request)
     {
         $url = $request->getVar('BackURL');
         $hash = $request->getVar('hash');

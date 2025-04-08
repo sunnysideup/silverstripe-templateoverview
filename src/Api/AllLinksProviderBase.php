@@ -33,7 +33,7 @@ abstract class AllLinksProviderBase
 
     private $errorsInGoogleSitemap = [];
 
-    public function setNumberOfExamples(int $n): static
+    public function setNumberOfExamples(int $n)
     {
         $this->numberOfExamples = $n;
 
@@ -45,13 +45,13 @@ abstract class AllLinksProviderBase
         return $this->numberOfExamples;
     }
 
-    public function setIncludeFrontEnd(bool $b): static
+    public function setIncludeFrontEnd(bool $b)
     {
         $this->includeFrontEnd = $b;
         return $this;
     }
 
-    public function setIncludeBackEnd(bool $b): static
+    public function setIncludeBackEnd(bool $b)
     {
         $this->includeBackEnd = $b;
         return $this;
