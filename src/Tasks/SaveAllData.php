@@ -142,7 +142,7 @@ class SaveAllData extends BuildTask
                 $action = 'write (not allowed)';
                 $title = 'n/a';
                 $timeBefore = microtime(true);
-                $this->writeTableRow($action, $type, $title, $timeBefore);
+                $this->writeTableRow($type, $action, $title, $timeBefore);
             }
             $type = '<div style="color: #555;">' . $type . '</div>';
             $createdObj = null;
@@ -170,6 +170,7 @@ class SaveAllData extends BuildTask
             } else {
                 $action = 'create (not allowed)';
                 $title = 'n/a';
+                $outcome = 'n/a';
                 $timeBefore = microtime(true);
             }
             $this->writeTableRow($action, $type, $title . ' OUTCOME: ' . $outcome, $timeBefore);
@@ -189,6 +190,7 @@ class SaveAllData extends BuildTask
             } else {
                 $action = 'delete (not required)';
                 $title = 'n/a';
+                $outcome = 'n/a';
                 $timeBefore = microtime(true);
             }
             $this->writeTableRow($action, $type, $title . ' OUTCOME: ' . $outcome, $timeBefore);
