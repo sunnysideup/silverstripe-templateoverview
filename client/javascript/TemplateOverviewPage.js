@@ -1,7 +1,4 @@
-if (
-  document.getElementById('ClassList') !== null &&
-  typeof document.getElementById('ClassList') !== 'undefined'
-) {
+if (document.getElementById('ClassList')) {
   document.addEventListener('DOMContentLoaded', function () {
     if (document.getElementById('ClassList')) {
       document.querySelectorAll('.typo-less').forEach(function (element) {
