@@ -1,6 +1,6 @@
 <?php
 
-namespace Sunnysideup\TemplateOverview\Api;
+namespace Sunnysideup\TemplateOverview\Api\Providers;
 
 use Psr\SimpleCache\CacheInterface;
 use SilverStripe\Core\Config\Config;
@@ -43,8 +43,7 @@ class ProvideTestUser implements Flushable
             $filter = ['Email:EndsWith' => self::FAKE_DOMAIN_NAME];
             // @var Member|null $this->member
             $members = Member::get()
-                ->filter($filter)
-            ;
+                ->filter($filter);
             foreach ($members as $member) {
                 $member->delete();
             }
@@ -102,8 +101,7 @@ class ProvideTestUser implements Flushable
         // @var Member|null $this->member
         $this->member = Member::get()
             ->filter($filter)
-            ->first()
-        ;
+            ->first();
         if (empty($this->member)) {
             $this->member = Member::create($filter);
         }

@@ -13,7 +13,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Injector\Injector;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
-use Sunnysideup\TemplateOverview\Api\ProvideTestUser;
+use Sunnysideup\TemplateOverview\Api\Providers\ProvideTestUser;
 use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
 
 /**
@@ -145,8 +145,7 @@ class CheckAllTemplatesResponseController extends Controller
 
         $testURL = Director::absoluteURL('/admin/templateoverviewloginandredirect/login')
             . '?BackURL=' . urlencode($url)
-            . '&hash=' . ProvideTestUser::get_user_name_from_cache()
-        ;
+            . '&hash=' . ProvideTestUser::get_user_name_from_cache();
         $this->guzzleSetup();
 
         $start = microtime(true);

@@ -11,7 +11,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
-use Sunnysideup\TemplateOverview\Api\ProvideTestUser;
+use Sunnysideup\TemplateOverview\Api\Providers\ProvideTestUser;
 use Symfony\Component\HttpFoundation\IpUtils;
 
 /**
