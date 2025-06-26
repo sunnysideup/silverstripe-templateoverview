@@ -108,7 +108,7 @@ class ProvideTestUser implements Flushable
 
         $this->member->Email = self::get_user_email();
         $this->member->Password = self::get_password();
-        $this->member->LockedOutUntil = null;
+        $this->member->LockedOutUntil = '';
         $this->member->FailedLoginCount = 0;
         $this->member->write();
         $auth = new MemberAuthenticator();
