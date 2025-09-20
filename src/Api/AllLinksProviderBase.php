@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Sunnysideup\TemplateOverview\Api;
 
 use ReflectionClass;
@@ -17,21 +19,21 @@ abstract class AllLinksProviderBase
     use Injectable;
     use Configurable;
 
-    protected $numberOfExamples = 3;
+    protected int $numberOfExamples = 3;
 
     /**
      * @var bool
      */
-    public $includeFrontEnd = true;
+    public bool $includeFrontEnd = true;
 
     /**
      * @var bool
      */
-    public $includeBackEnd = true;
+    public bool $includeBackEnd = true;
 
-    private $listOfAllSiteTreeClassesCache = [];
+    private array $listOfAllSiteTreeClassesCache = [];
 
-    private $errorsInGoogleSitemap = [];
+    private array $errorsInGoogleSitemap = [];
 
     public function setNumberOfExamples(int $n): static
     {

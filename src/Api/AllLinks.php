@@ -142,7 +142,7 @@ class AllLinks extends AllLinksProviderBase
             $this->numberOfExamples = $this->Config()->number_of_examples;
         }
         if ($this->includeFrontEnd === true) {
-            $array1 = $this->Config()->get('custom_links');
+            $array1 = $this->config()->get('custom_links');
             $array2 = $this->getCustomisedLinks();
             foreach (array_merge($array1, $array2) as $link) {
                 $link = '/' . ltrim($link, '/') . '/';
