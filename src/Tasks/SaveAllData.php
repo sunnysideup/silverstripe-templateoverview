@@ -122,6 +122,10 @@ class SaveAllData extends BuildTask
                 foreach ($list as $obj) {
                     $writeCount++;
                     $title = (string) $obj->getTitle() ?: (string) $obj->ID;
+                    if (! class_exists($obj->ClassName)) {
+                        DB::alteration_message('SKIPPING ' . $obj->ClassName . ' as seen in (' . $title . ') as class does not exist', 'deleted');
+                        continue;
+                    }
                     if ($obj->hasExtension(Versioned::class)) {
                         $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft() && $obj->canPublish($member);
                         $obj->writeToStage(Versioned::DRAFT);
