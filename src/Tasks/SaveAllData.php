@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
+use Exception;
 use SilverStripe\Assets\File;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
@@ -120,21 +121,26 @@ class SaveAllData extends BuildTask
                 $publishCount = 0;
                 $title = 'not-set';
                 foreach ($list as $obj) {
-                    $writeCount++;
-                    $title = (string) $obj->getTitle() ?: (string) $obj->ID;
-                    if (! class_exists($obj->ClassName)) {
-                        DB::alteration_message('SKIPPING ' . $obj->ClassName . ' as seen in (' . $title . ') as class does not exist', 'deleted');
-                        continue;
-                    }
-                    if ($obj->hasExtension(Versioned::class)) {
-                        $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft() && $obj->canPublish($member);
-                        $obj->writeToStage(Versioned::DRAFT);
-                        if ($isPublished || $alwaysPublish) {
-                            $obj->publishSingle();
-                            $publishCount++;
+                    try {
+                        $writeCount++;
+                        $title = (string) $obj->getTitle() ?: (string) $obj->ID;
+                        if (!$obj->ClassName || ! class_exists($obj->ClassName)) {
+                            DB::alteration_message('SKIPPING ' . $obj->ClassName . ' as seen in (' . $title . ') as class does not exist', 'deleted');
+                            continue;
                         }
-                    } else {
-                        $obj->write();
+                        if ($obj->hasExtension(Versioned::class)) {
+                            $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft() && $obj->canPublish($member);
+                            $obj->writeToStage(Versioned::DRAFT);
+                            if ($isPublished || $alwaysPublish) {
+                                $obj->publishSingle();
+                                $publishCount++;
+                            }
+                        } else {
+                            $obj->write();
+                        }
+                    } catch (Exception $e) {
+                        DB::alteration_message('SKIPPING ' . $obj->ClassName . ' as seen in (' . $title . ') due to error: ' . $e->getMessage(), 'deleted');
+                        continue;
                     }
                 }
                 $action = 'write (' . $writeCount . 'x)';
