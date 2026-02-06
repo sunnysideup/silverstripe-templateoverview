@@ -138,10 +138,10 @@ class AllLinks extends AllLinksProviderBase
      */
     public function getAllLinks(): array
     {
-        if (! $this->numberOfExamples) {
+        if ($this->numberOfExamples === 0) {
             $this->numberOfExamples = $this->Config()->number_of_examples;
         }
-        if ($this->includeFrontEnd === true) {
+        if ($this->includeFrontEnd) {
             $array1 = $this->config()->get('custom_links');
             $array2 = $this->getCustomisedLinks();
             foreach (array_merge($array1, $array2) as $link) {
@@ -161,7 +161,7 @@ class AllLinks extends AllLinksProviderBase
         }
         sort($this->allNonCMSLinks);
 
-        if ($this->includeBackEnd === true) {
+        if ($this->includeBackEnd) {
             $this->templateoverviewtestsLinks = $this->ListOfAllTemplateoverviewtestsLinks();
             $this->pagesInCMS = $this->ListOfPagesLinks(true);
             $this->dataObjectsInCMS = $this->ListOfDataObjectsLinks(true);

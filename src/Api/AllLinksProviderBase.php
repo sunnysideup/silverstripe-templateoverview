@@ -21,14 +21,8 @@ abstract class AllLinksProviderBase
 
     protected int $numberOfExamples = 3;
 
-    /**
-     * @var bool
-     */
     public bool $includeFrontEnd = true;
 
-    /**
-     * @var bool
-     */
     public bool $includeBackEnd = true;
 
     private array $listOfAllSiteTreeClassesCache = [];
@@ -71,7 +65,7 @@ abstract class AllLinksProviderBase
      */
     public function getListOfAllClasses()
     {
-        if (empty($this->listOfAllSiteTreeClassesCache)) {
+        if ($this->listOfAllSiteTreeClassesCache === []) {
             $siteTreeDetails = Injector::inst()->get(SiteTreeDetails::class);
             $list = $siteTreeDetails->ListOfAllClasses();
             foreach ($list as $page) {

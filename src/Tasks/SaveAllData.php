@@ -144,7 +144,7 @@ class SaveAllData extends BuildTask
                     }
                 }
                 $action = 'write (' . $writeCount . 'x)';
-                if ($publishCount) {
+                if ($publishCount !== 0) {
                     $action .= ' and publish (' . $publishCount . 'x)';
                 }
                 $this->writeTableRow($type, $action, $title, $timeBefore, $writeCount);

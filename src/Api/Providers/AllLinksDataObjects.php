@@ -54,17 +54,15 @@ class AllLinksDataObjects extends AllLinksProviderBase
                         if ($obj->hasMethod('PreviewLink')) {
                             $return[] = $obj->PreviewLink();
                         }
-                    } else {
-                        if ($obj->hasMethod('IsPublished') && ! $obj->IsPublished()) {
-                            continue;
-                        } elseif ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && null !== $obj->LinkID)) {
-                            $return[] = $obj->Link();
-                            $this->checkForErrorsInGoogleSitemap($obj, $obj->Link());
-                        } elseif ($obj->hasMethod('AbsoluteLink')) {
-                            $return[] = $obj->AbsoluteLink();
-                        } elseif ($obj->hasMethod('getLink')) {
-                            $return[] = $obj->getLink();
-                        }
+                    } elseif ($obj->hasMethod('IsPublished') && ! $obj->IsPublished()) {
+                        continue;
+                    } elseif ($obj->hasMethod('Link') && ! (property_exists($obj, 'LinkID') && null !== $obj->LinkID)) {
+                        $return[] = $obj->Link();
+                        $this->checkForErrorsInGoogleSitemap($obj, $obj->Link());
+                    } elseif ($obj->hasMethod('AbsoluteLink')) {
+                        $return[] = $obj->AbsoluteLink();
+                    } elseif ($obj->hasMethod('getLink')) {
+                        $return[] = $obj->getLink();
                     }
                 }
             }
