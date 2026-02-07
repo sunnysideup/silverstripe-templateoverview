@@ -16,7 +16,6 @@ use Symfony\Component\HttpFoundation\IpUtils;
 
 /**
  * Class \Sunnysideup\TemplateOverview\Control\LoginAndRedirect
- *
  */
 class LoginAndRedirect extends Controller
 {

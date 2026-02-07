@@ -5,7 +5,6 @@ namespace Sunnysideup\TemplateOverview\Api;
 use SilverStripe\Admin\CMSMenu;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Versioned\Versioned;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksArchiveAdmin;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksControllerInfo;
 use Sunnysideup\TemplateOverview\Api\Providers\AllLinksDataObjects;

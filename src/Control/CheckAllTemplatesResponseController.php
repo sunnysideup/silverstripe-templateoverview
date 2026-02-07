@@ -18,7 +18,6 @@ use Sunnysideup\TemplateOverview\Api\W3cValidateApi;
 
 /**
  * Class \Sunnysideup\TemplateOverview\Control\CheckAllTemplatesResponseController
- *
  */
 class CheckAllTemplatesResponseController extends Controller
 {

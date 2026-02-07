@@ -10,7 +10,6 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\HybridSessions\HybridSessionDataObject;
 use SilverStripe\MFA\Model\RegisteredMethod;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
@@ -56,8 +55,11 @@ class SaveAllData extends BuildTask
     private static $limit = 100;
 
     private static $do_save = [];
+
     private static $always_write = false;
+
     private static $always_publish = false;
+
     private array $timeTakenAggregate = [];
 
     /**
@@ -124,7 +126,7 @@ class SaveAllData extends BuildTask
                     try {
                         $writeCount++;
                         $title = (string) $obj->getTitle() ?: (string) $obj->ID;
-                        if (!$obj->ClassName || ! class_exists($obj->ClassName)) {
+                        if (! $obj->ClassName || ! class_exists($obj->ClassName)) {
                             DB::alteration_message('SKIPPING ' . $obj->ClassName . ' as seen in (' . $title . ') as class does not exist', 'deleted');
                             continue;
                         }

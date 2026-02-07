@@ -2,8 +2,6 @@
 
 namespace Sunnysideup\TemplateOverview\Api\Providers;
 
-use SilverStripe\Core\ClassInfo;
-use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
 use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 
