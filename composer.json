@@ -26,7 +26,8 @@
     "require": {
         "silverstripe/cms": "^6.0",
         "guzzlehttp/guzzle": "^6.0 || ^7.0",
-        "sebastian/diff": "*"
+        "sebastian/diff": "*",
+        "sunnysideup/silverstripe-4-5-compatibility": "dev-main"
     },
     "suggest": {
         "sebastian/diff": "Show diff for html files"
@@ -43,12 +44,5 @@
         }
     },
     "prefer-stable": true,
-    "minimum-stability": "dev",
-    "yet-to-update": {
-        "sunnysideup/silverstripe-4-5-compatibility": {
-            "section": "require",
-            "current": "dev-main",
-            "reason": "no-compatible-stable-release"
-        }
-    }
+    "minimum-stability": "dev"
 }
