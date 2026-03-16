@@ -2,8 +2,8 @@
 
 namespace Sunnysideup\TemplateOverview\Control;
 
+use SilverStripe\Model\ArrayData;
 use SilverStripe\Model\List\ArrayList;
-use SilverStripe\View\ArrayData;
 use PageController;
 use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\Assets\Image;
