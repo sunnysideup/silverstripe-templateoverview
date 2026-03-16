@@ -2,6 +2,8 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
+use SilverStripe\Control\HTTPRequest;
+use ReflectionException;
 use Exception;
 use SilverStripe\Assets\File;
 use SilverStripe\Control\Director;
@@ -63,9 +65,9 @@ class SaveAllData extends BuildTask
     private array $timeTakenAggregate = [];
 
     /**
-     * @param \SilverStripe\Control\HTTPRequest $request
+     * @param HTTPRequest $request
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function run($request)
     {
@@ -76,6 +78,7 @@ class SaveAllData extends BuildTask
         if (! Director::isDev() && ! Director::is_cli()) {
             die('you can only run this in dev mode');
         }
+
         $this->writeTableHeader();
         $dontSave = $this->Config()->get('dont_save');
         $doSave = $this->Config()->get('do_save');
@@ -85,6 +88,7 @@ class SaveAllData extends BuildTask
         if (Director::is_cli()) {
             $limit = 9999999;
         }
+
         foreach ($classes as $class) {
             // we need to keep setting this...
             Config::modify()->set(DataObject::class, 'validation_enabled', false);
@@ -97,6 +101,7 @@ class SaveAllData extends BuildTask
                     }
                 }
             }
+
             if (! empty($doSave)) {
                 $save = false;
                 foreach ($doSave as $doSaveClass) {
@@ -104,11 +109,13 @@ class SaveAllData extends BuildTask
                         $save = true;
                     }
                 }
+
                 if ($save === false) {
                     DB::alteration_message('SKIPPING (as not listed in doSave using is_a test) ' . $class, 'deleted');
                     continue;
                 }
             }
+
             DB::alteration_message('----------------- WRITING ' . $class . ' ------------------');
             $singleton = Injector::inst()->get($class);
             // space on purpose!
@@ -117,6 +124,7 @@ class SaveAllData extends BuildTask
                 if ($class::get()->count() > $limit) {
                     DB::alteration_message('SKIPPING some of ' . $class . ' as it has more than ' . $limit . ' records', 'deleted');
                 }
+
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
                 $writeCount = 0;
@@ -130,6 +138,7 @@ class SaveAllData extends BuildTask
                             DB::alteration_message('SKIPPING ' . $obj->ClassName . ' as seen in (' . $title . ') as class does not exist', 'deleted');
                             continue;
                         }
+
                         if ($obj->hasExtension(Versioned::class)) {
                             $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft() && $obj->canPublish($member);
                             $obj->writeToStage(Versioned::DRAFT);
@@ -145,10 +154,12 @@ class SaveAllData extends BuildTask
                         continue;
                     }
                 }
+
                 $action = 'write (' . $writeCount . 'x)';
                 if ($publishCount !== 0) {
                     $action .= ' and publish (' . $publishCount . 'x)';
                 }
+
                 $this->writeTableRow($type, $action, $title, $timeBefore, $writeCount);
             } else {
                 $action = 'write (not allowed)';
@@ -156,6 +167,7 @@ class SaveAllData extends BuildTask
                 $timeBefore = microtime(true);
                 $this->writeTableRow($type, $action, $title, $timeBefore);
             }
+
             $type = '<div style="color: #555;">' . $type . '</div>';
             $createdObj = null;
             if ($singleton->canCreate($member)) {
@@ -174,8 +186,9 @@ class SaveAllData extends BuildTask
                     } else {
                         $createdObj->write();
                     }
+
                     $outcome = 'ID = ' . $createdObj->ID;
-                } catch (\Exception $e) {
+                } catch (Exception) {
                     $action = 'create ERROR!!!';
                     $title = 'n/a';
                 }
@@ -185,6 +198,7 @@ class SaveAllData extends BuildTask
                 $outcome = 'n/a';
                 $timeBefore = microtime(true);
             }
+
             $this->writeTableRow($action, $type, $title . ' OUTCOME: ' . $outcome, $timeBefore);
             if ($createdObj && $createdObj->exists()) {
                 $outcome = 'DELETED ID = ' . $createdObj->ID;
@@ -205,8 +219,10 @@ class SaveAllData extends BuildTask
                 $outcome = 'n/a';
                 $timeBefore = microtime(true);
             }
+
             $this->writeTableRow($action, $type, $title . ' OUTCOME: ' . $outcome, $timeBefore);
         }
+
         $this->writeTableFooter();
         $this->writeAverage();
         DB::alteration_message('-----------------DONE ------------------');
@@ -217,6 +233,7 @@ class SaveAllData extends BuildTask
         if (Director::is_cli()) {
             return;
         }
+
         $this->output(
             '
             <style>
@@ -283,6 +300,7 @@ class SaveAllData extends BuildTask
         if ($divider < 1) {
             $divider = 1;
         }
+
         $timeTaken = round(($timeAfter - $timeBefore) / $divider, 2);
         $this->timeTakenAggregate[] = $timeTaken;
         $colour = 'transparent';
@@ -298,6 +316,7 @@ class SaveAllData extends BuildTask
         } else {
             $timeTaken .= 's';
         }
+
         $this->output(
             '
             <tr>

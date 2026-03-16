@@ -21,6 +21,7 @@ class AllLinksPages extends AllLinksProviderBase
         } else {
             Versioned::set_stage(Versioned::LIVE);
         }
+
         //first() will return null or the object
         $return = [];
         $siteTreeClassNames = $this->getListOfAllClasses();

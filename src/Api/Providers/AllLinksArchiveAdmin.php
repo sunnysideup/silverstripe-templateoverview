@@ -67,7 +67,7 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
                         $method = 'do-not-use';
                     }
 
-                    if (false !== strpos($modelAdminLink, $test)) {
+                    if (str_contains((string) $modelAdminLink, (string) $test)) {
                         $exceptionMethod = $method;
                     }
                 }
@@ -110,20 +110,21 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
             $list = $list
                 ->leftJoin(
                     $draftTable,
-                    "\"{$baseTable}\".\"ID\" = \"{$draftTable}\".\"ID\""
+                    sprintf('"%s"."ID" = "%s"."ID"', $baseTable, $draftTable)
                 )
             ;
 
             $list = $list->leftJoin(
                 $liveTable,
-                "\"{$baseTable}\".\"ID\" = \"{$liveTable}\".\"ID\""
+                sprintf('"%s"."ID" = "%s"."ID"', $baseTable, $liveTable)
             );
 
-            $list = $list->where("\"{$draftTable}\".\"ID\" IS NULL");
+            $list = $list->where(sprintf('"%s"."ID" IS NULL', $draftTable));
             $list = $list->shuffle();
 
             return $list->limit($this->getNumberOfExamples());
         }
+
         return null;
     }
 }

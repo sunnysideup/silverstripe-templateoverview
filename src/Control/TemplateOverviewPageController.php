@@ -2,6 +2,8 @@
 
 namespace Sunnysideup\TemplateOverview\Control;
 
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\View\ArrayData;
 use PageController;
 use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\Assets\Image;
@@ -11,17 +13,14 @@ use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
-use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
 use SilverStripe\View\SSViewer;
-use Sunnysideup\PrettyPhoto\PrettyPhoto;
 use Sunnysideup\TemplateOverview\Api\SiteTreeDetails;
 use Sunnysideup\TemplateOverview\Api\TemplateOverviewArrayMethods;
 
@@ -148,7 +147,7 @@ class TemplateOverviewPageController extends PageController
                         $potentialImage = $potentialImage['to'] ?? '';
                     }
 
-                    $potentialImage = (explode('.', $potentialImage))[0];
+                    $potentialImage = (explode('.', (string) $potentialImage))[0];
                     if (class_exists($potentialImage)) {
                         $innerSingleton = Injector::inst()->get($potentialImage);
                         if ($innerSingleton instanceof $classWeAreLookingFor) {
@@ -165,7 +164,7 @@ class TemplateOverviewPageController extends PageController
     /**
      * returns a list of all (SiteTree) Classes.
      *
-     * @return ArrayList
+     * @return \SilverStripe\Model\List\ArrayList
      */
     public function ListOfAllClasses()
     {
@@ -229,6 +228,7 @@ class TemplateOverviewPageController extends PageController
         } else {
             return Security::permissionFailure($this, 'Please login to access this list');
         }
+
         return null;
     }
 
@@ -236,7 +236,7 @@ class TemplateOverviewPageController extends PageController
      * @param SiteTree $obj
      * @param int      $count
      *
-     * @return ArrayData
+     * @return \SilverStripe\Model\ArrayData
      */
     protected function createPageObject($obj, $count)
     {
@@ -246,6 +246,7 @@ class TemplateOverviewPageController extends PageController
         } else {
             $breadCrumbs = '';
         }
+
         $canCreateString = ($obj->canCreate() ? 'Yes' : 'No');
         $isAdmin = Permission::check('ADMIN');
         $listArray = [];
@@ -259,7 +260,7 @@ class TemplateOverviewPageController extends PageController
         $listArray['Title'] = $obj->getTitle();
         $listArray['LiveLink'] = $obj->hasMethod('Link') ? str_replace('?stage=Stage', '', (string) $obj->Link()) : 'please-add-Link-method';
         $listArray['PreviewLink'] = $obj->hasMethod('PreviewLink') ? $obj->PreviewLink() : 'please-add-PreviewLink-method';
-        $listArray['CMSEditLink'] = $obj->hasMethod('CMSEditLink') ? $obj->CMSEditLink() : 'please-add-CMSEditLink-method';
+        $listArray['CMSEditLink'] = $obj->hasMethod('CMSEditLink') ? $obj->getCMSEditLink() : 'please-add-CMSEditLink-method';
         $listArray['MoreCanBeCreated'] = $isAdmin ? $canCreateString : 'Please login as ADMIN to see this value';
         $listArray['AllowedChildren'] = 'none';
         $listArray['AllowedActions'] = 'none';
@@ -270,13 +271,14 @@ class TemplateOverviewPageController extends PageController
             if (count($children) > 0) {
                 $listArray['AllowedChildren'] = implode(', ', $children);
             }
+
             $actions = TemplateOverviewArrayMethods::get_best_array_keys($obj->Config()->get('allowed_actions'));
             if ($actions !== []) {
                 $listArray['AllowedActions'] = implode(', ', $actions);
             }
         }
 
-        return new ArrayData($listArray);
+        return ArrayData::create($listArray);
     }
 
     protected function getIcon($obj): string
@@ -296,7 +298,7 @@ class TemplateOverviewPageController extends PageController
             $icon = 'font-page';
         }
 
-        if (false === strpos('.', $icon)) {
+        if (!str_contains('.', $icon)) {
             // $icon = str_replace('font-icon-', 'fa-', $icon);
         }
 

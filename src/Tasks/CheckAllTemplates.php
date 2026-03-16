@@ -2,16 +2,17 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\ArrayData;
+use SilverStripe\Model\ModelData;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\ORM\ArrayList;
 use SilverStripe\Security\Permission;
-use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
 use SilverStripe\View\SSViewer;
-use SilverStripe\View\ViewableData;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 
 class CheckAllTemplates extends BuildTask
@@ -28,7 +29,7 @@ class CheckAllTemplates extends BuildTask
      * 1. check on url specified in GET variable.
      * 2. create a list of urls to check.
      *
-     * @param \SilverStripe\Control\HTTPRequest $request
+     * @param HTTPRequest $request
      */
     public function run($request)
     {
@@ -39,6 +40,7 @@ class CheckAllTemplates extends BuildTask
         if (! Permission::check('ADMIN')) {
             die('Please <a href="/Security/login/?BackURL=/dev/tasks/smoketest/">log in</a> first.');
         }
+
         $obj = Injector::inst()->get(AllLinks::class);
 
         if (! empty($_GET['limit'])) {
@@ -60,6 +62,7 @@ class CheckAllTemplates extends BuildTask
 
             return;
         }
+
         if (! empty($_GET['sitemaperrors'])) {
             $this->sitemapErrorsOutput($obj);
 
@@ -101,10 +104,10 @@ class CheckAllTemplates extends BuildTask
         Requirements::javascript('sunnysideup/templateoverview:client/javascript/checkalltemplates.js');
         Requirements::themedCSS('client/css/checkalltemplates');
 
-        $template = new SSViewer('CheckAllTemplates');
+        $template = SSViewer::create('CheckAllTemplates');
 
         echo $template->process(
-            ViewableData::create(),
+            ModelData::create(),
             [
                 'Title' => $this->title,
                 'Links' => $links,

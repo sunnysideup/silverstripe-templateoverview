@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
@@ -22,7 +23,7 @@ class CheckAllTemplatesFromCli extends BuildTask
      * 1. check on url specified in GET variable.
      * 2. create a list of urls to check.
      *
-     * @param \SilverStripe\Control\HTTPRequest $request
+     * @param HTTPRequest $request
      */
     public function run($request)
     {
@@ -31,14 +32,16 @@ class CheckAllTemplatesFromCli extends BuildTask
         if (! Director::is_cli()) {
             die('Only run from CLI');
         }
+
         $obj = Injector::inst()->get(AllLinks::class);
 
         $allLinks = $obj->getAllLinks();
-        $controller = new CheckAllTemplatesResponseController();
+        $controller = CheckAllTemplatesResponseController::create();
         foreach ($allLinks['allNonCMSLinks'] as $link) {
             $testLink = $this->createTestLink($link, false);
             print_r($controller->testOneInner($testLink, false));
         }
+
         foreach ($allLinks['allCMSLinks'] as $link) {
             $testLink = $this->createTestLink($link, true);
             print_r($controller->testOneInner($testLink, false));

@@ -54,7 +54,7 @@ class W3cValidateApi
                     $errorDescription .= '<ul style="display: none;"><li>' . implode('</li><li>', $this->errorList) . '</li></ul>';
                 }
             } else {
-                $errorDescription .= '<a href="' . $this->baseURL . '?uri=' . urlencode($uri) . '">check</a>';
+                $errorDescription .= '<a href="' . $this->baseURL . '?uri=' . urlencode((string) $uri) . '">check</a>';
             }
         }
 
@@ -141,7 +141,7 @@ class W3cValidateApi
                 //message
                 $nodes = $node->xpath('m:message');
                 $message = strval($nodes[0]);
-                $this->errorList[] = $message . "({$line},{$col})";
+                $this->errorList[] = $message . sprintf('(%s,%s)', $line, $col);
             }
         }
 

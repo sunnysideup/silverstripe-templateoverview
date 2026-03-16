@@ -2,13 +2,13 @@
 
 namespace Sunnysideup\TemplateOverview\Api;
 
+use SilverStripe\Model\List\ArrayList;
 use SilverStripe\CMS\Model\RedirectorPage;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\CMS\Model\VirtualPage;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\ORM\ArrayList;
 
 class SiteTreeDetails
 {
@@ -50,7 +50,7 @@ class SiteTreeDetails
         if (self::$list_of_all_classes === null) {
             $this->getArrayOfAllClasses();
 
-            self::$list_of_all_classes = new ArrayList();
+            self::$list_of_all_classes = ArrayList::create();
 
             foreach ($this->arrayOfAllClasses as $item) {
                 self::$list_of_all_classes->push($item);

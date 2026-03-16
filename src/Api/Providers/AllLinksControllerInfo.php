@@ -2,6 +2,8 @@
 
 namespace Sunnysideup\TemplateOverview\Api\Providers;
 
+use Page;
+use Error;
 use ReflectionClass;
 use ReflectionMethod;
 use SilverStripe\Admin\LeftAndMain;
@@ -68,7 +70,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         $finalArray = [];
         $classes = ClassInfo::subclassesFor(DataObject::class, false);
         foreach ($classes as $className) {
-            if (\Page::class !== $className) {
+            if (Page::class !== $className) {
                 $classObject = $className::get()->first();
                 if ($classObject && $classObject->hasMethod('templateOverviewTests')) {
                     $array = $classObject->templateOverviewTests();
@@ -103,11 +105,11 @@ class AllLinksControllerInfo extends AllLinksProviderBase
                 $link = '???';
             }
 
-            if ('/' !== substr((string) $link, -1)) {
+            if (!str_ends_with((string) $link, '/')) {
                 $link .= '/';
             }
 
-            if ('/' !== substr((string) $link, 0, 1)) {
+            if (!str_starts_with((string) $link, '/')) {
                 $link = '/' . $link;
             }
 
@@ -216,7 +218,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             //match to filter
             $filterMatch = ! (bool) count($this->nameSpaces);
             foreach ($this->nameSpaces as $filter) {
-                if (false !== strpos($className, $filter)) {
+                if (str_contains($className, (string) $filter)) {
                     $filterMatch = true;
                 }
             }
@@ -256,7 +258,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             if (! isset($this->classObjects[$className])) {
                 try {
                     $this->classObjects[$className] = Injector::inst()->get($className);
-                } catch (\Error $error) {
+                } catch (Error) {
                     $this->classObjects[$className] = null;
                 }
             }
@@ -363,7 +365,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             foreach (['Link', 'getLink'] as $method) {
                 if ($object->hasMethod($method)) {
                     $tmp = $object->$method();
-                    $tmpArray = explode('?', $tmp);
+                    $tmpArray = explode('?', (string) $tmp);
 
                     return $tmpArray[0];
                 }
@@ -384,7 +386,7 @@ class AllLinksControllerInfo extends AllLinksProviderBase
 
         $route = array_search($className, $this->routes, true);
         if ($route) {
-            $routeArray = explode('//', $route);
+            $routeArray = explode('//', (string) $route);
 
             return $routeArray[0];
         }

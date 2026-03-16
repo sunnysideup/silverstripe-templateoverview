@@ -117,7 +117,7 @@ class AllLinks extends AllLinksProviderBase
 
     public static function is_admin_link(string $link): bool
     {
-        return 'admin' === substr(ltrim($link, '/'), 0, 5);
+        return str_starts_with(ltrim($link, '/'), 'admin');
     }
 
     /**
@@ -140,17 +140,19 @@ class AllLinks extends AllLinksProviderBase
         if ($this->numberOfExamples === 0) {
             $this->numberOfExamples = $this->Config()->number_of_examples;
         }
+
         if ($this->includeFrontEnd) {
             $array1 = $this->config()->get('custom_links');
             $array2 = $this->getCustomisedLinks();
             foreach (array_merge($array1, $array2) as $link) {
-                $link = '/' . ltrim($link, '/') . '/';
+                $link = '/' . ltrim((string) $link, '/') . '/';
                 if (self::is_admin_link($link)) {
                     $this->customCMSLinks[] = $link;
                 } else {
                     $this->customNonCMSLinks[] = $link;
                 }
             }
+
             $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->customNonCMSLinks);
             $this->pagesOnFrontEnd = $this->ListOfPagesLinks();
             $this->dataObjectsOnFrontEnd = $this->ListOfDataObjectsLinks(false);
@@ -158,6 +160,7 @@ class AllLinks extends AllLinksProviderBase
             $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->pagesOnFrontEnd);
             $this->allNonCMSLinks = $this->addToArrayOfLinks($this->allNonCMSLinks, $this->dataObjectsOnFrontEnd);
         }
+
         sort($this->allNonCMSLinks);
 
         if ($this->includeBackEnd) {
@@ -235,6 +238,7 @@ class AllLinks extends AllLinksProviderBase
     {
         $obj = Injector::inst()->get(AllLinksControllerInfo::class);
         $obj->setNumberOfExamples($this->getNumberOfExamples());
+
         $list = $obj->getAllLinksInner();
         $list = $obj->getLinksAndActions();
 
@@ -322,16 +326,18 @@ class AllLinks extends AllLinksProviderBase
                 if (strpos($pushItem, '.') > (strlen($pushItem) - 6)) {
                     $pushItem = rtrim($pushItem, '/');
                 }
+
                 if (str_starts_with($pushItem, 'http') || str_starts_with($pushItem, '//')) {
                     continue;
                 } elseif ('' !== $pushItem) {
                     if (! empty($excludeList)) {
                         foreach ($excludeList as $excludeItem) {
-                            if (false !== stripos($pushItem, $excludeItem)) {
+                            if (false !== stripos($pushItem, (string) $excludeItem)) {
                                 continue 2;
                             }
                         }
                     }
+
                     if (! in_array($pushItem, $array, true)) {
                         $array[] = $pushItem;
                     }

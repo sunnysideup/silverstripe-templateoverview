@@ -26,7 +26,7 @@ class ProvideTestUser implements Flushable
      */
     private $member;
 
-    private const FAKE_DOMAIN_NAME = 'templateoverview.com.nz';
+    private const string FAKE_DOMAIN_NAME = 'templateoverview.com.nz';
 
     private static $use_default_admin = false;
 
@@ -68,9 +68,11 @@ class ProvideTestUser implements Flushable
             } else {
                 self::$username = bin2hex(random_bytes(48)) . '@' . self::FAKE_DOMAIN_NAME;
             }
+
             $hashArray = explode('@', (string) self::$username);
             self::get_cache()->set('username', $hashArray[0]);
         }
+
         return self::$username;
     }
 
@@ -111,6 +113,7 @@ class ProvideTestUser implements Flushable
         $this->member->LockedOutUntil = '';
         $this->member->FailedLoginCount = 0;
         $this->member->write();
+
         $auth = new MemberAuthenticator();
         $result = $auth->checkPassword($this->member, self::get_password());
         if (! $result->isValid()) {

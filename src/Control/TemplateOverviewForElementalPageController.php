@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\TemplateOverview\Control;
 
+use Override;
 use Sunnysideup\TemplateOverview\Api\ElementalDetails;
 
 /**
@@ -15,6 +16,7 @@ class TemplateOverviewForElementalPageController extends TemplateOverviewPageCon
 
     private static $base_class_provider = ElementalDetails::class;
 
+    #[Override]
     public function IsElemental(): bool
     {
         return true;
