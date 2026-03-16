@@ -25,6 +25,7 @@ class AllLinksDataObjects extends AllLinksProviderBase
         } else {
             Versioned::set_stage(Versioned::LIVE);
         }
+
         foreach ($list as $class) {
             if (! in_array($class, $exceptForArray, true) && $this->isValidClass($class)) {
                 $objects = $class::get()
@@ -36,21 +37,27 @@ class AllLinksDataObjects extends AllLinksProviderBase
                         if ($obj->hasMethod('CMSEditLink')) {
                             $return[] = $obj->CMSEditLink();
                         }
+
                         if ($obj->hasMethod('getCMSEditLink')) {
                             $return[] = $obj->getCMSEditLink();
                         }
+
                         if ($obj->hasMethod('EditLink')) {
                             $return[] = $obj->EditLink();
                         }
+
                         if ($obj->hasMethod('getEditLink')) {
                             $return[] = $obj->getEditLink();
                         }
+
                         if ($obj->hasMethod('CMSAddLink')) {
                             $return[] = $obj->CMSAddLink();
                         }
+
                         if ($obj->hasMethod('CMSListLink')) {
                             $return[] = $obj->CMSListLink();
                         }
+
                         if ($obj->hasMethod('PreviewLink')) {
                             $return[] = $obj->PreviewLink();
                         }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Sunnysideup\TemplateOverview\Api;
 
 use ReflectionClass;
-use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;

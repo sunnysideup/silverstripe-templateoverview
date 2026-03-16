@@ -120,7 +120,7 @@ class CheckAllTemplatesResponseController extends Controller
 
     protected function isJson($string)
     {
-        $obj = json_decode($string);
+        $obj = json_decode((string) $string);
 
         return JSON_ERROR_NONE === json_last_error() && 'object' === gettype($obj);
     }
@@ -216,10 +216,11 @@ class CheckAllTemplatesResponseController extends Controller
         if (Director::isDev()) {
             $content .= '<p><strong>TEST URL:</strong> ' . $testURL . '</p>';
         }
+
         $content .= '<p><strong>URL:</strong> ' . $url . '</p>';
         $content .= '<p><strong>Status:</strong> ' . $data['status'] . '</p>';
         $content .= '<p><strong>HTTP response:</strong> ' . $data['httpResponse'] . '</p>';
-        $content .= '<p><strong>Content:</strong> ' . htmlspecialchars($data['content']) . '</p>';
+        $content .= '<p><strong>Content:</strong> ' . htmlspecialchars((string) $data['content']) . '</p>';
         $content .= '<p><strong>Response time:</strong> ' . $data['responseTime'] . '</p>';
         $content .= '<p><strong>Type:</strong> ' . $data['type'] . '</p>';
 
@@ -286,7 +287,7 @@ class CheckAllTemplatesResponseController extends Controller
                 $style = 'float: left;';
                 if ($this->isSuccess && ! $isCMSLink && $this->Config()->create_diff) {
                     $otherURL = $comparisonBaseURL . $testURL;
-                    $testContent = str_replace(rtrim(Director::absoluteBaseURL(), '/'), rtrim($comparisonBaseURL, '/'), $this->rawResponse);
+                    $testContent = str_replace(rtrim(Director::absoluteBaseURL(), '/'), rtrim((string) $comparisonBaseURL, '/'), $this->rawResponse);
                     $rawResponseOtherSite = @file_get_contents($otherURL);
                     if (class_exists(Differ::class)) {
                         $diff = (new Differ())->diff(

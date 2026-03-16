@@ -2,74 +2,86 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\ArrayData;
+use SilverStripe\Model\ModelData;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\ORM\ArrayList;
+use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\Security\Permission;
-use SilverStripe\View\ArrayData;
 use SilverStripe\View\Requirements;
 use SilverStripe\View\SSViewer;
-use SilverStripe\View\ViewableData;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 class CheckAllTemplates extends BuildTask
 {
-    protected $title = 'SMOKETEST: Check URLs for HTTP errors';
+    protected static string $commandName = 'smoketest';
 
-    protected $description = 'Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited in ModelAdmin, checking for HTTP response errors (e.g. 404). Click start to run.';
+    protected string $title = 'SMOKETEST: Check URLs for HTTP errors';
 
-    private static $segment = 'smoketest';
+    protected static string $description = 'Will go through main URLs (all page types (e.g Page, MyPageTemplate), all page types in CMS (e.g. edit Page, edit HomePage, new MyPage) and all models being edited in ModelAdmin, checking for HTTP response errors (e.g. 404). Click start to run.';
 
-    /**
-     * Main function
-     * has two streams:
-     * 1. check on url specified in GET variable.
-     * 2. create a list of urls to check.
-     *
-     * @param \SilverStripe\Control\HTTPRequest $request
-     */
-    public function run($request)
+    public function getOptions(): array
+    {
+        return array_merge(
+            parent::getOptions(),
+            [
+                ['limit', 'l', InputOption::VALUE_OPTIONAL, 'Limit number of examples'],
+                ['nofrontend', 'f', InputOption::VALUE_NONE, 'Exclude frontend links'],
+                ['nobackend', 'b', InputOption::VALUE_NONE, 'Exclude backend links'],
+                ['htmllist', 't', InputOption::VALUE_NONE, 'Render HTML list output'],
+                ['sitemaperrors', 's', InputOption::VALUE_NONE, 'Show sitemap errors'],
+            ]
+        );
+    }
+
+    protected function execute(InputInterface $input, PolyOutput $output): int
     {
         ini_set('max_execution_time', 3000);
 
-        //we have this check here so that even in dev mode you have to log in.
-        //because if you do not log in, the test will not work.
-        if (! Permission::check('ADMIN')) {
-            die('Please <a href="/Security/login/?BackURL=/dev/tasks/smoketest/">log in</a> first.');
+        if (!Permission::check('ADMIN')) {
+            $output->writeln('Please log in as an administrator first.');
+            return Command::FAILURE;
         }
+
         $obj = Injector::inst()->get(AllLinks::class);
 
-        if (! empty($_GET['limit'])) {
-            $obj->setNumberOfExamples((int) $_GET['limit']);
+        $limit = $input->getOption('limit');
+        if ($limit !== null) {
+            $obj->setNumberOfExamples((int) $limit);
         }
 
-        if (! empty($_GET['nofrontend'])) {
+        if ($input->getOption('nofrontend')) {
             $obj->setIncludeFrontEnd(false);
         }
 
-        if (! empty($_GET['nobackend'])) {
+        if ($input->getOption('nobackend')) {
             $obj->setIncludeBackEnd(false);
         }
 
         $allLinks = $obj->getAllLinks();
 
-        if (! empty($_GET['htmllist'])) {
-            $this->htmlListOutput($allLinks);
-
-            return;
-        }
-        if (! empty($_GET['sitemaperrors'])) {
-            $this->sitemapErrorsOutput($obj);
-
-            return;
+        if ($input->getOption('htmllist')) {
+            $this->htmlListOutput($allLinks, $output);
+            return Command::SUCCESS;
         }
 
-        $this->defaultOutput($allLinks);
+        if ($input->getOption('sitemaperrors')) {
+            $this->sitemapErrorsOutput($obj, $output);
+            return Command::SUCCESS;
+        }
+
+        $this->defaultOutput($allLinks, $output);
+
+        return Command::SUCCESS;
     }
 
-    protected function defaultOutput(array $allLinks)
+    protected function defaultOutput(array $allLinks, PolyOutput $output)
     {
         $count = 0;
         $sections = ['allNonCMSLinks', 'allCMSLinks'];
@@ -101,17 +113,19 @@ class CheckAllTemplates extends BuildTask
         Requirements::javascript('sunnysideup/templateoverview:client/javascript/checkalltemplates.js');
         Requirements::themedCSS('client/css/checkalltemplates');
 
-        $template = new SSViewer('CheckAllTemplates');
+        $template = SSViewer::create('CheckAllTemplates');
 
-        echo $template->process(
-            ViewableData::create(),
-            [
-                'Title' => $this->title,
-                'Links' => $links,
-                'OtherLinks' => $otherLinks,
-                'AbsoluteBaseURLMinusSlash' => $this->baseURL(),
-                'HasEnvironmentVariable' => ((bool) Environment::getEnv('SS_ALLOW_SMOKE_TEST')),
-            ]
+        $output->writeln(
+            $template->process(
+                ModelData::create(),
+                [
+                    'Title' => $this->title,
+                    'Links' => $links,
+                    'OtherLinks' => $otherLinks,
+                    'AbsoluteBaseURLMinusSlash' => $this->baseURL(),
+                    'HasEnvironmentVariable' => ((bool) Environment::getEnv('SS_ALLOW_SMOKE_TEST')),
+                ]
+            )
         );
     }
 
@@ -120,7 +134,7 @@ class CheckAllTemplates extends BuildTask
         return rtrim(Director::absoluteBaseURL(), '/');
     }
 
-    protected function htmlListOutput(array $allLinks)
+    protected function htmlListOutput(array $allLinks, PolyOutput $output)
     {
         $base = $this->baseURL();
         $array = [];
@@ -140,22 +154,22 @@ class CheckAllTemplates extends BuildTask
 
         if ([] !== $array) {
             ksort($array);
-            echo '<ol><li>' . implode('</li><li>', $array) . '</li></ol>';
+            $output->writeln('<ol><li>' . implode('</li><li>', $array) . '</li></ol>');
         } else {
-            echo 'No links available';
+            $output->writeln('No links available');
         }
     }
 
-    protected function sitemapErrorsOutput($obj)
+    protected function sitemapErrorsOutput($obj, PolyOutput $output)
     {
         $this->baseURL();
         $array = $obj->getErrorsInGoogleSitemap();
         if (count($array) > 0) {
             foreach ($array as $error) {
-                echo '<li>' . $error . '</li>';
+                $output->writeln('<li>' . $error . '</li>');
             }
         } else {
-            echo 'No errors found';
+            $output->writeln('No errors found');
         }
     }
 }

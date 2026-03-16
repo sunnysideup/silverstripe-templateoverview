@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
+use ReflectionException;
 use Exception;
 use SilverStripe\Assets\File;
 use SilverStripe\Control\Director;
@@ -10,6 +11,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\MFA\Model\RegisteredMethod;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
@@ -24,17 +26,20 @@ use SilverStripe\UserForms\Model\EditableFormField;
 use SilverStripe\Versioned\ChangeSet;
 use SilverStripe\Versioned\ChangeSetItem;
 use SilverStripe\Versioned\Versioned;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * A task to manually flush InterventionBackend cache.
  */
 class SaveAllData extends BuildTask
 {
-    protected $title = 'Write all dataobjects - use with extreme caution.';
+    protected static string $commandName = 'write-all-data-objects';
 
-    protected $description = 'for testing purposes only';
+    protected string $title = 'Write all dataobjects - use with extreme caution.';
 
-    private static $segment = 'write-all-data-objects';
+    protected static string $description = 'for testing purposes only';
 
     private static $dont_save = [
         File::class,
@@ -62,12 +67,22 @@ class SaveAllData extends BuildTask
 
     private array $timeTakenAggregate = [];
 
+    public function getOptions(): array
+    {
+        return array_merge(
+            parent::getOptions(),
+            [
+                ['limit', 'l', InputOption::VALUE_OPTIONAL, 'Limit number of records written'],
+                ['always-write', 'w', InputOption::VALUE_NONE, 'Force write even without permission'],
+                ['always-publish', 'p', InputOption::VALUE_NONE, 'Force publish when versioned'],
+            ]
+        );
+    }
+
     /**
-     * @param \SilverStripe\Control\HTTPRequest $request
-     *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    public function run($request)
+    protected function execute(InputInterface $input, PolyOutput $output): int
     {
         $member = Injector::inst()->get(DefaultAdminService::class)->findOrCreateDefaultAdmin();
         Environment::increaseTimeLimitTo(600);
@@ -76,15 +91,18 @@ class SaveAllData extends BuildTask
         if (! Director::isDev() && ! Director::is_cli()) {
             die('you can only run this in dev mode');
         }
+
+        $this->currentOutput = $output;
         $this->writeTableHeader();
         $dontSave = $this->Config()->get('dont_save');
         $doSave = $this->Config()->get('do_save');
-        $limit = $this->Config()->get('limit');
-        $alwaysWrite = $this->Config()->get('always_write');
-        $alwaysPublish = $this->Config()->get('always_publish');
+        $limit = $input->getOption('limit') ?? $this->Config()->get('limit');
+        $alwaysWrite = $input->getOption('always-write') ?: $this->Config()->get('always_write');
+        $alwaysPublish = $input->getOption('always-publish') ?: $this->Config()->get('always_publish');
         if (Director::is_cli()) {
             $limit = 9999999;
         }
+
         foreach ($classes as $class) {
             // we need to keep setting this...
             Config::modify()->set(DataObject::class, 'validation_enabled', false);
@@ -92,11 +110,12 @@ class SaveAllData extends BuildTask
             if (! empty($dontSave)) {
                 foreach ($dontSave as $dontSaveClass) {
                     if (is_a($class, $dontSaveClass, true)) {
-                        DB::alteration_message('SKIPPING ' . $class . ' (as listed in dontSave using is_a test)', 'deleted');
+                $this->output('SKIPPING ' . $class . ' (as listed in dontSave using is_a test)');
                         continue 2;
                     }
                 }
             }
+
             if (! empty($doSave)) {
                 $save = false;
                 foreach ($doSave as $doSaveClass) {
@@ -104,19 +123,22 @@ class SaveAllData extends BuildTask
                         $save = true;
                     }
                 }
+
                 if ($save === false) {
-                    DB::alteration_message('SKIPPING (as not listed in doSave using is_a test) ' . $class, 'deleted');
+                    $this->output('SKIPPING (as not listed in doSave using is_a test) ' . $class);
                     continue;
                 }
             }
-            DB::alteration_message('----------------- WRITING ' . $class . ' ------------------');
+
+            $this->output('----------------- WRITING ' . $class . ' ------------------');
             $singleton = Injector::inst()->get($class);
             // space on purpose!
             $type = '<strong>' . $singleton->i18n_singular_name() . '</strong> <br />' . $singleton->ClassName;
             if ($singleton->canEdit($member) || $alwaysWrite) {
                 if ($class::get()->count() > $limit) {
-                    DB::alteration_message('SKIPPING some of ' . $class . ' as it has more than ' . $limit . ' records', 'deleted');
+                    $this->output('SKIPPING some of ' . $class . ' as it has more than ' . $limit . ' records');
                 }
+
                 $list = $class::get()->orderBy('RAND()')->limit($limit);
                 $timeBefore = microtime(true);
                 $writeCount = 0;
@@ -127,9 +149,10 @@ class SaveAllData extends BuildTask
                         $writeCount++;
                         $title = (string) $obj->getTitle() ?: (string) $obj->ID;
                         if (! $obj->ClassName || ! class_exists($obj->ClassName)) {
-                            DB::alteration_message('SKIPPING ' . $obj->ClassName . ' as seen in (' . $title . ') as class does not exist', 'deleted');
+                            $this->output('SKIPPING ' . $obj->ClassName . ' as seen in (' . $title . ') as class does not exist');
                             continue;
                         }
+
                         if ($obj->hasExtension(Versioned::class)) {
                             $isPublished = $obj->isPublished() && ! $obj->isModifiedOnDraft() && $obj->canPublish($member);
                             $obj->writeToStage(Versioned::DRAFT);
@@ -141,21 +164,24 @@ class SaveAllData extends BuildTask
                             $obj->write();
                         }
                     } catch (Exception $e) {
-                        DB::alteration_message('SKIPPING ' . $obj->ClassName . ' as seen in (' . $title . ') due to error: ' . $e->getMessage(), 'deleted');
+                        $this->output('SKIPPING ' . $obj->ClassName . ' as seen in (' . $title . ') due to error: ' . $e->getMessage());
                         continue;
                     }
                 }
+
                 $action = 'write (' . $writeCount . 'x)';
                 if ($publishCount !== 0) {
                     $action .= ' and publish (' . $publishCount . 'x)';
                 }
-                $this->writeTableRow($type, $action, $title, $timeBefore, $writeCount);
+
+            $this->writeTableRow($type, $action, $title, $timeBefore, $writeCount);
             } else {
                 $action = 'write (not allowed)';
                 $title = 'n/a';
                 $timeBefore = microtime(true);
-                $this->writeTableRow($type, $action, $title, $timeBefore);
+            $this->writeTableRow($type, $action, $title, $timeBefore);
             }
+
             $type = '<div style="color: #555;">' . $type . '</div>';
             $createdObj = null;
             if ($singleton->canCreate($member)) {
@@ -174,8 +200,9 @@ class SaveAllData extends BuildTask
                     } else {
                         $createdObj->write();
                     }
+
                     $outcome = 'ID = ' . $createdObj->ID;
-                } catch (\Exception $e) {
+                } catch (Exception) {
                     $action = 'create ERROR!!!';
                     $title = 'n/a';
                 }
@@ -185,6 +212,7 @@ class SaveAllData extends BuildTask
                 $outcome = 'n/a';
                 $timeBefore = microtime(true);
             }
+
             $this->writeTableRow($action, $type, $title . ' OUTCOME: ' . $outcome, $timeBefore);
             if ($createdObj && $createdObj->exists()) {
                 $outcome = 'DELETED ID = ' . $createdObj->ID;
@@ -205,11 +233,15 @@ class SaveAllData extends BuildTask
                 $outcome = 'n/a';
                 $timeBefore = microtime(true);
             }
+
             $this->writeTableRow($action, $type, $title . ' OUTCOME: ' . $outcome, $timeBefore);
         }
+
         $this->writeTableFooter();
         $this->writeAverage();
-        DB::alteration_message('-----------------DONE ------------------');
+        $this->output('-----------------DONE ------------------');
+
+        return Command::SUCCESS;
     }
 
     protected function writeTableHeader()
@@ -217,6 +249,7 @@ class SaveAllData extends BuildTask
         if (Director::is_cli()) {
             return;
         }
+
         $this->output(
             '
             <style>
@@ -265,9 +298,10 @@ class SaveAllData extends BuildTask
 
     protected function writeTableFooter()
     {
-        $this->output('
-            </tbody>
-            </teable>');
+        $this->output(
+            '</tbody>
+            </table>'
+        );
     }
 
     protected function writeAverage()
@@ -283,6 +317,7 @@ class SaveAllData extends BuildTask
         if ($divider < 1) {
             $divider = 1;
         }
+
         $timeTaken = round(($timeAfter - $timeBefore) / $divider, 2);
         $this->timeTakenAggregate[] = $timeTaken;
         $colour = 'transparent';
@@ -298,6 +333,7 @@ class SaveAllData extends BuildTask
         } else {
             $timeTaken .= 's';
         }
+
         $this->output(
             '
             <tr>
@@ -311,10 +347,12 @@ class SaveAllData extends BuildTask
 
     protected function output(string $string)
     {
-        if (Director::is_cli()) {
-            echo strip_tags($string) . PHP_EOL;
-        } else {
-            echo $string;
+        $message = Director::is_cli() ? strip_tags($string) : $string;
+        if ($this->currentOutput) {
+            $this->currentOutput->writeln($message);
+            return;
         }
+
+        echo $message . PHP_EOL;
     }
 }

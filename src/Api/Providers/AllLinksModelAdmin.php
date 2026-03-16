@@ -82,7 +82,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
                     $method = 'do-not-use';
                 }
 
-                if (false !== strpos($modelAdminLink, $test)) {
+                if (str_contains($modelAdminLink, (string) $test)) {
                     $exceptionMethod = $method;
                 }
             }

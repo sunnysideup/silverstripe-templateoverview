@@ -59,6 +59,7 @@ class LoginAndRedirect extends Controller
             } else {
                 $test = in_array($this->request->getIP(), $allowedIPs, true);
             }
+
             if ($test) {
                 return Director::isDev();
             }

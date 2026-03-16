@@ -5,44 +5,42 @@ namespace Sunnysideup\TemplateOverview\Tasks;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\PolyExecution\PolyOutput;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
 use Sunnysideup\TemplateOverview\Api\AllLinks;
 use Sunnysideup\TemplateOverview\Control\CheckAllTemplatesResponseController;
 
 class CheckAllTemplatesFromCli extends BuildTask
 {
-    protected $title = 'CLI ONLY SMOKETEST: Check URLs for errors';
+    protected static string $commandName = 'smoketest-cli';
 
-    protected $description = 'Run this task from the command line to check for HTTP response errors (e.g. 404).';
+    protected string $title = 'CLI ONLY SMOKETEST: Check URLs for errors';
 
-    private static $segment = 'smoketestcli';
+    protected static string $description = 'Run this task from the command line to check for HTTP response errors (e.g. 404).';
 
-    /**
-     * Main function
-     * has two streams:
-     * 1. check on url specified in GET variable.
-     * 2. create a list of urls to check.
-     *
-     * @param \SilverStripe\Control\HTTPRequest $request
-     */
-    public function run($request)
+    protected function execute(InputInterface $input, PolyOutput $output): int
     {
-        //we have this check here so that even in dev mode you have to log in.
-        //because if you do not log in, the test will not work.
-        if (! Director::is_cli()) {
-            die('Only run from CLI');
+        if (!Director::is_cli()) {
+            $output->writeln('Only run from CLI');
+            return Command::FAILURE;
         }
+
         $obj = Injector::inst()->get(AllLinks::class);
 
         $allLinks = $obj->getAllLinks();
-        $controller = new CheckAllTemplatesResponseController();
+        $controller = CheckAllTemplatesResponseController::create();
         foreach ($allLinks['allNonCMSLinks'] as $link) {
             $testLink = $this->createTestLink($link, false);
-            print_r($controller->testOneInner($testLink, false));
+            $output->writeln(print_r($controller->testOneInner($testLink, false), true));
         }
+
         foreach ($allLinks['allCMSLinks'] as $link) {
             $testLink = $this->createTestLink($link, true);
-            print_r($controller->testOneInner($testLink, false));
+            $output->writeln(print_r($controller->testOneInner($testLink, false), true));
         }
+
+        return Command::SUCCESS;
     }
 
     protected function createTestLink(string $link, bool $isCmsLink = false)
