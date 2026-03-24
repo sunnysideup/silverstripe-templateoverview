@@ -41,6 +41,8 @@ class SaveAllData extends BuildTask
 
     protected static string $description = 'for testing purposes only';
 
+    private $currentOutput = null;
+
     private static $dont_save = [
         File::class,
         ChangeSet::class,
@@ -349,7 +351,7 @@ class SaveAllData extends BuildTask
     {
         $message = Director::is_cli() ? strip_tags($string) : $string;
         if ($this->currentOutput) {
-            $this->currentOutput->writeln($message);
+            $this->currentOutput->writeForHtml($message);
             return;
         }
 
