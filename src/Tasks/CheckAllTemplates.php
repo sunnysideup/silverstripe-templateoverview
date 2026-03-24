@@ -115,7 +115,7 @@ class CheckAllTemplates extends BuildTask
 
         $template = SSViewer::create('CheckAllTemplates');
 
-        $output->writeln(
+        $output->writeForHtml(
             $template->process(
                 ModelData::create(),
                 [
