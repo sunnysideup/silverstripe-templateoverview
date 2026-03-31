@@ -31,11 +31,11 @@ class CheckAllTemplates extends BuildTask
         return array_merge(
             parent::getOptions(),
             [
-                ['limit', 'l', InputOption::VALUE_OPTIONAL, 'Limit number of examples'],
-                ['nofrontend', 'f', InputOption::VALUE_NONE, 'Exclude frontend links'],
-                ['nobackend', 'b', InputOption::VALUE_NONE, 'Exclude backend links'],
-                ['htmllist', 't', InputOption::VALUE_NONE, 'Render HTML list output'],
-                ['sitemaperrors', 's', InputOption::VALUE_NONE, 'Show sitemap errors'],
+                new InputOption('limit', 'l', InputOption::VALUE_OPTIONAL, 'Limit number of examples'),
+                new InputOption('nofrontend', 'f', InputOption::VALUE_NONE, 'Exclude frontend links'),
+                new InputOption('nobackend', 'b', InputOption::VALUE_NONE, 'Exclude backend links'),
+                new InputOption('htmllist', 't', InputOption::VALUE_NONE, 'Render HTML list output'),
+                new InputOption('sitemaperrors', 's', InputOption::VALUE_NONE, 'Show sitemap errors'),
             ]
         );
     }
@@ -115,7 +115,7 @@ class CheckAllTemplates extends BuildTask
 
         $template = SSViewer::create('CheckAllTemplates');
 
-        $output->writeln(
+        $output->writeForHtml(
             $template->process(
                 ModelData::create(),
                 [

@@ -26,8 +26,7 @@
     "require": {
         "silverstripe/cms": "^6.0",
         "guzzlehttp/guzzle": "^6.0 || ^7.0",
-        "sebastian/diff": "*",
-        "sunnysideup/silverstripe-4-5-compatibility": "dev-main"
+        "sebastian/diff": "*"
     },
     "suggest": {
         "sebastian/diff": "Show diff for html files"

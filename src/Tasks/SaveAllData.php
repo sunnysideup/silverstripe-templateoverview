@@ -41,6 +41,8 @@ class SaveAllData extends BuildTask
 
     protected static string $description = 'for testing purposes only';
 
+    private $currentOutput = null;
+
     private static $dont_save = [
         File::class,
         ChangeSet::class,
@@ -72,9 +74,9 @@ class SaveAllData extends BuildTask
         return array_merge(
             parent::getOptions(),
             [
-                ['limit', 'l', InputOption::VALUE_OPTIONAL, 'Limit number of records written'],
-                ['always-write', 'w', InputOption::VALUE_NONE, 'Force write even without permission'],
-                ['always-publish', 'p', InputOption::VALUE_NONE, 'Force publish when versioned'],
+                new InputOption('limit', 'l', InputOption::VALUE_OPTIONAL, 'Limit number of records written'),
+                new InputOption('always-write', 'w', InputOption::VALUE_NONE, 'Force write even without permission'),
+                new InputOption('always-publish', 'p', InputOption::VALUE_NONE, 'Force publish when versioned'),
             ]
         );
     }
@@ -349,7 +351,7 @@ class SaveAllData extends BuildTask
     {
         $message = Director::is_cli() ? strip_tags($string) : $string;
         if ($this->currentOutput) {
-            $this->currentOutput->writeln($message);
+            $this->currentOutput->writeForHtml($message);
             return;
         }
 

@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\TemplateOverview\Api;
 
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Model\List\ArrayList;
 use SilverStripe\CMS\Model\RedirectorPage;
 use SilverStripe\CMS\Model\SiteTree;
@@ -9,6 +10,7 @@ use SilverStripe\CMS\Model\VirtualPage;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\ORM\DataObject;
 
 class SiteTreeDetails
 {
@@ -69,7 +71,9 @@ class SiteTreeDetails
 
     protected function getClassList()
     {
-        return SiteTree::page_type_classes();
+        $classes = ClassInfo::getValidSubClasses(SiteTree::class);
+        DataObject::singleton(SiteTree::class)->invokeWithExtensions('updateAllowedSubClasses', $classes);
+        return $classes;
     }
 
     protected function getArrayOfAllClasses()
