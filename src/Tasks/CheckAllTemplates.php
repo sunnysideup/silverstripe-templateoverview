@@ -156,7 +156,7 @@ class CheckAllTemplates extends BuildTask
 
         if ([] !== $array) {
             ksort($array);
-            $output->writeln('<ol><li>' . implode('</li><li>', $array) . '</li></ol>');
+            $output->writeForHtml('<ol><li>' . implode('</li><li>', $array) . '</li></ol>');
         } else {
             $output->writeln('No links available');
         }
@@ -168,7 +168,7 @@ class CheckAllTemplates extends BuildTask
         $array = $obj->getErrorsInGoogleSitemap();
         if (count($array) > 0) {
             foreach ($array as $error) {
-                $output->writeln('<li>' . $error . '</li>');
+                $output->writeForHtml('<li>' . $error . '</li>');
             }
         } else {
             $output->writeln('No errors found');
