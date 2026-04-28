@@ -2,6 +2,8 @@
 
 namespace Sunnysideup\TemplateOverview\Tasks;
 
+use SilverStripe\UserForms\Model\Submission\SubmittedFileField;
+use Override;
 use ReflectionException;
 use Exception;
 use SilverStripe\Assets\File;
@@ -14,7 +16,6 @@ use SilverStripe\Dev\BuildTask;
 use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\MFA\Model\RegisteredMethod;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\DB;
 use SilverStripe\Security\DefaultAdminService;
 use SilverStripe\Security\LoginAttempt;
 use SilverStripe\Security\MemberPassword;
@@ -56,7 +57,7 @@ class SaveAllData extends BuildTask
         MemberPassword::class,
         EditableFormField::class,
         LoginAttempt::class,
-        'SilverStripe\\UserForms\\Model\\Submission\\SubmittedFileField',
+        SubmittedFileField::class,
     ];
 
     private static $limit = 100;
@@ -69,6 +70,7 @@ class SaveAllData extends BuildTask
 
     private array $timeTakenAggregate = [];
 
+    #[Override]
     public function getOptions(): array
     {
         return array_merge(

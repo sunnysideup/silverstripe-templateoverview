@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Sunnysideup\TemplateOverview\Api\Providers;
 
 use SilverStripe\Reports\Report;

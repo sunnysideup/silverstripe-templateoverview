@@ -2,6 +2,8 @@
 
 namespace Sunnysideup\TemplateOverview\Control;
 
+use Override;
+use DNADesign\Elemental\Models\BaseElement;
 use SilverStripe\Model\ArrayData;
 use SilverStripe\Model\List\ArrayList;
 use PageController;
@@ -96,6 +98,7 @@ class TemplateOverviewPageController extends PageController
         return $this->myMoreList;
     }
 
+    #[Override]
     public function Link($action = null)
     {
         $v = '/' . $this->Config()->url_segment;
@@ -164,7 +167,7 @@ class TemplateOverviewPageController extends PageController
     /**
      * returns a list of all (SiteTree) Classes.
      *
-     * @return \SilverStripe\Model\List\ArrayList
+     * @return ArrayList
      */
     public function ListOfAllClasses()
     {
@@ -184,7 +187,7 @@ class TemplateOverviewPageController extends PageController
 
     public function HasElemental(): bool
     {
-        return class_exists('\\DNADesign\\Elemental\\Models\\BaseElement');
+        return class_exists(BaseElement::class);
     }
 
     public function TotalTemplateCount(): int
@@ -210,6 +213,7 @@ class TemplateOverviewPageController extends PageController
         return $this->Config()->get('base_class');
     }
 
+    #[Override]
     protected function init()
     {
         parent::init();
@@ -236,7 +240,7 @@ class TemplateOverviewPageController extends PageController
      * @param SiteTree $obj
      * @param int      $count
      *
-     * @return \SilverStripe\Model\ArrayData
+     * @return ArrayData
      */
     protected function createPageObject($obj, $count)
     {
@@ -250,7 +254,7 @@ class TemplateOverviewPageController extends PageController
         $canCreateString = ($obj->canCreate() ? 'Yes' : 'No');
         $isAdmin = Permission::check('ADMIN');
         $listArray = [];
-        $listArray['Name'] = 1 === $count ? $obj->i18n_singular_name() : $obj->i18n_plural_name();
+        $listArray['Name'] = 1 === $count ? $obj->i18n_singular_name() : $obj->plural_name();
         $listArray['Description'] = DBField::create_field('HTMLText', $obj->hasMethod('i18n_classDescription') ? $obj->i18n_classDescription() : Config::inst()->get($obj->ClassName, 'description'));
         $listArray['ClassName'] = $obj->ClassName;
         $listArray['Count'] = $count;

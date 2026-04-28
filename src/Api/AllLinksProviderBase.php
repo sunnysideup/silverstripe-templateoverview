@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Sunnysideup\TemplateOverview\Api;
 
+use Wilr\GoogleSitemaps\GoogleSitemap;
+use Wilr\GoogleSitemaps\Extensions\GoogleSitemapExtension;
 use ReflectionClass;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
@@ -112,7 +114,7 @@ abstract class AllLinksProviderBase
 
     protected function checkForErrorsInGoogleSitemap($obj, ?string $link = '')
     {
-        if (class_exists('\\Wilr\\GoogleSitemaps\\GoogleSitemap') && $obj instanceof DataObject && ! $obj->hasExtension('\\Wilr\\GoogleSitemaps\\Extensions\\GoogleSitemapExtension')) {
+        if (class_exists(GoogleSitemap::class) && $obj instanceof DataObject && ! $obj->hasExtension(GoogleSitemapExtension::class)) {
             $this->errorsInGoogleSitemap[$obj->ClassName . ',' . $obj->ID] =
                 $obj->getTitle . ' (' . $obj->i18n_singular_name() . ') is not listed in the google sitemap...' . $link;
         }
