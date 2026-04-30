@@ -114,7 +114,7 @@ class SaveAllData extends BuildTask
             if (! empty($dontSave)) {
                 foreach ($dontSave as $dontSaveClass) {
                     if (is_a($class, $dontSaveClass, true)) {
-                $this->output('SKIPPING ' . $class . ' (as listed in dontSave using is_a test)');
+                        $this->output('SKIPPING ' . $class . ' (as listed in dontSave using is_a test)');
                         continue 2;
                     }
                 }
@@ -178,12 +178,12 @@ class SaveAllData extends BuildTask
                     $action .= ' and publish (' . $publishCount . 'x)';
                 }
 
-            $this->writeTableRow($type, $action, $title, $timeBefore, $writeCount);
+                $this->writeTableRow($type, $action, $title, $timeBefore, $writeCount);
             } else {
                 $action = 'write (not allowed)';
                 $title = 'n/a';
                 $timeBefore = microtime(true);
-            $this->writeTableRow($type, $action, $title, $timeBefore);
+                $this->writeTableRow($type, $action, $title, $timeBefore);
             }
 
             $type = '<div style="color: #555;">' . $type . '</div>';
@@ -351,6 +351,12 @@ class SaveAllData extends BuildTask
 
     protected function output(string $string)
     {
+        $isHtml = str_contains($string, '<') && str_contains($string, '>');
+        if (! $isHtml && Director::is_cli()) {
+            $string = '<div>' . $string . '</div>';
+            $this->currentOutput->writeLn($string);
+            return;
+        }
         $message = Director::is_cli() ? strip_tags($string) : $string;
         if ($this->currentOutput) {
             $this->currentOutput->writeForHtml($message);
