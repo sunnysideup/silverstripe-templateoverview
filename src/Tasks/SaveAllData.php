@@ -352,17 +352,18 @@ class SaveAllData extends BuildTask
     protected function output(string $string)
     {
         $isHtml = str_contains($string, '<') && str_contains($string, '>');
-        if (! $isHtml && Director::is_cli()) {
-            $string = '<div>' . $string . '</div>';
-            $this->currentOutput->writeLn($string);
-            return;
+        if (Director::is_cli()) {
+            if (! $isHtml) {
+                $this->currentOutput->writeLn($string);
+                return;
+            }
+        } else {
+            if ($isHtml) {
+                $this->currentOutput->writeForHtml($string);
+                return;
+            } else {
+                // echo $string . '<br />';
+            }
         }
-        $message = Director::is_cli() ? strip_tags($string) : $string;
-        if ($this->currentOutput) {
-            $this->currentOutput->writeForHtml($message);
-            return;
-        }
-
-        echo $message . PHP_EOL;
     }
 }
