@@ -7,7 +7,6 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\VersionedAdmin\ArchiveAdmin;
-use Sunnysideup\TemplateOverview\Api\AllLinks;
 use Sunnysideup\TemplateOverview\Api\AllLinksProviderBase;
 
 class AllLinksArchiveAdmin extends AllLinksProviderBase
@@ -56,7 +55,7 @@ class AllLinksArchiveAdmin extends AllLinksProviderBase
     protected function workOutLinksForModel($obj, $model, $modelAdminLink, $modelAdmin)
     {
         $links = [];
-        $sanitizedModel = AllLinks::sanitise_class_name($model);
+        $sanitizedModel = AllLinksProviderBase::sanitise_class_name($model);
         $modelLink = $modelAdminLink . $sanitizedModel . '/';
         $items = $this->getRandomArchivedItem($model);
         if ($items) {

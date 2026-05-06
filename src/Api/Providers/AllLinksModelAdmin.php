@@ -68,7 +68,7 @@ class AllLinksModelAdmin extends AllLinksProviderBase
     protected function workOutLinksForModel($modelAdminSingleton, string $model, string $modelAdminLink, string $modelAdmin)
     {
         $links = [];
-        $sanitizedModel = AllLinks::sanitise_class_name($model);
+        $sanitizedModel = AllLinksProviderBase::sanitise_class_name($model);
         $modelLink = Controller::join_links($modelAdminLink, $sanitizedModel);
         $items = $model::get()
             ->shuffle()

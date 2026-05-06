@@ -84,53 +84,11 @@ class AllLinks extends AllLinksProviderBase
      */
     protected $customCMSLinks = [];
 
-    /**
-     * url snippets that if found in links should exclude the link altogether.
-     * e.g. 'admin/registry'.
-     *
-     * @var array
-     */
-    private static $exclude_list = [
-        'admin/user-forms',
-    ];
-
-    /**
-     * @var int
-     */
-    private static $number_of_examples = 1;
-
-    /**
-     * @var array
-     */
-    private static $custom_links = [
-        'sitemap.xml',
-        'Security/login',
-        'Security/logout',
-        'Security/lostpassword',
-        'Security/lostpassword/passwordsent',
-    ];
-
-    /**
-     * @var array
-     */
-    private static $controller_name_space_filter = [];
-
     public static function is_admin_link(string $link): bool
     {
         return str_starts_with(ltrim($link, '/'), 'admin');
     }
 
-    /**
-     * Sanitise a model class' name for inclusion in a link.
-     *
-     * @param string $class
-     *
-     * @return string
-     */
-    public static function sanitise_class_name($class)
-    {
-        return str_replace('\\', '-', $class);
-    }
 
     /**
      * returns an array of allNonCMSLinks => [] , allCMSLinks => [], otherControllerMethods => [].
@@ -229,7 +187,7 @@ class AllLinks extends AllLinksProviderBase
     {
         $obj = Injector::inst()->get(AllLinksControllerInfo::class);
         $obj->setNumberOfExamples($this->getNumberOfExamples());
-        $obj->setValidNameSpaces($this->Config()->controller_name_space_filter);
+        $obj->setValidNameSpaces($this->config()->controller_name_space_filter);
 
         return $obj->getAllLinksInner();
     }
@@ -305,46 +263,5 @@ class AllLinks extends AllLinksProviderBase
         return $reportsLinks->getAllLinksInner();
     }
 
-    /**
-     * Pushes an array of items to an array.
-     *
-     * @param array $array     Array to push items to (will overwrite)
-     * @param array $pushArray array of items to push to $array
-     */
-    protected function addToArrayOfLinks($array, $pushArray): array
-    {
-        $excludeList = $this->Config()->exclude_list;
-        foreach ($pushArray as $pushItem) {
-            if ($pushItem) {
-                // clean
-                $pushItem = rtrim(str_replace('?stage=Stage', '?', (string) $pushItem), '?');
-                $pushItem = str_replace('?&', '?', $pushItem);
 
-                $pushItem = self::sanitise_class_name($pushItem);
-                $pushItem = '/' . Director::makeRelative($pushItem);
-                //is it a file?
-                if (strpos($pushItem, '.') > (strlen($pushItem) - 6)) {
-                    $pushItem = rtrim($pushItem, '/');
-                }
-
-                if (str_starts_with($pushItem, 'http') || str_starts_with($pushItem, '//')) {
-                    continue;
-                } elseif ('' !== $pushItem) {
-                    if (! empty($excludeList)) {
-                        foreach ($excludeList as $excludeItem) {
-                            if (false !== stripos($pushItem, (string) $excludeItem)) {
-                                continue 2;
-                            }
-                        }
-                    }
-
-                    if (! in_array($pushItem, $array, true)) {
-                        $array[] = $pushItem;
-                    }
-                }
-            }
-        }
-
-        return $array;
-    }
 }
