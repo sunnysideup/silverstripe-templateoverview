@@ -357,13 +357,11 @@ class SaveAllData extends BuildTask
                 $this->currentOutput->writeLn($string);
                 return;
             }
+        } elseif ($isHtml) {
+            $this->currentOutput->writeForHtml($string);
+            return;
         } else {
-            if ($isHtml) {
-                $this->currentOutput->writeForHtml($string);
-                return;
-            } else {
-                // echo $string . '<br />';
-            }
+            // echo $string . '<br />';
         }
     }
 }
