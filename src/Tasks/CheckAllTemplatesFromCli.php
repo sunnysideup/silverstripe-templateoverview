@@ -139,10 +139,14 @@ class CheckAllTemplatesFromCli extends BuildTask
             }
         }
 
-        // Other controller links – stored as ['Link' => ..., 'ClassName' => ...]
         $output->writeln("You may also want to check the following controller method for errors (not automatically checked by this task):");
-        foreach ($allLinks['otherLinks'] as $link => $className) {
-            $output->writeln("- {$link} ({$className})");
+        foreach ($allLinks['otherLinks'] as $data) {
+            $link = $data['Link'] ?? 'error';
+            if ($link) {
+                $link = Director::absoluteURL($link);
+                $className = $data['ClassName'] ?? 'error';
+                $output->writeln("- {$link} ({$className})");
+            }
         }
 
         // Clean up the temporary LoginSession record.
@@ -209,7 +213,7 @@ class CheckAllTemplatesFromCli extends BuildTask
 
         // Announce the URL *before* fetching so that if the request hangs or
         // triggers a fatal error the operator can see exactly which URL caused it.
-        $output->writeln('[    ] Fetching ' . $absoluteLink);
+        $output->writeln('[TEST] Fetching ' . $absoluteLink);
 
         $start = microtime(true);
         [$httpCode, $finalAbsolute] = $this->fetchWithRedirects($relativeLink, $absoluteLink);
