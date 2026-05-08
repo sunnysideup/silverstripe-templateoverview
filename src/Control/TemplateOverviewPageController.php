@@ -62,7 +62,7 @@ class TemplateOverviewPageController extends PageController
 
     private static $base_class_provider = SiteTreeDetails::class;
 
-    public function index(HTTPRequest $request = null)
+    public function index(?HTTPRequest $request = null)
     {
         // $this->renderWith(['Sunnysideup\\TemplateOverview\\TemplateOverviewPageController']);
         return [];
