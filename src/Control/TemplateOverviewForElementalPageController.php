@@ -6,6 +6,7 @@ use Sunnysideup\TemplateOverview\Api\ElementalDetails;
 
 /**
  * Class \Sunnysideup\TemplateOverview\Control\TemplateOverviewForElementalPageController
+ *
  */
 class TemplateOverviewForElementalPageController extends TemplateOverviewPageController
 {
