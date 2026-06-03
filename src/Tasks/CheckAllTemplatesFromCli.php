@@ -8,6 +8,7 @@ use SilverStripe\Control\Session;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
@@ -381,6 +382,7 @@ class CheckAllTemplatesFromCli extends BuildTask
                 'MemberID' => $this->adminMember->ID,
                 'IPAddress' => '127.0.0.1',
                 'UserAgent' => 'SilverStripe smoketest-cli',
+                'LastAccessed' => DBDatetime::now()->Rfc2822(),
             ]);
             $loginSession->write();
             Security::setCurrentUser(null);
