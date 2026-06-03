@@ -267,7 +267,7 @@ class SaveAllData extends BuildTask
     {
         $this->output('
             </tbody>
-            </teable>');
+            </table>');
     }
 
     protected function writeAverage()
