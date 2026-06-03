@@ -94,8 +94,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
         $allowedActions = $linksAndActions['Actions'];
         $controllerLinks = $linksAndActions['Links'];
         $finalArray = $linksAndActions['CustomLinks'];
-        $excludeList = $this->config()->exclude_list;
-
         // die('---');
         //construct array!
         foreach ($allowedActions as $className => $methods) {
@@ -137,7 +135,6 @@ class AllLinksControllerInfo extends AllLinksProviderBase
             return $a['Link'] <=> $b['Link'];
         });
 
-        // remove excluded items
         return $finalFinalArray;
     }
 

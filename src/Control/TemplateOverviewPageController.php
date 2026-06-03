@@ -28,6 +28,7 @@ use Sunnysideup\TemplateOverview\Api\TemplateOverviewArrayMethods;
 
 /**
  * Class \Sunnysideup\TemplateOverview\Control\TemplateOverviewPageController
+ *
  */
 class TemplateOverviewPageController extends PageController
 {

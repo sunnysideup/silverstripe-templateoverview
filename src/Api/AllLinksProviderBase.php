@@ -37,6 +37,7 @@ abstract class AllLinksProviderBase
      * @var array
      */
     private static array $exclude_list = [
+        'admin/user-forms',
     ];
 
     /**
@@ -176,7 +177,7 @@ abstract class AllLinksProviderBase
                 } elseif ('' !== $pushItem) {
                     if (! empty($excludeList)) {
                         foreach ($excludeList as $excludeItem) {
-                            if (str_contains($pushItem, (string) $excludeItem)) {
+                            if (false !== stripos($pushItem, (string) $excludeItem)) {
                                 continue 2;
                             }
                         }
