@@ -117,7 +117,7 @@ class ProvideTestUser implements Flushable
         $auth = new MemberAuthenticator();
         $result = $auth->checkPassword($this->member, self::get_password());
         if (! $result->isValid()) {
-            user_error('Error in creating test user.', E_USER_ERROR);
+            user_error('Could not create temporary admin user', E_USER_ERROR);
 
             return null;
         }
