@@ -66,11 +66,14 @@ class ProvideTestUser implements Flushable
             if (Config::inst()->get(self::class, 'use_default_admin')) {
                 self::$username = DefaultAdminService::getDefaultAdminUsername();
             } else {
-                self::$username = bin2hex(random_bytes(48)) . '@' . self::FAKE_DOMAIN_NAME;
+                $cache = self::get_cache();
+                $local = (string) $cache->get('username');
+                if ($local === '') {
+                    $local = bin2hex(random_bytes(48));
+                    $cache->set('username', $local);
+                }
+                self::$username = $local . '@' . self::FAKE_DOMAIN_NAME;
             }
-
-            $hashArray = explode('@', (string) self::$username);
-            self::get_cache()->set('username', $hashArray[0]);
         }
 
         return self::$username;
@@ -82,7 +85,13 @@ class ProvideTestUser implements Flushable
             if (Config::inst()->get(self::class, 'use_default_admin')) {
                 self::$password = DefaultAdminService::getDefaultAdminPassword();
             } else {
-                self::$password = bin2hex(random_bytes(32)) . '_17_#_PdKd';
+                $cache = self::get_cache();
+                $pw = (string) $cache->get('password');
+                if ($pw === '') {
+                    $pw = bin2hex(random_bytes(32)) . '_17_#_PdKd';
+                    $cache->set('password', $pw);
+                }
+                self::$password = $pw;
             }
         }
 
@@ -102,31 +111,30 @@ class ProvideTestUser implements Flushable
         $filter = ['Email:EndsWith' => self::FAKE_DOMAIN_NAME];
         // @var Member|null $this->member
         $this->member = Member::get()
-            ->filter($filter)
-            ->first();
-        if (empty($this->member)) {
-            $this->member = Member::create($filter);
+    ->filter(['Email:EndsWith' => self::FAKE_DOMAIN_NAME])
+    ->first();
+        if (! $this->member) {
+            $this->member = Member::create();
         }
 
         $this->member->Email = self::get_user_email();
         $this->member->Password = self::get_password();
-        $this->member->LockedOutUntil = '';
+        $this->member->LockedOutUntil = null;   // was '' — clears lockout cleanly
         $this->member->FailedLoginCount = 0;
         $this->member->write();
 
         $auth = new MemberAuthenticator();
         $result = $auth->checkPassword($this->member, self::get_password());
         if (! $result->isValid()) {
-            user_error('Could not create temporary admin user', E_USER_ERROR);
-
-            return null;
+            throw new \RuntimeException(
+                'Could not create temporary admin user: '
+                . implode('; ', array_column($result->getMessages(), 'message'))
+            );
         }
 
         $service->findOrCreateAdmin($this->member->Email, $this->member->FirstName);
         if (! Permission::checkMember($this->member, 'ADMIN')) {
-            user_error('No admin group exists', E_USER_ERROR);
-
-            return null;
+            throw new \RuntimeException('No admin group exists');
         }
 
         return $this->member;
