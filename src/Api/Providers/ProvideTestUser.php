@@ -40,10 +40,9 @@ class ProvideTestUser implements Flushable
             $cache = self::get_cache();
             $cache->clear();
             //Make temporary admin member
-            $filter = ['Email:EndsWith' => self::FAKE_DOMAIN_NAME];
             // @var Member|null $this->member
             $members = Member::get()
-                ->filter($filter);
+                ->filter(['Email:EndsWith' => self::FAKE_DOMAIN_NAME]);
             foreach ($members as $member) {
                 $member->delete();
             }
@@ -108,11 +107,10 @@ class ProvideTestUser implements Flushable
         }
 
         //Make temporary admin member
-        $filter = ['Email:EndsWith' => self::FAKE_DOMAIN_NAME];
         // @var Member|null $this->member
         $this->member = Member::get()
-    ->filter(['Email:EndsWith' => self::FAKE_DOMAIN_NAME])
-    ->first();
+            ->filter(['Email:EndsWith' => self::FAKE_DOMAIN_NAME])
+            ->first();
         if (! $this->member) {
             $this->member = Member::create();
         }
