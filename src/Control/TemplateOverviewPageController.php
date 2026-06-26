@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\TemplateOverview\Control;
 
+use InvalidArgumentException;
 use Override;
 use DNADesign\Elemental\Models\BaseElement;
 use SilverStripe\Model\ArrayData;
@@ -161,7 +162,7 @@ class TemplateOverviewPageController extends PageController
                 }
             }
         } else {
-            user_error('Please specify the ID for the model you are looking for - e.g. /listofobjectsused/Image/', E_USER_ERROR);
+            throw new InvalidArgumentException('Please specify the ID for the model you are looking for - e.g. /listofobjectsused/Image/');
         }
     }
 

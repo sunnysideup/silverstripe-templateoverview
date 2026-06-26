@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\TemplateOverview\Control;
 
+use RuntimeException;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPResponse;
@@ -41,11 +42,11 @@ class LoginAndRedirect extends Controller
                 Injector::inst()->get(IdentityStore::class)->logIn($member, true);
                 return $this->redirect($url);
             } else {
-                user_error('Could not find user with email ' . $testvalue . '@. Please try again.', E_USER_ERROR);
+                throw new RuntimeException('Could not find user with email ' . $testvalue . '@. Please try again.');
                 return null;
             }
         } else {
-            user_error('Could not log you in while trying to access ' . $hash . ' should be the same as ' . $testvalue . '. Please try again.', E_USER_ERROR);
+            throw new RuntimeException('Could not log you in while trying to access ' . $hash . ' should be the same as ' . $testvalue . '. Please try again.');
             return null;
         }
     }
@@ -65,19 +66,17 @@ class LoginAndRedirect extends Controller
                 return Director::isDev();
             }
 
-            user_error(
+            throw new RuntimeException(
                 'Please include your ip address in LoginAndRedirect.allowed_ips: ' .
                     $this->request->getIP() . '.
-                    Currently set are: ' . implode(', ', $allowedIPs),
-                E_USER_ERROR
+                    Currently set are: ' . implode(', ', $allowedIPs)
             );
 
             return null;
         }
 
-        user_error(
-            'Please set SS_ALLOW_SMOKE_TEST in your environment variables to use this service.',
-            E_USER_ERROR
+        throw new RuntimeException(
+            'Please set SS_ALLOW_SMOKE_TEST in your environment variables to use this service.'
         );
         return null;
     }
