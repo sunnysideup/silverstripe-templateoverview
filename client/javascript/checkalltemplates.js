@@ -19,14 +19,17 @@ const SmokeTester = {
 
   stop: true,
 
+  startButton: document.querySelector('.start'),
+
   init: function () {
     document.getElementById('NumberOfTests').textContent =
       SmokeTester.list.length
-    document.querySelector('a.start').addEventListener('click', function () {
+    SmokeTester.startButton.addEventListener('click', function () {
       console.log('start')
       if (SmokeTester.stop === true) {
         this.textContent = 'Stop'
         SmokeTester.stop = false
+        this.classList.add('stoppable')
 
         if (!SmokeTester.item) {
           SmokeTester.item = SmokeTester.list.shift()
@@ -36,12 +39,12 @@ const SmokeTester = {
           console.log('check', SmokeTester.item)
           SmokeTester.checkURL()
         } else {
-          this.classList.add('disabled')
-          this.textContent = 'Complete'
+          SmokeTester.setComplete()
         }
       } else {
         this.textContent = 'Start'
         SmokeTester.stop = true
+        this.classList.remove('stoppable')
       }
     })
   },
@@ -272,6 +275,14 @@ const SmokeTester = {
     }
   },
 
+  setComplete: function () {
+    const btn = SmokeTester.startButton
+    btn.disabled = true
+    btn.textContent = 'Complete'
+    btn.classList.remove('stoppable')
+    btn.classList.add('done')
+  },
+
   runNextItem: function () {
     if (!SmokeTester.nextItemRetrieved) {
       SmokeTester.item = null
@@ -286,8 +297,7 @@ const SmokeTester = {
       }, 10)
     } else {
       console.log('No more items. Process complete.')
-      document.querySelector('a.start').classList.add('disabled')
-      document.querySelector('a.start').textContent = 'Complete'
+      SmokeTester.setComplete()
     }
   }
 }
