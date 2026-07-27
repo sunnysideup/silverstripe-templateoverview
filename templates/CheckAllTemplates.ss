@@ -28,7 +28,7 @@
             If you really want test without caution, you can <a href="/dev/tasks/write-all-data-objects">write all dataobjects</a> to the database.
         </p>
     </aside>
-    <% if $HasEnvironmentVariable %><a href="#" class="start btn prevent-default">Start</a><% else %>
+    <% if $HasEnvironmentVariable %><button class="start btn prevent-default">Start</button><% else %>
         <span style="color: red">You must set the <strong>SS_ALLOW_SMOKE_TEST</strong> environment variable to <strong>TRUE</strong> to run the tests below!</span>
     <% end_if %>
     <p class="stats">
