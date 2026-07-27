@@ -207,12 +207,12 @@ class CheckAllTemplatesFromCli extends BuildTask
         if (($hashPos = strpos($link, '#')) !== false) {
             $link = substr($link, 0, $hashPos);
         }
-
         $relativeLink = Director::makeRelative($link) ?: '/';
         $absoluteLink = rtrim(Director::absoluteBaseURL(), '/') . '/' . ltrim($relativeLink, '/');
 
         // Announce the URL *before* fetching so that if the request hangs or
         // triggers a fatal error the operator can see exactly which URL caused it.
+        sleep(1); // Be nice to the server and avoid flooding it with requests.
         $output->writeln('[TEST] Fetching ' . $absoluteLink);
 
         $start = microtime(true);
