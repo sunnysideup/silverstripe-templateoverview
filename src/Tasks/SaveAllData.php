@@ -215,7 +215,7 @@ class SaveAllData extends BuildTask
     {
         if ($this->isCli()) {
             echo sprintf(
-                '%-55s write:%-6d publish:%-6d %-22s %6.2fs%s' . PHP_EOL,
+                '%-75s write:%-6d publish:%-6d %-22s %6.2fs%s' . PHP_EOL,
                 $class,
                 $writeCount,
                 $publishCount,
@@ -246,7 +246,7 @@ class SaveAllData extends BuildTask
     private function skipRow(string $class, string $reason): void
     {
         if ($this->isCli()) {
-            echo sprintf('%-55s %s' . PHP_EOL, $class, $reason);
+            echo sprintf('%-75s %s' . PHP_EOL, $class, $reason);
             return;
         }
         echo '
