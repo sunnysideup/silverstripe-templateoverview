@@ -37,7 +37,7 @@ class CheckAllTemplates extends BuildTask
         //we have this check here so that even in dev mode you have to log in.
         //because if you do not log in, the test will not work.
         if (! Permission::check('ADMIN')) {
-            die('Please <a href="/Security/login/?BackURL=/dev/tasks/smoketest/">log in</a> first.');
+            die('Please <a href="/Security/login/?BackURL=%2Fdev%2Ftasks%2Fsmoketest%2F">log in</a> first.');
         }
         $obj = Injector::inst()->get(AllLinks::class);
 
